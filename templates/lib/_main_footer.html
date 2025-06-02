@@ -1,0 +1,136 @@
+{% load i18n static main_tags %}
+<div class="footer__inner">
+    <div class="container">
+        <div class="row">
+
+            <div class="col col-4 col-d-12">
+                <h3 class="footer__info__title">Bracho</h3>
+
+                <p class="footer__info__description">{% blocktranslate %}Here, I share ideas, tools, and methods that help me
+                    balance productivity with creativity while keeping control over my digital world. Dive in,
+                    get inspired, and feel free to share your thoughts!{% endblocktranslate %}</p>
+
+
+                <div class="footer__social">
+                    <ul class="footer__social__list list-reset">
+
+                        <li class="footer__social__item">
+                            <a class="footer__social__link" href="https://twitter.com" target="_blank"
+                               rel="noopener" aria-label="Twitter link"><i
+                                    class="fa-brands fa-x-twitter"></i></a>
+                        </li>
+
+                        <li class="footer__social__item">
+                            <a class="footer__social__link" href="https://facebook.com" target="_blank"
+                               rel="noopener" aria-label="Facebook link"><i
+                                    class="fa-brands fa-facebook"></i></a>
+                        </li>
+
+                        <li class="footer__social__item">
+                            <a class="footer__social__link" href="https://mastodon.social" target="_blank"
+                               rel="noopener" aria-label="Mastodon link"><i
+                                    class="fa-brands fa-mastodon"></i></a>
+                        </li>
+
+                        <li class="footer__social__item">
+                            <a class="footer__social__link" href="https://reddit.com" target="_blank"
+                               rel="noopener" aria-label="Reddit link"><i class="fa-brands fa-reddit-alien"></i></a>
+                        </li>
+
+                        <li class="footer__social__item">
+                            <a class="footer__social__link" href="https://github.com" target="_blank"
+                               rel="noopener" aria-label="Github link"><i class="fa-brands fa-github"></i></a>
+                        </li>
+
+                        <li class="footer__social__item">
+                            <a class="footer__social__link" href="/feed.xml" target="_blank" rel="noopener"
+                               aria-label="Rss link"><i class="fa-solid fa-rss"></i></a>
+                        </li>
+
+                    </ul>
+                </div>
+
+            </div>
+
+            <div class="col col-4 col-d-12">
+                <h3 class="footer__title">{% translate 'Recent Posts' %}</h3>
+                <div class="footer__recent-posts">
+
+                    {% for rpost in recent_posts %}
+                        <div class="footer__recent-content">
+
+                        <a href="{% url 'main:post-detail' rpost.slug  %}"
+                           class="footer__recent-image">
+
+                            <img class="lazy" data-src="{{ rpost.cover.url }}"
+                                 alt="{{  repost.title }}">
+                        </a>
+
+                        <div class="footer__recent-meta">
+                            <h3 class="footer__recent-title"><a
+                                    href="{% url 'main:post-detail' rpost.slug  %}">{{  repost.title }}</a></h3>
+                            <time class="footer__recent-date" datetime="{{ rpost.created|iso8601 }}">
+                                {{  rpost.created|localized_date }}
+                            </time>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+
+
+            <div class="col col-2 col-d-6 col-m-12">
+                <div class="footer-nav__left">
+                    <h3 class="footer__title">{% translate 'Menu' %}</h3>
+                    <div class="footer-nav__list">
+
+
+                        <a class="footer-nav__link" href="/">{% translate 'Home' %}</a>
+
+
+                        <a class="footer-nav__link" href="/videos/">{% translate 'Videos' %}</a>
+
+
+                        <a class="footer-nav__link" href="">{% translate 'Archive' %}</a>
+
+
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col col-2 col-d-6 col-m-12">
+                <div class="footer-nav__right">
+
+
+                    <h3 class="footer__title">{% translate 'Pages' %}</h3>
+                    <div class="footer-nav__list">
+
+                        <a class="footer-nav__link" href="">{% translate 'About' %}</a>
+
+                        <a class="footer-nav__link" href="{% url 'main:contact' %}">{% translate 'Contact' %}</a>
+
+                        <a class="footer-nav__link" href="/elements/">{% translate 'Elements' %}</a>
+
+                    </div>
+
+
+                </div>
+            </div>
+
+
+        </div>
+
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col col-12">
+            <div class="copyright">2025 {% translate 'Crafted by' %} <a href="/">Bracho</a> & {% translate 'Designed by' %} <a
+                    href="https://jekyllthemes.io/developers/artem-sheludko">Artem Sheludko</a>.
+            </div>
+        </div>
+    </div>
+</div>

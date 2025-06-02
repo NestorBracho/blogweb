@@ -1,0 +1,48 @@
+{% load i18n static main_tags %}
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+{% if page_title %}
+    <title>{{ page_title }} - Bracho</title>{% else %}<title>Bracho</title>
+{% endif %}
+
+{% if meta_description %}
+    <meta name="description" content="{{ meta_description }}">{% else %}
+    <meta name="description" content="Science, storytelling, and software—bridging code, cosmos, and culture">
+{% endif %}
+
+<link rel="canonical" href="{{ request.build_absolute_uri }}">
+<link rel="alternate" type="application/rss+xml" title="" href="/feed.xml">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+{% if page_title %}
+    <meta property="twitter:title" content="{{ page_title }} - Bracho">{% else %}
+    <meta property="twitter:title" content="Bracho">
+{% endif %}
+{% if meta_description %}
+    <meta property="twitter:description" content="{{ meta_description }}">{% else %}
+    <meta property="twitter:description"
+          content="Science, storytelling, and software—bridging code, cosmos, and culture">
+{% endif %}
+{% if social_image_url %}
+    <meta property="twitter:image:src" content="{{ social_image_url }}">{% else %}
+    <meta property="twitter:image:src"
+          content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/02.png' %}">
+{% endif %}
+
+<!-- OpenGraph (Facebook, LinkedIn, etc.) -->
+{% if page_title %}
+    <meta property="og:title" content="{{ page_title }} - Bracho">{% else %}
+    <meta property="og:title" content="Bracho">
+{% endif %}
+{% if meta_description %}
+    <meta property="og:description" content="{{ meta_description }}">{% else %}
+    <meta property="og:description" content="Science, storytelling, and software—bridging code, cosmos, and culture">
+{% endif %}
+{% if social_image_url %}
+    <meta property="og:image" content="{{ social_image_url }}">{% else %}
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/02.png' %}">
+{% endif %}
+<meta property="og:url" content="{{ request.build_absolute_uri }}">

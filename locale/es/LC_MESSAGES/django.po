@@ -1,0 +1,304 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-06-01 22:28+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? "
+"1 : 2;\n"
+
+#: main/api/serializers.py:61 main/templates/main/category.html:60
+#: main/templates/main/post.html:33
+msgid "min read"
+msgstr "min de lectura"
+
+#: main/templates/main/category.html:16
+msgid "A collection of"
+msgstr "Un grupo de"
+
+#: main/templates/main/category.html:16
+msgid "Posts"
+msgstr "Publicaiones"
+
+#: main/templates/main/category.html:70
+msgid "EMPTY"
+msgstr "VACÍO"
+
+#: main/templates/main/category.html:71
+msgid ""
+"No intel here… yet. The grid’s quiet in this sector. Check back soon. "
+"<br><i>Information always finds a way.</i>"
+msgstr ""
+"Vacío… por ahora. Esta zona del sistema está en silencio. Vuelve pronto. "
+"<br><i>La información siempre encuentra un camino.</i>"
+
+#: main/templates/main/category.html:72
+msgid "Back to homepage"
+msgstr "Vuelve al inicio"
+
+#: main/templates/main/contact.html:70
+msgid "Back to home"
+msgstr "Vuelve al inicio"
+
+#: main/templates/main/contact.html:73
+msgid "Get In Touch"
+msgstr "Ponte en Contacto"
+
+#: main/templates/main/contact.html:76
+msgid ""
+"Plug into the grid, whether you’re building\n"
+"                    something bold or need a sharp mind in the system, this "
+"is your uplink to start working\n"
+"                    together."
+msgstr ""
+"¿Buscas un dev que hable en código y entienda el sistema? Transmite por aquí. <br><i>Construyamos el futuro juntos.</i>"
+
+#: main/templates/main/contact.html:84
+msgid "Your Name"
+msgstr "Tu Nombre"
+
+#: main/templates/main/contact.html:85
+msgid "Your name"
+msgstr "Tu nombre"
+
+#: main/templates/main/contact.html:89 main/templates/main/contact.html:90
+msgid "Your Email"
+msgstr "Tu Correo"
+
+#: main/templates/main/contact.html:94 main/templates/main/contact.html:95
+msgid "Your Message"
+msgstr "Tu Mensaje"
+
+#: main/templates/main/contact.html:99
+msgid "Send Now"
+msgstr "Enviar Ahora"
+
+#: main/templates/main/index.html:14
+msgid "office's Picture"
+msgstr "imagen de oficina"
+
+#: main/templates/main/index.html:18
+msgid "My creative space, where masterpieces are born"
+msgstr "Mi espacio creativo, donde nacen obras maestras"
+
+#: main/templates/main/index.html:33
+msgid "Hi! I’m"
+msgstr "Hola! Soy"
+
+#: main/templates/main/index.html:36
+msgid "A digital explorer, coder, and Linux advocate"
+msgstr "Un explorador digital, codificador, y defensor de Linux"
+
+#: main/templates/main/index.html:39
+msgid ""
+"I’m a digital explorer, coder, and Linux advocate.\n"
+"                                    This blog is my personal knowledge base "
+"on productivity, programming, and the\n"
+"                                    freedom of information."
+msgstr ""
+"Soy un explorador digital, codificador y denfensor de Linux.\n"
+"Este blog es mi recolección personal de información sobre productividad, "
+"programación y la \n"
+"libertad de información."
+
+#: main/templates/main/index.html:43
+msgid ""
+"Here, I share ideas, tools, and methods that help me balance productivity "
+"with\n"
+"                                        creativity while keeping control "
+"over my digital world. Dive in, get inspired,\n"
+"                                        and feel free to share your thoughts!"
+msgstr ""
+"Aquí comparto ideas, herramientas y métodos que me ayudan a balancear "
+"productividad con creatividad \n"
+"mientras mantengo el control sobre mi mundo digital. Entra, inpirate y "
+"sientete en la libertad de compartir ideas!"
+
+#: main/templates/main/index.html:51
+msgid "Let’s Work Together"
+msgstr "Trabajemos Jutnos"
+
+#: main/templates/main/index.html:69
+msgid "Nerd Stuff"
+msgstr "Cosas Nerd"
+
+#: main/templates/main/index.html:206
+msgid "The Binary Journal"
+msgstr "La Terminal"
+
+#: main/templates/main/index.html:452
+msgid "Load More"
+msgstr "Cargar más"
+
+#: main/templates/main/index.html:484
+msgid "Hacker’s Haven"
+msgstr "Paraiso del Hacker"
+
+#: main/templates/main/index.html:657
+msgid "Latest Videos"
+msgstr "Últimos Vídeos"
+
+#: main/templates/main/post.html:50
+msgid "Share this"
+msgstr "Compartir"
+
+#: main/templates/main/post.html:95
+msgid "Older post"
+msgstr "Publicación anterior"
+
+#: main/templates/main/post.html:104
+msgid "Newer post"
+msgstr "Última publicación"
+
+#: main/templates/main/post.html:122
+msgid "Start the conversation"
+msgstr "Comienza la conversación"
+
+#: main/templates/main/post.html:125
+msgid "Show Comments"
+msgstr "Mostrar comentarios"
+
+#: main/templates/main/post.html:164
+msgid "Related"
+msgstr "Relacionados"
+
+#: main/views.py:41
+msgid "Categories"
+msgstr "Categorías"
+
+#: main/views.py:72
+#, python-format
+msgid "No %(verbose_name)s found matching the query"
+msgstr ""
+
+#: main/views.py:84 templates/lib/_main_footer.html:112
+#: templates/lib/_main_navbar.html:49
+msgid "Contact"
+msgstr "Contacto"
+
+#: templates/lib/_main_footer.html:9
+msgid ""
+"Here, I share ideas, tools, and methods that help me\n"
+"                    balance productivity with creativity while keeping "
+"control over my digital world. Dive in,\n"
+"                    get inspired, and feel free to share your thoughts!"
+msgstr ""
+"Aquí comparto ideas, herramientas y métodos que me ayudan a balancear "
+"productividad con creatividad \n"
+"mientras mantengo el control sobre mi mundo digital. Entra, inpirate y "
+"sientete en la libertad de compartir ideas!"
+
+#: templates/lib/_main_footer.html:56
+msgid "Recent Posts"
+msgstr "Publicaiones Recientes"
+
+#: templates/lib/_main_footer.html:85
+msgid "Menu"
+msgstr "Menú"
+
+#: templates/lib/_main_footer.html:89 templates/lib/_main_navbar.html:23
+msgid "Home"
+msgstr "Inicio"
+
+#: templates/lib/_main_footer.html:92 templates/lib/_main_navbar.html:28
+msgid "Videos"
+msgstr "Vídeos"
+
+#: templates/lib/_main_footer.html:95 templates/lib/_main_navbar.html:33
+msgid "Archive"
+msgstr "Archivo"
+
+#: templates/lib/_main_footer.html:107
+msgid "Pages"
+msgstr "Páginas"
+
+#: templates/lib/_main_footer.html:110 templates/lib/_main_navbar.html:47
+msgid "About"
+msgstr "Acerca"
+
+#: templates/lib/_main_footer.html:114 templates/lib/_main_navbar.html:51
+msgid "Elements"
+msgstr "Elementos"
+
+#: templates/lib/_main_footer.html:131
+msgid "Crafted by"
+msgstr "Hecho por"
+
+#: templates/lib/_main_footer.html:131
+msgid "Designed by"
+msgstr "Diseñado por"
+
+#: templates/lib/_main_navbar.html:17
+msgid "Main menu"
+msgstr "Menú principal"
+
+#: templates/lib/_main_navbar.html:70
+msgid "Enable dark mode"
+msgstr "Activar modo oscuro"
+
+#: templates/lib/_main_navbar.html:77
+msgid "Enable light mode"
+msgstr "Activar modo claro"
+
+#: templates/lib/_main_navbar.html:92
+msgid "Language options"
+msgstr "Opciones de lenguaje"
+
+#: templates/lib/_main_navbar.html:1207
+msgid "Spanish"
+msgstr "Español"
+
+#: templates/lib/_main_navbar.html:1226
+msgid "English"
+msgstr "Inglés"
+
+#: templates/lib/_main_navbar.html:1238
+msgid "Search posts..."
+msgstr "Buscar publicación"
+
+#: templates/lib/_main_right_sidebar.html:7
+msgid "Stay inspired weekly"
+msgstr "Mantente inspirado semanalmente"
+
+#: templates/lib/_main_right_sidebar.html:10
+msgid ""
+"Every Sunday, I deliver actionable tips for\n"
+"                enhancing productivity, practical life advice, and top-notch "
+"insights gathered from\n"
+"                various sources, right to your email inbox."
+msgstr ""
+"Todos los domingos, envío consejos para mejorar la productividad, consejos "
+"practicos de vida, e información de vanguardia de distintas fuentes, directo "
+"en tu bandeja de entrada."
+
+#: templates/lib/_main_right_sidebar.html:19
+msgid "Email address"
+msgstr "Dirección de correo"
+
+#: templates/lib/_main_right_sidebar.html:21
+msgid "Your email address..."
+msgstr "Tu correo aquí..."
+
+#: templates/lib/_main_right_sidebar.html:23
+msgid "Join Now"
+msgstr "Únete Ahora"
+
+#: templates/lib/_main_right_sidebar.html:68
+msgid "Featured posts"
+msgstr "Publicaciones destacadas"
+
+#: templates/lib/_main_right_sidebar.html:93
+msgid "Topics"
+msgstr "Temas"

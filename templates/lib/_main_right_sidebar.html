@@ -1,0 +1,107 @@
+{% load i18n static main_tags %}
+<aside class="sidebar">
+
+    <div class="widget widget-subscribe">
+        <div class="widget-subscribe__content">
+
+            <h2 class="widget-subscribe__title">{% translate 'Stay inspired weekly' %} ✌️</h2>
+
+
+            <p class="widget-subscribe__description">{% blocktranslate %}Every Sunday, I deliver actionable tips for
+                enhancing productivity, practical life advice, and top-notch insights gathered from
+                various sources, right to your email inbox.{% endblocktranslate %}</p>
+
+        </div>
+        <form class="widget-subscribe__form validate"
+              action="//gmail.us21.list-manage.com/subscribe/post?u=8aeb9c31a5c97a3a5f9ff2740&amp;id=0e31fd7793&amp;"
+              method="POST" id="membedded-subscribe-form" name="membedded-subscribe-form"
+              target="_blank" novalidate="">
+            <label class="screen-reader-text" for="mce-EMAIL">{% translate 'Email address' %}</label>
+            <input class="widget-subscribe__email required email" id="mce-EMAIL" type="text"
+                   name="EMAIL" placeholder="{% translate 'Your email address...' %}">
+            <button class="button button--secondary button--big widget-subscribe__button"
+                    id="membedded-subscribe" type="submit" name="subscribe">{% translate 'Join Now' %}
+            </button>
+        </form>
+    </div>
+
+
+    <div class="widget widget-social">
+        <ul class="widget-social__list list-reset">
+
+            <li class="widget-social__item">
+                <a class="widget-social__link" href="https://twitter.com" target="_blank" rel="noopener"
+                   aria-label="Twitter link"><i class="fa-brands fa-x-twitter"></i></a>
+            </li>
+
+            <li class="widget-social__item">
+                <a class="widget-social__link" href="https://facebook.com" target="_blank"
+                   rel="noopener" aria-label="Facebook link"><i class="fa-brands fa-facebook"></i></a>
+            </li>
+
+            <li class="widget-social__item">
+                <a class="widget-social__link" href="https://mastodon.social" target="_blank"
+                   rel="noopener" aria-label="Mastodon link"><i class="fa-brands fa-mastodon"></i></a>
+            </li>
+
+            <li class="widget-social__item">
+                <a class="widget-social__link" href="https://reddit.com" target="_blank" rel="noopener"
+                   aria-label="Reddit link"><i class="fa-brands fa-reddit-alien"></i></a>
+            </li>
+
+            <li class="widget-social__item">
+                <a class="widget-social__link" href="https://github.com" target="_blank" rel="noopener"
+                   aria-label="Github link"><i class="fa-brands fa-github"></i></a>
+            </li>
+
+            <li class="widget-social__item">
+                <a class="widget-social__link" href="/feed.xml" target="_blank" rel="noopener"
+                   aria-label="Rss link"><i class="fa-solid fa-rss"></i></a>
+            </li>
+
+        </ul>
+    </div>
+
+
+    <div class="widget widget-featured-posts">
+        <div class="widget-sidebar-head">
+            <h2 class="widget-sidebar-title">{% translate 'Featured posts' %}</h2>
+        </div>
+
+        {% for fpost in featured_posts %}
+            <div class="post-featured-content">
+
+                <a href="{% url 'main:post-detail' fpost.slug %}" class="post-featured-image">
+
+                    <img class="lazy loaded" alt="{{ fpost.title }}"
+                         data-ll-status="loaded" src="{{ fpost.cover.url }}">
+                </a>
+
+                <div class="post-featured-meta">
+                    <h3 class="post-featured-title"><a
+                            href="{% url 'main:post-detail' fpost.slug %}">{{ fpost.title }}</a></h3>
+                    <time class="post-featured-date" datetime="{{ fpost.created|iso8601 }}">{{  fpost.created|localized_date }}</time>
+                </div>
+            </div>
+        {% endfor %}
+
+    </div>
+
+
+    <div class="widget widget-tags">
+        <div class="widget-sidebar-head">
+            <h2 class="widget-sidebar-title">{% translate 'Topics' %}</h2>
+        </div>
+
+        <div class="tag-cloud">
+
+            {% for category in categories %}
+            <a href="{% url 'main:category-detail' category.slug %}" class="tag-cloud__item" style="background: {{ category.color }};">
+                {{ category.name }}
+            </a>
+            {% endfor %}
+
+        </div>
+    </div>
+
+</aside>

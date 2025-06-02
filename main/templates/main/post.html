@@ -1,0 +1,345 @@
+{% extends 'base.html' %}
+{% load i18n static main_tags l10n %}
+
+{% block content %}
+    <div class="container">
+
+        <div class="row">
+            <div class="col col-8 col-d-12">
+
+                <div class="post-head">
+
+                    <div class="post-image">
+                        <img class="lazy loaded" alt="{{  object.description }}"
+                             data-ll-status="loaded" src="{{ object.cover.url }}">
+                    </div>
+
+
+                    <div class="post-info">
+
+                        <div class="post-tags">
+
+                            <a href="/tags/?tag=linux" class="post-tag" style="background: {{  object.category.color }};">{{ object.category.name }}</a>
+
+                        </div>
+
+                        <h1 class="post-title">{{ object.title }}</h1>
+
+                        <div class="post-meta">
+                            <div class="post-meta__bottom">
+                                <time class="post-date" datetime="{{ object.created|iso8601 }}">{{  object.created|localized_date }}</time>
+                                –
+                                <span class="post-minutes">
+                                    {{ object.read_time }} {% translate 'min read' %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <article class="post">
+                    <div class="post__content">
+
+                        {{ post.rendered_body|safe }}
+
+                    </div>
+                </article>
+
+                <div class="share">
+                    <div class="share__title">{% translate 'Share this' %}:</div>
+                    <ul class="share__list list-reset">
+                        <li class="share__item">
+                            <a class="share__link share__facebook"
+                               href="https://www.facebook.com/sharer/sharer.php?u=https://coderon-jekyll.netlify.app/setting-up-the-perfect-programming-environment-on-ubuntu"
+                               onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;"
+                               title="Share on Facebook" rel="nofollow"><i class="fa-brands fa-facebook-f"></i></a>
+                        </li>
+                        <li class="share__item">
+                            <a class="share__link share__twitter"
+                               href="https://twitter.com/intent/tweet?text=Setting%20Up%20the%20Perfect%20Programming%20Environment%20on%20Ubuntu&amp;url=https://coderon-jekyll.netlify.app/setting-up-the-perfect-programming-environment-on-ubuntu"
+                               onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;"
+                               title="Share on Twitter" rel="nofollow"><i class="fa-brands fa-x-twitter"></i></a>
+                        </li>
+                        <li class="share__item">
+                            <a class="share__link share__pinterest"
+                               href="http://pinterest.com/pin/create/button/?url=https://coderon-jekyll.netlify.app/setting-up-the-perfect-programming-environment-on-ubuntu&amp;media=https://coderon-jekyll.netlify.app/images/07.jpg&amp;description=Setting%20Up%20the%20Perfect%20Programming%20Environment%20on%20Ubuntu"
+                               onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=900,height=500,toolbar=1,resizable=0'); return false;"
+                               title="Share on Pinterest" rel="nofollow"><i class="fa-brands fa-pinterest"></i></a>
+                        </li>
+                        <li class="share__item">
+                            <a class="share__link share__linkedin"
+                               href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https://coderon-jekyll.netlify.app/setting-up-the-perfect-programming-environment-on-ubuntu&amp;title=Setting%20Up%20the%20Perfect%20Programming%20Environment%20on%20Ubuntu&amp;summary=Rooted%20in%20the%20principles%20of%20free%20software,%20Linux%20has%20evolved%20from%20a%20student%E2%80%99s%20project%20into%20a%20cornerstone%20of%20modern%20technology,%20powering%20everything%20from%20supercomputers%20to%20smartphones.&amp;source="
+                               onclick="window.open(this.href, 'pop-up', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;"
+                               title="Share on LinkedIn" rel="nofollow"><i class="fa-brands fa-linkedin-in"></i></a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="post__navigation">
+
+                    <div class="post__prev">
+
+                        <a href="/why-two-factor-authentication-is-a-must-have-tool" class="prev__image">
+
+                            <div class="video-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                                    <polygon points="40,30 70,50 40,70"></polygon>
+                                </svg>
+                            </div>
+
+                            <img class="lazy loaded" alt="Setting Up the Perfect Programming Environment on Ubuntu"
+                                 data-ll-status="loaded" src="/images/04.jpg">
+                        </a>
+
+                        <div class="prev__box">
+                            <span class="post__nav__prev">{% translate 'Older post' %}</span>
+                            <h2 class="post__nav__title"><a href="/why-two-factor-authentication-is-a-must-have-tool">Why
+                                Two-Factor Authentication Is a Must-Have Tool</a></h2>
+                        </div>
+                    </div>
+
+
+                    <div class="post__next">
+                        <div class="next__box">
+                            <span class="post__nav__next">{% translate 'Newer post' %}</span>
+                            <h2 class="post__nav__title"><a
+                                    href="/avoiding-common-javascript-mistakes-and-writing-clean-code">Avoiding Common
+                                JavaScript Mistakes and Writing Clean Code</a></h2>
+                        </div>
+
+                        <a href="/avoiding-common-javascript-mistakes-and-writing-clean-code" class="next__image">
+
+                            <img class="lazy loaded" alt="Setting Up the Perfect Programming Environment on Ubuntu"
+                                 data-ll-status="loaded" src="/images/02.jpg">
+                        </a>
+
+                    </div>
+
+                </div>
+
+                <div class="show-comments">
+
+                    <h3 class="show-comments__title">{% translate 'Start the conversation' %}</h3>
+
+                    <button class="button button--primary disqus-button" id="show-comments-button"
+                            onclick="disqus();return false;">{% translate 'Show Comments' %}
+                    </button>
+                </div>
+
+                <div id="disqus_thread" class="post__comments">
+                    <div id="disqus_empty"></div>
+                </div>
+
+                <script>
+                    var disqus_loaded = false;
+                    var disqus_shortname = 'anvod-studio-test';
+                    var disqus_container = document.getElementById("disqus_thread");
+
+                    function disqus() {
+                        if (!disqus_loaded) {
+                            disqus_loaded = true;
+                            var e = document.createElement("script");
+                            e.type = "text/javascript";
+                            e.async = true;
+                            e.src = "//" + disqus_shortname + ".disqus.com/embed.js";
+                            (document.getElementsByTagName("head")[0] ||
+                                document.getElementsByTagName("body")[0])
+                                .appendChild(e);
+                            // Hide the button after opening
+                            document.getElementById("show-comments-button").style.display = "none";
+                            // Show disqus comments
+                            disqus_container.classList.add("is-open");
+                        }
+                    }
+                </script>
+
+                <noscript>Please enable JavaScript to view the
+                    <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+                </noscript>
+
+
+                <div class="related-posts is-related">
+                    <div class="section__info">
+                        <div class="section__head">
+                            <h2 class="section__title">{% translate 'Related' %}</h2>
+                        </div>
+                    </div>
+                    <div class="view-list">
+
+
+                        <div class="article article--flexible">
+                            <div class="article__inner">
+
+
+                                <div class="article__head">
+
+
+                                    <a class="article__image"
+                                       href="/why-i-switched-to-arch-linux-and-never-looked-back">
+                                        <img class="lazy loaded"
+                                             alt="Why I Switched to Arch Linux and Never Looked Back"
+                                             data-ll-status="loaded" src="/images/08.jpg">
+                                    </a>
+                                </div>
+
+
+                                <div class="article__content">
+
+
+                                    <div class="article__tags">
+
+                                        <a href="/tags/?tag=linux" class="article__tag"
+                                           style="background: var(--dark-gray);">
+                                            Linux
+                                        </a>
+
+                                    </div>
+
+
+                                    <h2 class="article__title">
+                                        <a href="/why-i-switched-to-arch-linux-and-never-looked-back">Why I Switched to
+                                            Arch Linux and Never Looked Back</a>
+                                    </h2>
+
+                                    <p class="article__excerpt">Rooted in the principles of free software, Linux has
+                                        evolved from a student’s project into a cornerstone of modern technology,
+                                        powering everything from supercomputers to smartphones.</p>
+
+                                    <div class="article__meta">
+                                        <time class="article__date" datetime="2024-12-15T12:01:35+00:00">15 Dec, 2024
+                                        </time>
+                                        <div class="article__minutes">
+
+
+                                            3 min read
+
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="article article--flexible">
+                            <div class="article__inner">
+
+
+                                <div class="article__head">
+
+
+                                    <a class="article__image"
+                                       href="/top-7-terminal-commands-every-linux-user-should-know">
+                                        <img class="lazy loaded"
+                                             alt="Top 7 Terminal Commands Every Linux User Should Know"
+                                             data-ll-status="loaded" src="/images/28.jpg">
+                                    </a>
+                                </div>
+
+
+                                <div class="article__content">
+
+
+                                    <div class="article__tags">
+
+                                        <a href="/tags/?tag=linux" class="article__tag"
+                                           style="background: var(--dark-gray);">
+                                            Linux
+                                        </a>
+
+                                    </div>
+
+
+                                    <h2 class="article__title">
+                                        <a href="/top-7-terminal-commands-every-linux-user-should-know">Top 7 Terminal
+                                            Commands Every Linux User Should Know</a>
+                                    </h2>
+
+                                    <p class="article__excerpt">Rooted in the principles of free software, Linux has
+                                        evolved from a student’s project into a cornerstone of modern technology,
+                                        powering everything from supercomputers to smartphones.</p>
+
+                                    <div class="article__meta">
+                                        <time class="article__date" datetime="2024-11-10T12:01:35+00:00">10 Nov, 2024
+                                        </time>
+                                        <div class="article__minutes">
+
+
+                                            3 min read
+
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="article article--flexible">
+                            <div class="article__inner">
+
+
+                                <div class="article__head">
+
+                                    <div class="video-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                                            <polygon points="40,30 70,50 40,70"></polygon>
+                                        </svg>
+                                    </div>
+
+
+                                    <a class="article__image" href="/customizing-the-terminal-and-productivity-tools">
+                                        <img class="lazy loaded" alt="Customizing the Terminal and Productivity Tools"
+                                             data-ll-status="loaded" src="/images/18.jpg">
+                                    </a>
+                                </div>
+
+
+                                <div class="article__content">
+
+
+                                    <div class="article__tags">
+
+                                        <a href="/tags/?tag=linux" class="article__tag"
+                                           style="background: var(--dark-gray);">
+                                            Linux
+                                        </a>
+
+                                    </div>
+
+
+                                    <h2 class="article__title">
+                                        <a href="/customizing-the-terminal-and-productivity-tools">Customizing the
+                                            Terminal and Productivity Tools</a>
+                                    </h2>
+
+                                    <p class="article__excerpt">Rooted in the principles of free software, Linux has
+                                        evolved from a student’s project into a cornerstone of modern technology,
+                                        powering everything from supercomputers to smartphones.</p>
+
+                                    <div class="article__meta">
+                                        <time class="article__date" datetime="2024-11-07T12:01:35+00:00">07 Nov, 2024
+                                        </time>
+                                        <div class="article__minutes">
+
+
+                                            3 min read
+
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="col col-4 col-d-12">
+                {% include 'lib/_main_right_sidebar.html' %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

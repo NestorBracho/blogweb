@@ -28,8 +28,7 @@
 {% endif %}
 {% if social_image_url %}
     <meta property="twitter:image:src" content="{{ social_image_url }}">{% else %}
-    <meta property="twitter:image:src"
-          content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/02.png' %}">
+    <meta property="twitter:image:src" content="{% static 'images/02.png' %}">
 {% endif %}
 
 <!-- OpenGraph (Facebook, LinkedIn, etc.) -->
@@ -43,6 +42,6 @@
 {% endif %}
 {% if social_image_url %}
     <meta property="og:image" content="{{ social_image_url }}">{% else %}
-    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/02.png' %}">
+    <meta property="og:image" content="{% static 'images/02.png' %}">
 {% endif %}
 <meta property="og:url" content="{{ request.build_absolute_uri }}">

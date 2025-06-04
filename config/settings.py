@@ -97,6 +97,16 @@ DATABASES = {
     }
 }
 
+# Celery config
+
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+
+# OpenAI config
+
+OPENAI_API_KEY = env("OPENAI_API_KEY")
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

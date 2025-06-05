@@ -47,6 +47,18 @@
             document.documentElement.setAttribute("list", "");
             document.documentElement.classList.add('view-list');
         }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const elements = document.querySelectorAll('.messages');
+                elements.forEach(el => {
+                    el.classList.add('fade-out');
+                    setTimeout(() => {
+                        el.style.display = 'none';
+                    }, 1000);
+                });
+            }, 5000);
+        });
     </script>
 
     <link rel="stylesheet" href="{% static 'css/pygments.css' %}">
@@ -85,6 +97,21 @@
         <div class="search__overlay"></div>
     </div>
     <!-- end search -->
+
+    {% if messages %}
+        <section class="messages">
+            <div class="container">
+                {% for message in messages %}
+                    <div class="row">
+                        <div class="col col-12">
+                            <p class="
+                                    {% if message.tags %}{{ message.tags }}{% else %}success{% endif %}">{{ message }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
 
     <!-- begin content -->
     <main class="content" aria-label="Content">

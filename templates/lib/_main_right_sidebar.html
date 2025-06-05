@@ -12,13 +12,12 @@
                 various sources, right to your email inbox.{% endblocktranslate %}</p>
 
         </div>
-        <form class="widget-subscribe__form validate"
-              action="//gmail.us21.list-manage.com/subscribe/post?u=8aeb9c31a5c97a3a5f9ff2740&amp;id=0e31fd7793&amp;"
-              method="POST" id="membedded-subscribe-form" name="membedded-subscribe-form"
-              target="_blank" novalidate="">
+        <form class="widget-subscribe__form validate" action="{% url 'main:newsletter-subscriber' %}?next={{ request.path }}"
+              method="POST" id="membedded-subscribe-form" name="membedded-subscribe-form">
+            {% csrf_token %}
             <label class="screen-reader-text" for="mce-EMAIL">{% translate 'Email address' %}</label>
             <input class="widget-subscribe__email required email" id="mce-EMAIL" type="text"
-                   name="EMAIL" placeholder="{% translate 'Your email address...' %}">
+                   name="email" placeholder="{% translate 'Your email address...' %}">
             <button class="button button--secondary button--big widget-subscribe__button"
                     id="membedded-subscribe" type="submit" name="subscribe">{% translate 'Join Now' %}
             </button>

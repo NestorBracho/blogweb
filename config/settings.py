@@ -46,7 +46,9 @@ DJANGO_APPS = [
     'django.contrib.staticfiles',
 ]
 LOCAL_APPS = [
+    'blog.apps.BlogConfig',
     'main.apps.MainConfig',
+    'usermanager.apps.UsermanagerConfig',
 ]
 
 EXTERNAL_APPS = [

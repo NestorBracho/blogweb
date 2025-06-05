@@ -16124,7 +16124,7 @@ table td {
     overflow: hidden
 }
 
-.post .note, .post .tip, .post .important, .post .warning, .post .caution, .page .note, .page .tip, .page .important, .page .warning, .page .caution {
+.post .note, .post .tip, .post .important, .post .warning, .post .caution, .page .note, .page .tip, .page .important, .page .warning, .page .caution, .messages .success, .messages .error {
     position: relative;
     padding: 32px 32px 32px 64px;
     font-family: "Poppins", Helvetica Neue, Helvetica, Arial, sans-serif;
@@ -16141,11 +16141,27 @@ table td {
     display: block
 }
 
+.messages .success::after {
+    content: "\2705";
+    position: absolute;
+    top: 32px;
+    left: 32px;
+    display: block
+}
+
+.messages .error::after {
+    content: "\274C";
+    position: absolute;
+    top: 32px;
+    left: 32px;
+    display: block
+}
+
 .post .note, .page .note {
     background: var(--callout-note)
 }
 
-.post .tip, .page .tip {
+.post .tip, .page .tip, .messages .success {
     background: var(--callout-tip)
 }
 
@@ -16157,7 +16173,7 @@ table td {
     background: var(--callout-warning)
 }
 
-.post .caution, .page .caution {
+.post .caution, .page .caution, .messages .error {
     background: var(--callout-caution)
 }
 
@@ -16494,6 +16510,11 @@ table td {
 
 .dropdown-menu a.nav__link:hover {
     background-color: var(--background-alt-color);
+}
+
+.fade-out {
+  transition: opacity 1s ease-out;
+  opacity: 0;
 }
 
 /*# sourceMappingURL=main.css.map */

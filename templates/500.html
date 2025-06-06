@@ -1,0 +1,19 @@
+{% load i18n %}
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col col-12">
+            <div class="error">
+                <h2 class="error__title">500 - {% translate 'Server Malfunction' %}</h2>
+                <p class="error__text">{% translate 'Well, this is awkward... Something went wrong on my end.' %}</p>
+                <p class="error__text">{% translate "We poked the server and it's thinking about what it did." %} 🧠⚙️</p>
+                <p class="error__text">{% translate "Try refreshing, or come back after a coffee" %} ☕️.</p>
+                <a class="button button--primary" href="/">{% translate 'Back to homepage' %}</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

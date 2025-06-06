@@ -59,7 +59,7 @@
                     {% for rpost in recent_posts %}
                         <div class="footer__recent-content">
 
-                        <a href="{% url 'main:post-detail' rpost.slug  %}"
+                        <a href="{% url 'blog:post-detail' rpost.slug  %}"
                            class="footer__recent-image">
 
                             <img class="lazy" data-src="{{ rpost.cover.url }}"
@@ -68,7 +68,7 @@
 
                         <div class="footer__recent-meta">
                             <h3 class="footer__recent-title"><a
-                                    href="{% url 'main:post-detail' rpost.slug  %}">{{  repost.title }}</a></h3>
+                                    href="{% url 'blog:post-detail' rpost.slug  %}">{{  repost.title }}</a></h3>
                             <time class="footer__recent-date" datetime="{{ rpost.created|iso8601 }}">
                                 {{  rpost.created|localized_date }}
                             </time>

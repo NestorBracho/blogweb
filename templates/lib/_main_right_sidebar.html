@@ -70,7 +70,7 @@
         {% for fpost in featured_posts %}
             <div class="post-featured-content">
 
-                <a href="{% url 'main:post-detail' fpost.slug %}" class="post-featured-image">
+                <a href="{% url 'blog:post-detail' fpost.slug %}" class="post-featured-image">
 
                     <img class="lazy loaded" alt="{{ fpost.title }}"
                          data-ll-status="loaded" src="{{ fpost.cover.url }}">
@@ -78,7 +78,7 @@
 
                 <div class="post-featured-meta">
                     <h3 class="post-featured-title"><a
-                            href="{% url 'main:post-detail' fpost.slug %}">{{ fpost.title }}</a></h3>
+                            href="{% url 'blog:post-detail' fpost.slug %}">{{ fpost.title }}</a></h3>
                     <time class="post-featured-date" datetime="{{ fpost.created|iso8601 }}">{{  fpost.created|localized_date }}</time>
                 </div>
             </div>
@@ -95,7 +95,7 @@
         <div class="tag-cloud">
 
             {% for category in categories %}
-            <a href="{% url 'main:category-detail' category.slug %}" class="tag-cloud__item" style="background: {{ category.color }};">
+            <a href="{% url 'blog:category-detail' category.slug %}" class="tag-cloud__item" style="background: {{ category.color }};">
                 {{ category.name }}
             </a>
             {% endfor %}

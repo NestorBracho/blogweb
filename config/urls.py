@@ -24,6 +24,7 @@ urlpatterns = [
     path('i18n/setlang/', set_language, name='set_language'),
     path('admin/', admin.site.urls),
     path('', include('main.urls')),
+    path('', include('blog.urls')),
 ] + static(
     settings.STATIC_URL, document_root=settings.STATIC_ROOT
 ) + static(

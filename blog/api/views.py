@@ -1,7 +1,7 @@
 from django.db.models import Q
 from rest_framework import generics
 
-from main.models import Post
+from blog.models import Post
 from .serializers import PostSerializer
 
 

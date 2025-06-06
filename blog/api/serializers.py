@@ -24,7 +24,7 @@ class PostSerializer(serializers.ModelSerializer):
                   'description', 'timestamp', 'user_friendly_date', 'read_time']
 
     def get_href(self, obj):
-        return reverse('main:post-detail', kwargs={'slug': obj.slug})
+        return reverse('blog:post-detail', kwargs={'slug': obj.slug})
 
     def get_cover_url(self, obj):
         return obj.cover.url
@@ -36,7 +36,7 @@ class PostSerializer(serializers.ModelSerializer):
         return obj.title_en
 
     def get_category_href(self, obj):
-        return reverse('main:category-detail', kwargs={'slug': obj.category.slug})
+        return reverse('blog:category-detail', kwargs={'slug': obj.category.slug})
 
     def get_category(self, obj):
         lang = self.context['request'].headers.get('X-Language')

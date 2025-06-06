@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-01 22:28+0000\n"
+"POT-Creation-Date: 2025-06-06 15:09+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,10 +19,19 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? "
 "1 : 2;\n"
 
-#: main/api/serializers.py:61 main/templates/main/category.html:60
+#: blog/api/serializers.py:61 main/templates/main/category.html:60
 #: main/templates/main/post.html:33
 msgid "min read"
 msgstr "min de lectura"
+
+#: blog/views.py:40
+msgid "Categories"
+msgstr "Categorías"
+
+#: blog/views.py:71
+#, python-format
+msgid "No %(verbose_name)s found matching the query"
+msgstr ""
 
 #: main/templates/main/category.html:16
 msgid "A collection of"
@@ -44,44 +53,46 @@ msgstr ""
 "Vacío… por ahora. Esta zona del sistema está en silencio. Vuelve pronto. "
 "<br><i>La información siempre encuentra un camino.</i>"
 
-#: main/templates/main/category.html:72
+#: main/templates/main/category.html:72 templates/404.html:13
+#: templates/500.html:14
 msgid "Back to homepage"
 msgstr "Vuelve al inicio"
 
-#: main/templates/main/contact.html:70
-msgid "Back to home"
-msgstr "Vuelve al inicio"
-
-#: main/templates/main/contact.html:73
+#: main/templates/main/contact.html:58 main/templates/main/contact.html:68
 msgid "Get In Touch"
 msgstr "Ponte en Contacto"
 
-#: main/templates/main/contact.html:76
+#: main/templates/main/contact.html:65
+msgid "Back to home"
+msgstr "Vuelve al inicio"
+
+#: main/templates/main/contact.html:71
 msgid ""
 "Plug into the grid, whether you’re building\n"
 "                    something bold or need a sharp mind in the system, this "
 "is your uplink to start working\n"
 "                    together."
 msgstr ""
-"¿Buscas un dev que hable en código y entienda el sistema? Transmite por aquí. <br><i>Construyamos el futuro juntos.</i>"
+"¿Buscas un dev que hable en código y entienda el sistema? Transmite por "
+"aquí. <br><i>Construyamos el futuro juntos.</i>"
 
-#: main/templates/main/contact.html:84
+#: main/templates/main/contact.html:79
 msgid "Your Name"
 msgstr "Tu Nombre"
 
-#: main/templates/main/contact.html:85
+#: main/templates/main/contact.html:80
 msgid "Your name"
 msgstr "Tu nombre"
 
-#: main/templates/main/contact.html:89 main/templates/main/contact.html:90
+#: main/templates/main/contact.html:84 main/templates/main/contact.html:85
 msgid "Your Email"
 msgstr "Tu Correo"
 
-#: main/templates/main/contact.html:94 main/templates/main/contact.html:95
+#: main/templates/main/contact.html:89 main/templates/main/contact.html:90
 msgid "Your Message"
 msgstr "Tu Mensaje"
 
-#: main/templates/main/contact.html:99
+#: main/templates/main/contact.html:94
 msgid "Send Now"
 msgstr "Enviar Ahora"
 
@@ -174,19 +185,54 @@ msgstr "Mostrar comentarios"
 msgid "Related"
 msgstr "Relacionados"
 
-#: main/views.py:41
-msgid "Categories"
-msgstr "Categorías"
-
-#: main/views.py:72
-#, python-format
-msgid "No %(verbose_name)s found matching the query"
-msgstr ""
-
-#: main/views.py:84 templates/lib/_main_footer.html:112
+#: main/views.py:19 templates/lib/_main_footer.html:112
 #: templates/lib/_main_navbar.html:49
 msgid "Contact"
 msgstr "Contacto"
+
+#: main/views.py:20
+msgid ""
+"Plug into the grid, whether you’re building something bold or need a sharp "
+"mind in the system, this is your uplink to start working together."
+msgstr ""
+"¿Buscas un dev que hable en código y entienda el sistema? Transmite por "
+"aquí. <br><i>Construyamos el futuro juntos.</i>"
+
+#: main/views.py:29
+msgid ""
+"Your contact request has been successfully submitted. I'll get in touch as "
+"soon as possible!"
+msgstr ""
+"Solicitud de contacto enviada con éxito. Me pondré en contacto contigo lo antes posible!"
+
+#: main/views.py:37
+msgid "Something went wrong. Try again latter."
+msgstr "Algo salió mal. Intenta de nuevo más tarde."
+
+#: templates/404.html:11
+msgid "Well, this is embarrassing..."
+msgstr "Bueno, esto es vergonzoso..."
+
+#: templates/404.html:12
+msgid ""
+"The page you're looking for doesn't exist, never existed, or just rage quit."
+msgstr "La pápagina que buscas no existe, nunca existió, o abandonó el sitio."
+
+#: templates/500.html:10
+msgid "Server Malfunction"
+msgstr "Mal funcionamiento del servidor"
+
+#: templates/500.html:11
+msgid "Well, this is awkward... Something went wrong on my end."
+msgstr "Bueno, esto es incómodo... Algo salió mal por aquí."
+
+#: templates/500.html:12
+msgid "We poked the server and it's thinking about what it did."
+msgstr "El servidor esta castigado y esta pensando en lo que hizo."
+
+#: templates/500.html:13
+msgid "Try refreshing, or come back after a coffee"
+msgstr "Trata de refrescar, o vuelve después de un café"
 
 #: templates/lib/_main_footer.html:9
 msgid ""
@@ -283,22 +329,30 @@ msgstr ""
 "practicos de vida, e información de vanguardia de distintas fuentes, directo "
 "en tu bandeja de entrada."
 
-#: templates/lib/_main_right_sidebar.html:19
+#: templates/lib/_main_right_sidebar.html:18
 msgid "Email address"
 msgstr "Dirección de correo"
 
-#: templates/lib/_main_right_sidebar.html:21
+#: templates/lib/_main_right_sidebar.html:20
 msgid "Your email address..."
 msgstr "Tu correo aquí..."
 
-#: templates/lib/_main_right_sidebar.html:23
+#: templates/lib/_main_right_sidebar.html:22
 msgid "Join Now"
 msgstr "Únete Ahora"
 
-#: templates/lib/_main_right_sidebar.html:68
+#: templates/lib/_main_right_sidebar.html:67
 msgid "Featured posts"
 msgstr "Publicaciones destacadas"
 
-#: templates/lib/_main_right_sidebar.html:93
+#: templates/lib/_main_right_sidebar.html:92
 msgid "Topics"
 msgstr "Temas"
+
+#: usermanager/views.py:13
+msgid "You've subscribed to my newsletter!"
+msgstr "Te has suscrito a mi boletín informativo!"
+
+#: usermanager/views.py:17
+msgid "I was unable to subscribe you to your newsletter. Something went wrong."
+msgstr "No pude suscribirte a tu boletín informativo. Algo salió mal."

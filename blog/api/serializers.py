@@ -3,7 +3,7 @@ from django.urls import reverse
 from babel.dates import format_date
 from django.utils.translation import gettext_lazy as _
 
-from main.models import Post
+from blog.models import Post
 
 
 class PostSerializer(serializers.ModelSerializer):

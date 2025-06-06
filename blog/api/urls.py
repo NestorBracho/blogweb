@@ -1,5 +1,5 @@
 from django.urls import path
-from main.api import views
+from blog.api import views
 
 app_name = 'api'
 urlpatterns = [

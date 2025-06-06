@@ -55,12 +55,7 @@
 
     <div class="contact__left">
         <div class="contact__image">
-            <img src="{% static 'images/40.jpg' %}" alt="{% translate 'Get In Touch' %}" decoding="async" loading="lazy">
-
-            <div class="contact__image__caption">Photo by <a href="https://www.lummi.ai/creator/pablostanley">Pablo
-                Stanley</a> / <a href="https://www.lummi.ai/">Lummi</a>
-            </div>
-
+            <img src="{% static 'images/40.png' %}" alt="{% translate 'Get In Touch' %}" decoding="async" loading="lazy">
         </div>
     </div>
 
@@ -87,7 +82,7 @@
                 </div>
                 <div class="form__group">
                     <label class="form__label screen-reader-text" for="form-email">{% translate 'Your Email' %}</label>
-                    <input class="form__input" id="form-email" type="email" name="reply_to" placeholder="{% translate 'Your Email' %}"
+                    <input class="form__input" id="form-email" type="email" name="email" placeholder="{% translate 'Your Email' %}"
                            required="">
                 </div>
                 <div class="form__group">

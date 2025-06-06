@@ -1,4 +1,4 @@
-from main.models import Post, Category
+from blog.models import Post, Category
 
 
 def sidebar(request):

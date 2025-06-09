@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-06 15:09+0000\n"
+"POT-Creation-Date: 2025-06-09 23:11+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? "
 "1 : 2;\n"
 
-#: blog/api/serializers.py:61 main/templates/main/category.html:60
+#: blog/api/serializers.py:80 main/templates/main/category.html:60
 #: main/templates/main/post.html:33
 msgid "min read"
 msgstr "min de lectura"
@@ -32,6 +32,193 @@ msgstr "Categorías"
 #, python-format
 msgid "No %(verbose_name)s found matching the query"
 msgstr ""
+
+#: main/templates/main/about.html:14 main/templates/main/about.html:19
+msgid "About Me"
+msgstr "Sobre Mi"
+
+#: main/templates/main/about.html:28
+msgid ""
+"Hey, I’m Nestor, a fullstack developer by trade, a problem-solver by "
+"instinct, and someone who’s been obsessed with the future since I was a kid."
+msgstr ""
+"Hola, soy Néstor, desarrollador fullstack de profesión, solucionador de "
+"problemas por naturaleza, y alguien que lleva soñando con el futuro desde "
+"que era niño."
+
+#: main/templates/main/about.html:33
+msgid "Where It All Started"
+msgstr "Cómo empezó todo"
+
+#: main/templates/main/about.html:36
+msgid ""
+"I still remember walking into a robotics expo as a child and being "
+"completely blown away. The\n"
+"                        blinking LEDs, the moving joints... The feeling that "
+"I was witnessing the <strong>future</strong>...\n"
+"                        That moment stuck with me. Ever since, I’ve been "
+"hooked on sci-fi, cyberpunk, and everything\n"
+"                        that feels like it belongs in a tomorrow that’s "
+"already here."
+msgstr ""
+"Todavía recuerdo cuando, de pequeño, fui a una exposición de robótica. Luces "
+"parpadeando, piezas moviéndose, sensores por todos lados... era como mirar "
+"de frente al <strong>futuro</strong>, y ese momento me marcó para siempre. "
+"Desde entonces me atrapó la ciencia ficción, el ciberpunk y todo lo que "
+"parece sacado de un mañana que ya llegó."
+
+#: main/templates/main/about.html:43
+msgid ""
+"Before I even finished high school, I was already building rudimentary "
+"programs, full of bugs and\n"
+"                        excitement. I remember thinking, <em>“I could do "
+"this for the rest of my life.”</em> So I did."
+msgstr ""
+"Aprendí a programar poco después, y antes de terminar el colegio ya estaba "
+"haciendo programas básicos, simples, pero emocionantes. Pensaba: <em>“Podría "
+"hacer esto el resto de mi vida”</em>. Y así fue."
+
+#: main/templates/main/about.html:49
+msgid "What I Do (and Love Doing)"
+msgstr "Lo que hago (y lo que más disfruto)"
+
+#: main/templates/main/about.html:52
+msgid ""
+"I build complex backend systems. It’s where I feel most at home; "
+"architecting infrastructure,\n"
+"                        optimizing processes, and spinning up APIs and "
+"services that hum with efficiency. I’ve spent\n"
+"                        over a decade crafting digital platforms for "
+"everything from social good to business\n"
+"                        logistics."
+msgstr ""
+"Me especializo en construir sistemas backend complejos. Es donde me siento "
+"en casa: diseñando infraestructuras, optimizando procesos y creando APIs que "
+"funcionan como un reloj suizo. Llevo más de una década desarrollando "
+"plataformas digitales, desde soluciones para proyectos sociales hasta "
+"sistemas logísticos robustos."
+
+#: main/templates/main/about.html:59
+msgid ""
+"My main stack today centers around <strong>Python</strong> (which I love for "
+"its clarity and\n"
+"                        flexibility), and I deploy most of my solutions on "
+"<strong>AWS</strong>, where spinning up EC2\n"
+"                        instances and wiring up scalable architecture feels "
+"like second nature."
+msgstr ""
+"Mi stack favorito gira alrededor de <strong>Python</strong>, por su claridad "
+"y versatilidad. Casi todo lo despliego en <strong>AWS</strong>, donde "
+"levantar instancias EC2, montar arquitecturas escalables y automatizar "
+"despliegues se ha vuelto parte de mi día a día."
+
+#: main/templates/main/about.html:65
+msgid ""
+"Over the years, I’ve also become really fast, and really good, at shipping "
+"web applications and\n"
+"                        APIs from scratch. Startup life taught me that "
+"adaptability is a skill, and learning new tech is\n"
+"                        just part of the fun."
+msgstr ""
+"También he desarrollado una capacidad poco común: crear y desplegar "
+"servicios web desde cero, de forma rápida y sólida. Trabajar en startups me "
+"enseñó que la adaptabilidad no es solo una ventaja, es una forma de vida."
+
+#: main/templates/main/about.html:72
+msgid "Code With Purpose"
+msgstr "Código con propósito"
+
+#: main/templates/main/about.html:75
+msgid ""
+"Problem-solving has always been my engine. But more recently, it’s become "
+"about more than just\n"
+"                        logic, it’s about <strong>impact</strong>. I’ve "
+"worked with organizations like the <strong>World\n"
+"                            Bank Group</strong> on digital tools that help "
+"communities in Africa connect with\n"
+"                        governments, track climate vulnerabilities, and "
+"promote peace. In Venezuela, I’ve supported\n"
+"                        social research by building data collection apps "
+"used in the field."
+msgstr ""
+"Resolver problemas siempre fue mi motor. Pero con los años, el enfoque ha "
+"evolucionado: ahora también me mueve el <strong>impacto</strong>. He "
+"trabajado con el <strong>Banco Mundial</strong> en herramientas tecnológicas "
+"para comunidades vulnerables en África: plataformas que mejoran la "
+"comunicación con gobiernos, ayudan a prevenir conflictos y permiten tomar "
+"mejores decisiones a través del análisis de datos. También he diseñado apps "
+"para recolectar datos en zonas remotas de Venezuela, facilitando "
+"investigaciones sociales de campo."
+
+#: main/templates/main/about.html:83
+msgid "For me, the real reward is seeing tech solve human problems."
+msgstr "Para mí, lo más valioso es ver cómo la tecnología puede mejorar vidas."
+
+#: main/templates/main/about.html:87
+msgid ""
+"Coding is a language I use to shape visions into reality. But the vision "
+"matters."
+msgstr ""
+"Programar es el lenguaje que uso para convertir ideas en realidad. Pero lo "
+"importante es tener una buena idea."
+
+#: main/templates/main/about.html:92
+msgid "My Developer DNA"
+msgstr "Mi ADN como desarrollador"
+
+#: main/templates/main/about.html:100
+msgid "Linux since forever, my EC2 shell is my second home"
+msgstr "Linux desde siempre, mi consola en EC2 es como mi segundo hogar"
+
+#: main/templates/main/about.html:106
+msgid ""
+"Working on AI-related projects recently has been particularly fun, a good "
+"reminder that the\n"
+"                        future is still unfolding."
+msgstr ""
+"Últimamente me he divertido mucho trabajando en proyectos con inteligencia "
+"artificial. Me recuerdan que el futuro sigue llegando."
+
+#: main/templates/main/about.html:112
+msgid "I Share What I Know"
+msgstr "Compartir también es crear"
+
+#: main/templates/main/about.html:115
+msgid ""
+"I’ve spent a good portion of my career mentoring junior developers, teaching "
+"Django, setting up\n"
+"                        environments, debugging live. Whether at "
+"<strong>Turpial</strong> or <strong>Selia</strong>,\n"
+"                        I’ve always enjoyed guiding others. Knowledge "
+"multiplies when you share it."
+msgstr ""
+"Durante mi carrera he tenido el placer de enseñar a otros: desde ayudar a "
+"configurar entornos hasta guiar en la arquitectura de proyectos Django. En "
+"<strong>Turpial</strong> y luego en <strong>Selia</strong>, una parte "
+"importante de mi día a día fue acompañar a desarrolladores más jóvenes en su "
+"crecimiento profesional."
+
+#: main/templates/main/about.html:122
+msgid "Stay Curious"
+msgstr "Mantente curioso"
+
+#: main/templates/main/about.html:125
+msgid ""
+"This site isn’t just a portfolio , it’s a reflection of what drives me. "
+"Programming is just one\n"
+"                        tool in a universe full of wonders, and I hope that "
+"reading this reminds you of how much there\n"
+"                        is to explore."
+msgstr ""
+"Este blog no es solo un portafolio: es una ventana a lo que me inspira. La "
+"programación es una de mis herramientas favoritas, pero el mundo es mucho "
+"más grande."
+
+#: main/templates/main/about.html:131
+msgid "Stay curious. Stay human. Keep building things that matter."
+msgstr ""
+"No dejes de aprender. No pierdas la curiosidad. Y construye cosas que de "
+"verdad importen."
 
 #: main/templates/main/category.html:16
 msgid "A collection of"
@@ -53,8 +240,8 @@ msgstr ""
 "Vacío… por ahora. Esta zona del sistema está en silencio. Vuelve pronto. "
 "<br><i>La información siempre encuentra un camino.</i>"
 
-#: main/templates/main/category.html:72 templates/404.html:13
-#: templates/500.html:14
+#: main/templates/main/category.html:72 templates/404.html:12
+#: templates/500.html:13
 msgid "Back to homepage"
 msgstr "Vuelve al inicio"
 
@@ -203,34 +390,35 @@ msgid ""
 "Your contact request has been successfully submitted. I'll get in touch as "
 "soon as possible!"
 msgstr ""
-"Solicitud de contacto enviada con éxito. Me pondré en contacto contigo lo antes posible!"
+"Solicitud de contacto enviada con éxito. Me pondré en contacto contigo lo "
+"antes posible!"
 
 #: main/views.py:37
 msgid "Something went wrong. Try again latter."
 msgstr "Algo salió mal. Intenta de nuevo más tarde."
 
-#: templates/404.html:11
+#: templates/404.html:10
 msgid "Well, this is embarrassing..."
 msgstr "Bueno, esto es vergonzoso..."
 
-#: templates/404.html:12
+#: templates/404.html:11
 msgid ""
 "The page you're looking for doesn't exist, never existed, or just rage quit."
 msgstr "La pápagina que buscas no existe, nunca existió, o abandonó el sitio."
 
-#: templates/500.html:10
+#: templates/500.html:9
 msgid "Server Malfunction"
 msgstr "Mal funcionamiento del servidor"
 
-#: templates/500.html:11
+#: templates/500.html:10
 msgid "Well, this is awkward... Something went wrong on my end."
 msgstr "Bueno, esto es incómodo... Algo salió mal por aquí."
 
-#: templates/500.html:12
+#: templates/500.html:11
 msgid "We poked the server and it's thinking about what it did."
 msgstr "El servidor esta castigado y esta pensando en lo que hizo."
 
-#: templates/500.html:13
+#: templates/500.html:12
 msgid "Try refreshing, or come back after a coffee"
 msgstr "Trata de refrescar, o vuelve después de un café"
 
@@ -354,5 +542,6 @@ msgid "You've subscribed to my newsletter!"
 msgstr "Te has suscrito a mi boletín informativo!"
 
 #: usermanager/views.py:17
-msgid "I was unable to subscribe you to your newsletter. Something went wrong."
+msgid ""
+"We were unable to subscribe you to your newsletter. Something went wrong."
 msgstr "No pude suscribirte a tu boletín informativo. Algo salió mal."

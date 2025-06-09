@@ -6,6 +6,7 @@ from django.views.generic import TemplateView
 app_name = 'main'
 urlpatterns = [
     path('', TemplateView.as_view(template_name='main/index.html'), name='index'),
+    path('about/', TemplateView.as_view(template_name='main/about.html'), name='about'),
     path('contact/', ContactFormView.as_view(), name='contact'),
     path('newsletter/', AddNewsletterSubscriberView.as_view(), name='newsletter-subscriber'),
 ]

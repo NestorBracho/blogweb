@@ -44,7 +44,7 @@
                             </div>
                             <div class="dropdown-menu">
 
-                                <a href="" class="nav__link{% if url_name == 'about' %} active-link{% endif %}">{% translate 'About' %}</a>
+                                <a href="{% url 'main:about' %}" class="nav__link{% if url_name == 'about' %} active-link{% endif %}">{% translate 'About' %}</a>
 
                                 <a href="{% url 'main:contact' %}" class="nav__link">{% translate 'Contact' %}</a>
 

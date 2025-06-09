@@ -4,7 +4,9 @@
 <html lang="{{ LANGUAGE_CODE }}" dark="" class="dark-mode">
 <head>
 
+    {% block meta_seo %}
     {% include 'lib/_main_meta_seo.html' %}
+    {% endblock %}
 
     <link rel="icon" type="image/png" href="{% static 'favicon/favicon-96x96.png' %}" sizes="96x96"/>
     <link rel="icon" type="image/svg+xml" href="{% static 'favicon/favicon.svg' %}"/>

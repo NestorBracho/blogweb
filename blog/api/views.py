@@ -2,11 +2,11 @@ from django.db.models import Q
 from rest_framework import generics
 
 from blog.models import Post
-from .serializers import PostSerializer
+from .serializers import PostSerializer, CreatePostSerializer
 
 
 class SearchPostAPIView(generics.ListAPIView):
-    queryset = Post.objects.all()
+    queryset = Post.objects.filter(is_published=True)
     serializer_class = PostSerializer
     pagination_class = None
 
@@ -33,3 +33,9 @@ class SearchPostAPIView(generics.ListAPIView):
         for backend in list(self.filter_backends):
             queryset = backend().filter_queryset(self.request, queryset, self)
         return queryset
+
+
+class CreateArticleAPIView(generics.CreateAPIView):
+    queryset = Post.objects.all()
+    serializer_class = CreatePostSerializer
+

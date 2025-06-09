@@ -32,6 +32,11 @@ class Post(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True)
     read_time = models.IntegerField(default=0)
 
+    is_published = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.slug
+
     def save(self, *args, **kwargs):
         if not self.slug:
             base_title = self.title_es or self.title_en

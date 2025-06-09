@@ -68,7 +68,7 @@
 
                         <div class="footer__recent-meta">
                             <h3 class="footer__recent-title"><a
-                                    href="{% url 'blog:post-detail' rpost.slug  %}">{{  repost.title }}</a></h3>
+                                    href="{% url 'blog:post-detail' rpost.slug  %}">{{  rpost.title }}</a></h3>
                             <time class="footer__recent-date" datetime="{{ rpost.created|iso8601 }}">
                                 {{  rpost.created|localized_date }}
                             </time>

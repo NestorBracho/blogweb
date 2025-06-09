@@ -1,9 +1,28 @@
 from rest_framework import serializers
 from django.urls import reverse
 from babel.dates import format_date
+from django.utils.text import slugify
+from django.utils.safestring import SafeString
 from django.utils.translation import gettext_lazy as _
 
-from blog.models import Post
+from blog.models import Post, Category
+
+
+class CreatePostSerializer(serializers.ModelSerializer):
+    category = serializers.SlugRelatedField(slug_field='slug', queryset=Category.objects.all())
+
+    class Meta:
+        model = Post
+        fields = ['title_es', 'title_en', 'body_es', 'body_en', 'description_es',
+                  'description_en', 'category', 'read_time', 'cover']
+
+    def create(self, validated_data):
+        validated_data['slug'] = slugify(validated_data['title_en'])
+
+        validated_data['body_en'] = SafeString(validated_data['body_en'])
+
+        validated_data['body_es'] = SafeString(validated_data['body_en'])
+        return super().create(validated_data)
 
 
 class PostSerializer(serializers.ModelSerializer):

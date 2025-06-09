@@ -26,7 +26,7 @@
                                     <div class="article__head">
 
 
-                                        <a class="article__image" href="{% url 'main:post-detail' post.slug %}">
+                                        <a class="article__image" href="{% url 'blog:post-detail' post.slug %}">
                                             <img class="lazy" data-src="{{ post.cover.url }}"
                                                  alt="{{ post.title }}">
                                         </a>
@@ -38,7 +38,7 @@
 
                                         <div class="article__tags">
 
-                                            <a href="{% url 'main:category-detail' post.category.id %}" class="article__tag"
+                                            <a href="{% url 'blog:category-detail' post.category.id %}" class="article__tag"
                                                style="background: {{ post.category.color }};">
                                                 {{ post.category.name }}
                                             </a>
@@ -47,7 +47,7 @@
 
 
                                         <h2 class="article__title">
-                                            <a href="{% url 'main:post-detail' post.slug %}">{{ post.title }}</a>
+                                            <a href="{% url 'blog:post-detail' post.slug %}">{{ post.title }}</a>
                                         </h2>
 
                                         <p class="article__excerpt">{{ post.description }}</p>

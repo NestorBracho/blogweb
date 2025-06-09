@@ -7,7 +7,7 @@ from .models import Post, Category
 
 
 class PostDetailView(generic.DetailView):
-    queryset = Post.objects.all()
+    queryset = Post.objects.filter(is_published=True)
     template_name = 'main/post.html'
 
     page_title = None

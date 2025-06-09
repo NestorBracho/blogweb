@@ -1,4 +1,30 @@
 {% extends "base.html" %}
+{% load static i18n %}
+
+{% block meta_seo %}
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>About Me - Bracho</title>
+<meta name="description" content="Get to know Nestor, a fullstack software engineer passionate about backend systems, Python, AWS, and technology for social impact. Discover his journey, skills, and mission to build meaningful digital tools.">
+
+<link rel="canonical" href="{{ request.build_absolute_uri }}">
+<link rel="alternate" type="application/rss+xml" title="" href="/feed.xml">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta property="twitter:title" content="About Me - Bracho">
+<meta property="twitter:description"
+      content="Get to know Nestor, a fullstack software engineer passionate about backend systems, Python, AWS, and technology for social impact. Discover his journey, skills, and mission to build meaningful digital tools.">
+<meta property="twitter:image:src" content="{% static 'images/02.png' %}">
+
+<!-- OpenGraph (Facebook, LinkedIn, etc.) -->
+<meta property="og:title" content="About Me - Bracho">
+<meta property="og:description" content="Get to know Nestor, a fullstack software engineer passionate about backend systems, Python, AWS, and technology for social impact. Discover his journey, skills, and mission to build meaningful digital tools.">
+<meta property="og:image" content="{% static 'images/02.png' %}">
+<meta property="og:url" content="{{ request.build_absolute_uri }}">
+{% endblock %}
 
 {% block content %}
 <!-- begin page -->
@@ -10,349 +36,132 @@
 
 
                 <div class="page-image">
-                    <img class="lazy loaded" alt="About Me" data-ll-status="loaded" src="{{ url_for('static', filename='images/01-2.jpg') }}">
+                    <img class="lazy loaded" alt="{% translate 'About Me' %}" data-ll-status="loaded" src="{% static 'images/02.png' %}">
                 </div>
 
 
                 <div class="page-info">
-                    <h1 class="page-title">About Me</h1>
+                    <h1 class="page-title">{% translate 'About Me' %}</h1>
                 </div>
 
             </div>
 
             <article class="page">
                 <div class="page__content">
-                    <p>Hey, I’m Alex - part developer, part digital explorer, and full-time lover of all things
-                        tech. From crafting lines of code on Linux to unraveling the layers of cybersecurity, my
-                        passion for technology goes beyond just a career.</p>
 
-                    <p class="note">Even the most experienced developers don’t know everything</p>
+                    <p>
+                        {% blocktranslate %}Hey, I’m Nestor, a fullstack developer by trade, a problem-solver by instinct, and someone who’s been obsessed with the future since I was a kid.{% endblocktranslate %}
+                    </p>
 
-                    <p>Over the years, my curiosity only deepened. I became a coder, learning languages like
-                        Python, JavaScript, and C++, and fell in love with the sheer power of programming. For
-                        me, coding isn’t just a skill; it’s a language for bringing ideas to life. The thrill of
-                        debugging, the satisfaction of building something from scratch, and the endless
-                        potential of code keep me motivated every day. Coding lets me shape my vision into
-                        reality, one line at a time.</p>
+                    <hr>
+
+                    <h2 id="origin">🚀 {% translate 'Where It All Started' %}</h2>
+
+                    <p>
+                        {% blocktranslate %}I still remember walking into a robotics expo as a child and being completely blown away. The
+                        blinking LEDs, the moving joints... The feeling that I was witnessing the <strong>future</strong>...
+                        That moment stuck with me. Ever since, I’ve been hooked on sci-fi, cyberpunk, and everything
+                        that feels like it belongs in a tomorrow that’s already here.{% endblocktranslate %}
+                    </p>
+
+                    <p>
+                        {% blocktranslate %}Before I even finished high school, I was already building rudimentary programs, full of bugs and
+                        excitement. I remember thinking, <em>“I could do this for the rest of my life.”</em> So I did.{% endblocktranslate %}
+                    </p>
+
+                    <hr>
+
+                    <h2 id="what-i-do">⚙️ {% translate 'What I Do (and Love Doing)' %}</h2>
+
+                    <p>
+                        {% blocktranslate %}I build complex backend systems. It’s where I feel most at home; architecting infrastructure,
+                        optimizing processes, and spinning up APIs and services that hum with efficiency. I’ve spent
+                        over a decade crafting digital platforms for everything from social good to business
+                        logistics.{% endblocktranslate %}
+                    </p>
+
+                    <p>
+                        {% blocktranslate %}My main stack today centers around <strong>Python</strong> (which I love for its clarity and
+                        flexibility), and I deploy most of my solutions on <strong>AWS</strong>, where spinning up EC2
+                        instances and wiring up scalable architecture feels like second nature.{% endblocktranslate %}
+                    </p>
+
+                    <p>
+                        {% blocktranslate %}Over the years, I’ve also become really fast, and really good, at shipping web applications and
+                        APIs from scratch. Startup life taught me that adaptability is a skill, and learning new tech is
+                        just part of the fun.{% endblocktranslate %}
+                    </p>
+
+                    <hr>
+
+                    <h2 id="purpose">🌍 {% translate 'Code With Purpose' %}</h2>
+
+                    <p>
+                        {% blocktranslate %}Problem-solving has always been my engine. But more recently, it’s become about more than just
+                        logic, it’s about <strong>impact</strong>. I’ve worked with organizations like the <strong>World
+                            Bank Group</strong> on digital tools that help communities in Africa connect with
+                        governments, track climate vulnerabilities, and promote peace. In Venezuela, I’ve supported
+                        social research by building data collection apps used in the field.{% endblocktranslate %}
+                    </p>
+
+                    <p>
+                        {% translate 'For me, the real reward is seeing tech solve human problems.' %}
+                    </p>
 
                     <blockquote>
-                        <p>Curiosity fuels my code, Linux keeps me grounded, and every bug is just a puzzle
-                            waiting to be solved.</p>
+                        <p class="quote">{% blocktranslate %}Coding is a language I use to shape visions into reality. But the vision matters.{% endblocktranslate %}</p>
                     </blockquote>
 
-                    <p>Linux was a turning point. Once I got into Linux, I realized how transformative
-                        open-source software could be. I started with Ubuntu, dabbled in Debian, and eventually
-                        moved on to Arch. Linux taught me how customizable, flexible, and free technology could
-                        truly be. It’s more than an operating system—it’s a philosophy that resonates with my
-                        love for exploration and problem-solving. My Linux setup is always evolving, whether I’m
-                        configuring a new window manager or experimenting with terminal commands. It’s like a
-                        puzzle I never get tired of solving.</p>
+                    <hr>
 
-                    <div class="gallery-box">
-                        <div class="gallery gallery-columns-2">
-                            <figure class="gallery__image">
-                                <img src="{{ url_for('static', filename='images/01-4.jpg') }}" loading="lazy" alt="Keyboard">
+                    <h2 id="tech-stack">🧠 {% translate 'My Developer DNA' %}</h2>
 
-                                <figcaption class="gallery__image__caption">The symphony of keys</figcaption>
+                    <ul>
+                        <li>🐍 Python (Django, DRF)</li>
+                        <li>☁️ AWS (EC2, S3, Lambda, RDS, CloudFront… name it)</li>
+                        <li>🧰 TypeScript (Angular, NestJS)</li>
+                        <li>🧠 PostgreSQL, MySQL, REST APIs</li>
+                        <li>🧬 Machine Learning (Hugging Face)</li>
+                        <li>🐧 {% translate 'Linux since forever, my EC2 shell is my second home' %}</li>
+                    </ul>
 
-                            </figure>
-                            <figure class="gallery__image">
-                                <img src="{{ url_for('static', filename='images/01-5.jpg') }}" loading="lazy" alt="Keyboard">
+                    <br>
 
-                                <figcaption class="gallery__image__caption">Where every keystroke brings ideas
-                                    to life
-                                </figcaption>
+                    <p>
+                        {% blocktranslate %}Working on AI-related projects recently has been particularly fun, a good reminder that the
+                        future is still unfolding.{% endblocktranslate %}
+                    </p>
 
-                            </figure>
-                            <figure class="gallery__image">
-                                <img src="{{ url_for('static', filename='images/01-6.jpg') }}" loading="lazy" alt="Keyboard">
+                    <hr>
 
-                                <figcaption class="gallery__image__caption">The quiet hum of creativity
-                                </figcaption>
+                    <h2 id="mentorship">👥 {% translate 'I Share What I Know' %}</h2>
 
-                            </figure>
-                            <figure class="gallery__image">
-                                <img src="{{ url_for('static', filename='images/01-7.jpg') }}" loading="lazy" alt="Keyboard">
+                    <p>
+                        {% blocktranslate %}I’ve spent a good portion of my career mentoring junior developers, teaching Django, setting up
+                        environments, debugging live. Whether at <strong>Turpial</strong> or <strong>Selia</strong>,
+                        I’ve always enjoyed guiding others. Knowledge multiplies when you share it.{% endblocktranslate %}
+                    </p>
 
-                                <figcaption class="gallery__image__caption">Ready to transform thoughts into
-                                    text
-                                </figcaption>
+                    <hr>
 
-                            </figure>
-                        </div>
-                        <em>Gallery / <a href="https://unsplash.com/" target="_blank">Unsplash</a></em>
-                    </div>
+                    <h2 id="outro">📚 {% translate 'Stay Curious' %}</h2>
 
-                    <p>Gaming is another integral part of my story. Growing up with video games, I’ve seen
-                        firsthand how gaming has evolved from simple pixelated platforms to immersive,
-                        narrative-driven experiences. My love for gaming goes beyond just playing; I enjoy
-                        analyzing game mechanics, studying character design, and understanding the technology
-                        behind these virtual worlds. Indie games hold a special place in my heart because they
-                        represent the creativity and innovation of small teams that pour their souls into making
-                        something unique.</p>
+                    <p>
+                        {% blocktranslate %}This site isn’t just a portfolio , it’s a reflection of what drives me. Programming is just one
+                        tool in a universe full of wonders, and I hope that reading this reminds you of how much there
+                        is to explore.{% endblocktranslate %}
+                    </p>
 
-                    <div class="language-js highlighter-rouge">
-                        <div class="highlight"><pre class="highlight"><code>  <span class="nx">$</span><span
-                                class="p">(</span><span class="dl">'</span><span class="s1">.top</span><span
-                                class="dl">'</span><span class="p">).</span><span class="nx">click</span><span
-                                class="p">(</span><span class="kd">function</span> <span
-                                class="p">()</span> <span class="p">{</span>
-<span class="nx">$</span><span class="p">(</span><span class="dl">'</span><span class="s1">html, body</span><span
-                                    class="dl">'</span><span class="p">).</span><span
-                                    class="nx">stop</span><span class="p">().</span><span
-                                    class="nx">animate</span><span class="p">({</span> <span class="na">scrollTop</span><span
-                                    class="p">:</span> <span class="mi">0</span> <span class="p">},</span> <span
-                                    class="dl">'</span><span class="s1">slow</span><span
-                                    class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span
-                                    class="s1">swing</span><span class="dl">'</span><span class="p">);</span>
-<span class="p">});</span>
-<span class="nx">$</span><span class="p">(</span><span class="nb">window</span><span class="p">).</span><span
-                                    class="nx">scroll</span><span class="p">(</span><span
-                                    class="kd">function</span> <span class="p">()</span> <span
-                                    class="p">{</span>
-<span class="k">if</span> <span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="k">this</span><span
-                                    class="p">).</span><span class="nx">scrollTop</span><span
-                                    class="p">()</span> <span class="o">&gt;</span> <span
-                                    class="nx">$</span><span class="p">(</span><span
-                                    class="nb">window</span><span class="p">).</span><span
-                                    class="nx">height</span><span class="p">())</span> <span class="p">{</span>
-<span class="nx">$</span><span class="p">(</span><span class="dl">'</span><span class="s1">.top</span><span
-                                    class="dl">'</span><span class="p">).</span><span class="nx">addClass</span><span
-                                    class="p">(</span><span class="dl">"</span><span
-                                    class="s2">top-active</span><span class="dl">"</span><span
-                                    class="p">);</span>
-<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-<span class="nx">$</span><span class="p">(</span><span class="dl">'</span><span class="s1">.top</span><span
-                                    class="dl">'</span><span class="p">).</span><span
-                                    class="nx">removeClass</span><span class="p">(</span><span
-                                    class="dl">"</span><span class="s2">top-active</span><span
-                                    class="dl">"</span><span class="p">);</span>
-<span class="p">};</span>
-<span class="p">});</span>
-</code><button type="button" aria-label="Copy code to clipboard">Copy</button></pre>
-                        </div>
-                    </div>
-
-                    <p>When I’m not coding or gaming, I’m diving into the world of comics and sci-fi movies.
-                        Both are more than hobbies—they’re ways to explore the “what ifs” of life. Comics taught
-                        me that even fictional heroes have real struggles, and sci-fi movies sparked my
-                        imagination about the future.</p>
-
-                    <h2 id="the-mind-behind-the-keyboard">The Mind Behind the Keyboard</h2>
-
-                    <p>Building this blog has been a passion project. It’s a place where I can share my journey,
-                        document what I learn, and connect with people who have the same interests. I’ve written
-                        countless tutorials, tech tips, and reviews because I want to create a resource I wish I
-                        had when I was starting out. The tech world can be intimidating, but it doesn’t have to
-                        be. Thоrough this blog, I hope to make technology accessible, fun, and rewarding for
-                        people of all skill levels.</p>
-
-                    <p><img src="{{ url_for('static', filename='images/01-3.jpg') }}" alt="Keyboard">
-                        <em>Photo by <a
-                                href="https://www.lummi.ai/photo/contemplative-technicolor-workstation-sonrb">Pablo
-                            Stanley</a> on <a href="https://www.lummi.ai/">Lummi</a></em></p>
-
-                    <p>Looking back, I see that each step in my journey—whether it was installing my first Linux
-                        distro, debugging my first program, or exploring cybersecurity—has shaped me into who I
-                        am today.</p>
-
-                    <p>The geek in me thrives on discovery, and as I explore new topics and skills, I’m reminded
-                        that there’s always more to learn. That’s the beauty of the tech world: no matter how
-                        much you know, there’s always a new challenge or a new horizon waiting.</p>
-
-                    <p class="important">Automate repetitive tasks. If you find yourself doing the same task
-                        multiple times, it’s a sign you should automate it.</p>
-
-                    <p>Thank you for being here and for sharing in this journey with me. This blog is more than
-                        just articles and posts; it’s a community of curious, passionate individuals who love
-                        technology, creativity, and the endless pursuit of knowledge. Whether you’re a fellow
-                        Linux enthusiast, a developer looking for new ideas, or just someone curious about the
-                        digital world, I’m excited to connect and share this space with you.</p>
+                    <p class="note">
+                        {% translate 'Stay curious. Stay human. Keep building things that matter.' %}
+                    </p>
 
                 </div>
             </article>
         </div>
 
         <div class="col col-4 col-d-12">
-            <aside class="sidebar">
-
-                <div class="widget widget-subscribe">
-                    <div class="widget-subscribe__content">
-
-                        <h2 class="widget-subscribe__title">Stay inspired weekly ✌️</h2>
-
-
-                        <p class="widget-subscribe__description">Every Sunday, I deliver actionable tips for
-                            enhancing productivity, practical life advice, and top-notch insights gathered from
-                            various sources, right to your email inbox.</p>
-
-                    </div>
-                    <form class="widget-subscribe__form validate"
-                          action="//gmail.us21.list-manage.com/subscribe/post?u=8aeb9c31a5c97a3a5f9ff2740&amp;id=0e31fd7793&amp;"
-                          method="POST" id="membedded-subscribe-form" name="membedded-subscribe-form"
-                          target="_blank" novalidate="">
-                        <label class="screen-reader-text" for="mce-EMAIL">Email address</label>
-                        <input class="widget-subscribe__email required email" id="mce-EMAIL" type="text"
-                               name="EMAIL" placeholder="Your email address...">
-                        <button class="button button--secondary button--big widget-subscribe__button"
-                                id="membedded-subscribe" type="submit" name="subscribe">Join Now
-                        </button>
-                    </form>
-                </div>
-
-
-                <div class="widget widget-social">
-                    <ul class="widget-social__list list-reset">
-
-                        <li class="widget-social__item">
-                            <a class="widget-social__link" href="https://twitter.com" target="_blank"
-                               rel="noopener" aria-label="Twitter link"><i
-                                    class="fa-brands fa-x-twitter"></i></a>
-                        </li>
-
-                        <li class="widget-social__item">
-                            <a class="widget-social__link" href="https://facebook.com" target="_blank"
-                               rel="noopener" aria-label="Facebook link"><i
-                                    class="fa-brands fa-facebook"></i></a>
-                        </li>
-
-                        <li class="widget-social__item">
-                            <a class="widget-social__link" href="https://mastodon.social" target="_blank"
-                               rel="noopener" aria-label="Mastodon link"><i
-                                    class="fa-brands fa-mastodon"></i></a>
-                        </li>
-
-                        <li class="widget-social__item">
-                            <a class="widget-social__link" href="https://reddit.com" target="_blank"
-                               rel="noopener" aria-label="Reddit link"><i class="fa-brands fa-reddit-alien"></i></a>
-                        </li>
-
-                        <li class="widget-social__item">
-                            <a class="widget-social__link" href="https://github.com" target="_blank"
-                               rel="noopener" aria-label="Github link"><i class="fa-brands fa-github"></i></a>
-                        </li>
-
-                        <li class="widget-social__item">
-                            <a class="widget-social__link" href="/feed.xml" target="_blank" rel="noopener"
-                               aria-label="Rss link"><i class="fa-solid fa-rss"></i></a>
-                        </li>
-
-                    </ul>
-                </div>
-
-
-                <div class="widget widget-featured-posts">
-                    <div class="widget-sidebar-head">
-                        <h2 class="widget-sidebar-title">Featured posts</h2>
-                    </div>
-
-
-                    <div class="post-featured-content">
-
-                        <a href="/why-i-switched-to-arch-linux-and-never-looked-back"
-                           class="post-featured-image">
-
-                            <img class="lazy loaded" alt="Why I Switched to Arch Linux and Never Looked Back"
-                                 data-ll-status="loaded" src="{{ url_for('static', filename='images/08.png') }}">
-                        </a>
-
-                        <div class="post-featured-meta">
-                            <h3 class="post-featured-title"><a
-                                    href="/why-i-switched-to-arch-linux-and-never-looked-back">Why I Switched to
-                                Arch Linux and Never Looked Back</a></h3>
-                            <time class="post-featured-date" datetime="2024-12-15T12:01:35+00:00">15 Dec, 2024
-                            </time>
-                        </div>
-                    </div>
-
-
-                    <div class="post-featured-content">
-
-                        <a href="/automating-routine-tasks-with-bash-scripts" class="post-featured-image">
-
-                            <div class="video-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-                                    <polygon points="40,30 70,50 40,70"></polygon>
-                                </svg>
-                            </div>
-
-                            <img class="lazy loaded" alt="Automating Routine Tasks with Bash Scripts"
-                                 data-ll-status="loaded" src="{{ url_for('static', filename='images/32.jpg') }}">
-                        </a>
-
-                        <div class="post-featured-meta">
-                            <h3 class="post-featured-title"><a
-                                    href="/automating-routine-tasks-with-bash-scripts">Automating Routine Tasks
-                                with Bash Scripts</a></h3>
-                            <time class="post-featured-date" datetime="2024-11-15T12:01:35+00:00">15 Nov, 2024
-                            </time>
-                        </div>
-                    </div>
-
-
-                    <div class="post-featured-content">
-
-                        <a href="/how-games-keep-players-engaged-and-motivated" class="post-featured-image">
-
-                            <img class="lazy loaded" alt="How Games Keep Players Engaged and Motivated"
-                                 data-ll-status="loaded" src="{{ url_for('static', filename='images/33.jpg') }}">
-                        </a>
-
-                        <div class="post-featured-meta">
-                            <h3 class="post-featured-title"><a
-                                    href="/how-games-keep-players-engaged-and-motivated">How Games Keep Players
-                                Engaged and Motivated</a></h3>
-                            <time class="post-featured-date" datetime="2024-10-19T12:01:35+00:00">19 Oct, 2024
-                            </time>
-                        </div>
-                    </div>
-
-
-                </div>
-
-
-                <div class="widget widget-tags">
-                    <div class="widget-sidebar-head">
-                        <h2 class="widget-sidebar-title">Topics</h2>
-                    </div>
-
-                    <div class="tag-cloud">
-
-
-                        <a href="/tags/?tag=games" class="tag-cloud__item" style="background: #ff4500;">
-                            Games
-                        </a>
-
-
-                        <a href="/tags/?tag=movies" class="tag-cloud__item" style="background: #f14979;">
-                            Movies
-                        </a>
-
-
-                        <a href="/tags/?tag=security" class="tag-cloud__item" style="background: #de47e2;">
-                            Security
-                        </a>
-
-
-                        <a href="/tags/?tag=productivity" class="tag-cloud__item" style="background: #3eb99a;">
-                            Productivity
-                        </a>
-
-
-                        <a href="/tags/?tag=linux" class="tag-cloud__item"
-                           style="background: var(--dark-gray);">
-                            Linux
-                        </a>
-
-
-                        <a href="/tags/?tag=programming" class="tag-cloud__item" style="background: #4643ec;">
-                            Programming
-                        </a>
-
-                    </div>
-                </div>
-
-            </aside>
+            {% include 'lib/_main_right_sidebar.html' %}
         </div>
 
     </div>

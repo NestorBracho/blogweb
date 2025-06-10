@@ -28,7 +28,7 @@ class PostDetailView(generic.DetailView):
 
 
 class CategoryDetailView(generic.ListView):
-    queryset = Post.objects.all()
+    queryset = Post.objects.filter(is_published=True)
     template_name = 'main/category.html'
 
     def get(self, request, *args, **kwargs):

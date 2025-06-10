@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-09 23:11+0000\n"
+"POT-Creation-Date: 2025-06-10 18:35+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -33,11 +33,11 @@ msgstr "Categorías"
 msgid "No %(verbose_name)s found matching the query"
 msgstr ""
 
-#: main/templates/main/about.html:14 main/templates/main/about.html:19
+#: main/templates/main/about.html:39 main/templates/main/about.html:44
 msgid "About Me"
 msgstr "Sobre Mi"
 
-#: main/templates/main/about.html:28
+#: main/templates/main/about.html:53
 msgid ""
 "Hey, I’m Nestor, a fullstack developer by trade, a problem-solver by "
 "instinct, and someone who’s been obsessed with the future since I was a kid."
@@ -46,11 +46,11 @@ msgstr ""
 "problemas por naturaleza, y alguien que lleva soñando con el futuro desde "
 "que era niño."
 
-#: main/templates/main/about.html:33
+#: main/templates/main/about.html:58
 msgid "Where It All Started"
 msgstr "Cómo empezó todo"
 
-#: main/templates/main/about.html:36
+#: main/templates/main/about.html:61
 msgid ""
 "I still remember walking into a robotics expo as a child and being "
 "completely blown away. The\n"
@@ -67,7 +67,7 @@ msgstr ""
 "Desde entonces me atrapó la ciencia ficción, el ciberpunk y todo lo que "
 "parece sacado de un mañana que ya llegó."
 
-#: main/templates/main/about.html:43
+#: main/templates/main/about.html:68
 msgid ""
 "Before I even finished high school, I was already building rudimentary "
 "programs, full of bugs and\n"
@@ -78,11 +78,11 @@ msgstr ""
 "haciendo programas básicos, simples, pero emocionantes. Pensaba: <em>“Podría "
 "hacer esto el resto de mi vida”</em>. Y así fue."
 
-#: main/templates/main/about.html:49
+#: main/templates/main/about.html:74
 msgid "What I Do (and Love Doing)"
 msgstr "Lo que hago (y lo que más disfruto)"
 
-#: main/templates/main/about.html:52
+#: main/templates/main/about.html:77
 msgid ""
 "I build complex backend systems. It’s where I feel most at home; "
 "architecting infrastructure,\n"
@@ -98,7 +98,7 @@ msgstr ""
 "plataformas digitales, desde soluciones para proyectos sociales hasta "
 "sistemas logísticos robustos."
 
-#: main/templates/main/about.html:59
+#: main/templates/main/about.html:84
 msgid ""
 "My main stack today centers around <strong>Python</strong> (which I love for "
 "its clarity and\n"
@@ -112,7 +112,7 @@ msgstr ""
 "levantar instancias EC2, montar arquitecturas escalables y automatizar "
 "despliegues se ha vuelto parte de mi día a día."
 
-#: main/templates/main/about.html:65
+#: main/templates/main/about.html:90
 msgid ""
 "Over the years, I’ve also become really fast, and really good, at shipping "
 "web applications and\n"
@@ -124,11 +124,11 @@ msgstr ""
 "servicios web desde cero, de forma rápida y sólida. Trabajar en startups me "
 "enseñó que la adaptabilidad no es solo una ventaja, es una forma de vida."
 
-#: main/templates/main/about.html:72
+#: main/templates/main/about.html:97
 msgid "Code With Purpose"
 msgstr "Código con propósito"
 
-#: main/templates/main/about.html:75
+#: main/templates/main/about.html:100
 msgid ""
 "Problem-solving has always been my engine. But more recently, it’s become "
 "about more than just\n"
@@ -150,11 +150,11 @@ msgstr ""
 "para recolectar datos en zonas remotas de Venezuela, facilitando "
 "investigaciones sociales de campo."
 
-#: main/templates/main/about.html:83
+#: main/templates/main/about.html:108
 msgid "For me, the real reward is seeing tech solve human problems."
 msgstr "Para mí, lo más valioso es ver cómo la tecnología puede mejorar vidas."
 
-#: main/templates/main/about.html:87
+#: main/templates/main/about.html:112
 msgid ""
 "Coding is a language I use to shape visions into reality. But the vision "
 "matters."
@@ -162,15 +162,15 @@ msgstr ""
 "Programar es el lenguaje que uso para convertir ideas en realidad. Pero lo "
 "importante es tener una buena idea."
 
-#: main/templates/main/about.html:92
+#: main/templates/main/about.html:117
 msgid "My Developer DNA"
 msgstr "Mi ADN como desarrollador"
 
-#: main/templates/main/about.html:100
+#: main/templates/main/about.html:125
 msgid "Linux since forever, my EC2 shell is my second home"
 msgstr "Linux desde siempre, mi consola en EC2 es como mi segundo hogar"
 
-#: main/templates/main/about.html:106
+#: main/templates/main/about.html:131
 msgid ""
 "Working on AI-related projects recently has been particularly fun, a good "
 "reminder that the\n"
@@ -179,11 +179,11 @@ msgstr ""
 "Últimamente me he divertido mucho trabajando en proyectos con inteligencia "
 "artificial. Me recuerdan que el futuro sigue llegando."
 
-#: main/templates/main/about.html:112
+#: main/templates/main/about.html:137
 msgid "I Share What I Know"
 msgstr "Compartir también es crear"
 
-#: main/templates/main/about.html:115
+#: main/templates/main/about.html:140
 msgid ""
 "I’ve spent a good portion of my career mentoring junior developers, teaching "
 "Django, setting up\n"
@@ -198,11 +198,11 @@ msgstr ""
 "importante de mi día a día fue acompañar a desarrolladores más jóvenes en su "
 "crecimiento profesional."
 
-#: main/templates/main/about.html:122
+#: main/templates/main/about.html:147
 msgid "Stay Curious"
 msgstr "Mantente curioso"
 
-#: main/templates/main/about.html:125
+#: main/templates/main/about.html:150
 msgid ""
 "This site isn’t just a portfolio , it’s a reflection of what drives me. "
 "Programming is just one\n"
@@ -214,7 +214,7 @@ msgstr ""
 "programación es una de mis herramientas favoritas, pero el mundo es mucho "
 "más grande."
 
-#: main/templates/main/about.html:131
+#: main/templates/main/about.html:156
 msgid "Stay curious. Stay human. Keep building things that matter."
 msgstr ""
 "No dejes de aprender. No pierdas la curiosidad. Y construye cosas que de "
@@ -296,55 +296,45 @@ msgid "Hi! I’m"
 msgstr "Hola! Soy"
 
 #: main/templates/main/index.html:36
-msgid "A digital explorer, coder, and Linux advocate"
-msgstr "Un explorador digital, codificador, y defensor de Linux"
+msgid "Problem solver, explorer, and lifelong student of how things work"
+msgstr "Explorador curioso, creador de soluciones y aprendiz de por vida"
 
-#: main/templates/main/index.html:39
+#: main/templates/main/index.html:41
 msgid ""
-"I’m a digital explorer, coder, and Linux advocate.\n"
-"                                    This blog is my personal knowledge base "
-"on productivity, programming, and the\n"
-"                                    freedom of information."
+"Welcome to my little home on the web. This is where code, physics, "
+"engineering,\n"
+"                                        and curiosity all come together. I "
+"write about software, space, systems, and sometimes\n"
+"                                        games. If you love building, "
+"exploring, or just asking “how does this work?”,\n"
+"                                        you’re in the right place."
 msgstr ""
-"Soy un explorador digital, codificador y denfensor de Linux.\n"
-"Este blog es mi recolección personal de información sobre productividad, "
-"programación y la \n"
-"libertad de información."
+"Bienvenido a mi pequeño rincón en internet. Aquí se cruzan la programación, "
+"la física, la ingeniería y la curiosidad. Escribo sobre software, espacio, "
+"sistemas y a veces también sobre juegos. Si te gusta construir, explorar o "
+"simplemente preguntarte “¿cómo funciona esto?”, este lugar es para ti."
 
-#: main/templates/main/index.html:43
-msgid ""
-"Here, I share ideas, tools, and methods that help me balance productivity "
-"with\n"
-"                                        creativity while keeping control "
-"over my digital world. Dive in, get inspired,\n"
-"                                        and feel free to share your thoughts!"
-msgstr ""
-"Aquí comparto ideas, herramientas y métodos que me ayudan a balancear "
-"productividad con creatividad \n"
-"mientras mantengo el control sobre mi mundo digital. Entra, inpirate y "
-"sientete en la libertad de compartir ideas!"
-
-#: main/templates/main/index.html:51
+#: main/templates/main/index.html:49
 msgid "Let’s Work Together"
-msgstr "Trabajemos Jutnos"
+msgstr "Trabajemos Juntos"
 
-#: main/templates/main/index.html:69
+#: main/templates/main/index.html:67
 msgid "Nerd Stuff"
 msgstr "Cosas Nerd"
 
-#: main/templates/main/index.html:206
+#: main/templates/main/index.html:204
 msgid "The Binary Journal"
 msgstr "La Terminal"
 
-#: main/templates/main/index.html:452
+#: main/templates/main/index.html:450
 msgid "Load More"
 msgstr "Cargar más"
 
-#: main/templates/main/index.html:484
+#: main/templates/main/index.html:482
 msgid "Hacker’s Haven"
 msgstr "Paraiso del Hacker"
 
-#: main/templates/main/index.html:657
+#: main/templates/main/index.html:655
 msgid "Latest Videos"
 msgstr "Últimos Vídeos"
 
@@ -404,7 +394,7 @@ msgstr "Bueno, esto es vergonzoso..."
 #: templates/404.html:11
 msgid ""
 "The page you're looking for doesn't exist, never existed, or just rage quit."
-msgstr "La pápagina que buscas no existe, nunca existió, o abandonó el sitio."
+msgstr "La página que buscas no existe, nunca existió, o abandonó el sitio."
 
 #: templates/500.html:9
 msgid "Server Malfunction"
@@ -545,3 +535,30 @@ msgstr "Te has suscrito a mi boletín informativo!"
 msgid ""
 "We were unable to subscribe you to your newsletter. Something went wrong."
 msgstr "No pude suscribirte a tu boletín informativo. Algo salió mal."
+
+#~ msgid "A digital explorer, coder, and Linux advocate"
+#~ msgstr "Un explorador digital, codificador, y defensor de Linux"
+
+#~ msgid ""
+#~ "I’m a digital explorer, coder, and Linux advocate.\n"
+#~ "                                    This blog is my personal knowledge "
+#~ "base on productivity, programming, and the\n"
+#~ "                                    freedom of information."
+#~ msgstr ""
+#~ "Soy un explorador digital, codificador y denfensor de Linux.\n"
+#~ "Este blog es mi recolección personal de información sobre productividad, "
+#~ "programación y la \n"
+#~ "libertad de información."
+
+#~ msgid ""
+#~ "Here, I share ideas, tools, and methods that help me balance productivity "
+#~ "with\n"
+#~ "                                        creativity while keeping control "
+#~ "over my digital world. Dive in, get inspired,\n"
+#~ "                                        and feel free to share your "
+#~ "thoughts!"
+#~ msgstr ""
+#~ "Aquí comparto ideas, herramientas y métodos que me ayudan a balancear "
+#~ "productividad con creatividad \n"
+#~ "mientras mantengo el control sobre mi mundo digital. Entra, inpirate y "
+#~ "sientete en la libertad de compartir ideas!"

@@ -426,7 +426,7 @@ msgstr ""
 
 #: templates/lib/_main_footer.html:56
 msgid "Recent Posts"
-msgstr "Publicaiones Recientes"
+msgstr "Publicaciones Recientes"
 
 #: templates/lib/_main_footer.html:85
 msgid "Menu"

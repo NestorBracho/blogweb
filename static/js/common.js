@@ -267,12 +267,29 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
 
-  // =====================
-  // Load More Posts
-  // =====================
-  var load_posts_button=document.querySelector(".load-more-posts");
-
-  load_posts_button&&load_posts_button.addEventListener("click",function(e){e.preventDefault();var t=load_posts_button.textContent;load_posts_button.classList.add("button--loading"),load_posts_button.textContent="Loading";var o=document.querySelector(".pagination"),n=pagination_next_url.split("/page")[0]+"/page/"+pagination_next_page_number+"/";fetch(n).then(function(e){if(e.ok)return e.text()}).then(function(e){var n=document.createElement("div");n.innerHTML=e;for(var a=document.querySelector(".grid"),i=n.querySelectorAll(".grid__post"),l=0;l<i.length;l++)a.appendChild(i.item(l));new LazyLoad({elements_selector:".lazy"}),pagination_next_page_number++,pagination_next_page_number>pagination_available_pages_number&&(o.style.display="none")}).finally(function(){load_posts_button.classList.remove("button--loading"),load_posts_button.textContent=t})});
+  // // =====================
+  // // Load More Posts
+  // // =====================
+  // var load_posts_button = document.querySelector(".load-more-posts");
+  //
+  // load_posts_button && load_posts_button.addEventListener("click", function (e) {
+  //   e.preventDefault();
+  //   var t = load_posts_button.textContent;
+  //   load_posts_button.classList.add("button--loading"), load_posts_button.textContent = "Loading";
+  //   var o = document.querySelector(".pagination"),
+  //       n = pagination_next_url.split("/page")[0] + "/page/" + pagination_next_page_number + "/";
+  //   fetch(n).then(function (e) {
+  //     if (e.ok) return e.text()
+  //   }).then(function (e) {
+  //     var n = document.createElement("div");
+  //     n.innerHTML = e;
+  //     for (var a = document.querySelector(".grid"), i = n.querySelectorAll(".grid__post"), l = 0; l < i.length; l++) a.appendChild(i.item(l));
+  //     new LazyLoad({elements_selector: ".lazy"}), pagination_next_page_number++, pagination_next_page_number > pagination_available_pages_number && (o.style.display = "none")
+  //   }).finally(function () {
+  //     load_posts_button.classList.remove("button--loading");
+  //     load_posts_button.textContent = t;
+  //   })
+  // });
 
 
   /* =======================

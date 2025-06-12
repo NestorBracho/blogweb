@@ -8,7 +8,7 @@ from .models import Post, Category
 
 class PostDetailView(generic.DetailView):
     queryset = Post.objects.filter(is_published=True)
-    template_name = 'main/post.html'
+    template_name = 'blog/post.html'
 
     page_title = None
     meta_description = None
@@ -29,7 +29,7 @@ class PostDetailView(generic.DetailView):
 
 class CategoryDetailView(generic.ListView):
     queryset = Post.objects.filter(is_published=True)
-    template_name = 'main/category.html'
+    template_name = 'blog/category.html'
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()

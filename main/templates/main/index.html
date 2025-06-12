@@ -2,332 +2,448 @@
 {% load i18n static main_tags l10n %}
 
 {% block content %}
-        <!-- begin hero -->
-        <section class="hero">
-            <div class="container">
-                <div class="hero__inner">
-                    <div class="row">
+    <!-- begin hero -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero__inner">
+                <div class="row">
 
-                        <div class="col col-6 col-d-12">
-                            <div class="hero__left">
-                                <div class="hero__image">
-                                    <img class="lazy loaded" alt="{% translate "office's Picture" %}" data-ll-status="loaded"
-                                         src="{% static 'images/01.jpg' %}">
-                                </div>
+                    <div class="col col-6 col-d-12">
+                        <div class="hero__left">
+                            <div class="hero__image">
+                                <img class="lazy loaded" alt="{% translate "office's Picture" %}"
+                                     data-ll-status="loaded"
+                                     src="{% static 'images/01.jpg' %}">
+                            </div>
 
-                                <div class="hero__image__caption">{% translate 'My creative space, where masterpieces are born' %}
-                                </div>
+                            <div class="hero__image__caption">{% translate 'My creative space, where masterpieces are born' %}
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="col col-6 col-d-12">
+                        <div class="hero__right">
+
+                            <div class="hero__avatar">
+                                <img class="lazy loaded" alt="Nestor Bracho" data-ll-status="loaded"
+                                     src="{% static 'images/01-1.png' %}">
+                            </div>
+
+
+                            <h1 class="hero__title">{% translate 'Hi! I’m' %} Nestor 👋</h1>
+
+
+                            <p class="hero__subtitle">{% translate 'Problem solver, explorer, and lifelong student of how things work' %}</p>
+
+
+                            <div class="hero__description">
+
+                                <p>{% blocktranslate %}Welcome to my little home on the web. This is where code,
+                                    physics, engineering,
+                                    and curiosity all come together. I write about software, space, systems, and
+                                    sometimes
+                                    games. If you love building, exploring, or just asking “how does this work?”,
+                                    you’re in the right place.{% endblocktranslate %}</p>
 
                             </div>
+
+
+                            <a href="{% url 'main:contact' %}"
+                               class="hero__button button button--primary">{% translate 'Let’s Work Together' %}</a>
+
                         </div>
+                    </div>
 
-                        <div class="col col-6 col-d-12">
-                            <div class="hero__right">
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- end hero -->
 
-                                <div class="hero__avatar">
-                                    <img class="lazy loaded" alt="Nestor Bracho" data-ll-status="loaded"
-                                         src="{% static 'images/01-1.png' %}">
+
+    <!-- begin section-logos -->
+    <section class="section section-logos">
+        <div class="container">
+            <div class="row">
+                <div class="col col-12">
+
+                    <h2 class="logos-title">{% translate 'Nerd Stuff' %}</h2>
+
+                    <div class="logos splide splide--loop splide--ltr splide--draggable is-active is-initialized"
+                         id="splide01" role="region" aria-roledescription="carousel">
+                        <div class="splide__track splide__track--loop splide__track--ltr splide__track--draggable"
+                             id="splide01-track" style="padding-left: 0; padding-right: 0;" aria-live="off"
+                             aria-atomic="true">
+                            <div class="logos__inner splide__list" id="splide01-list" role="presentation"
+                                 style="transform: translateX(-1768.8px);">
+
+                                <div class="logos__image splide__slide splide__slide--clone" id="splide01-clone01"
+                                     role="group" aria-roledescription="slide" aria-label="3 of 5"
+                                     style="margin-right: 16px;" aria-hidden="true">
+                                    <img src="{% static 'images/1002.png' %}" alt="LotR" loading="eager">
+                                </div>
+                                <div class="logos__image splide__slide splide__slide--clone is-active"
+                                     id="splide01-clone02"
+                                     role="group" aria-roledescription="slide"
+                                     aria-label="4 of 5" style="margin-right: 16px;" aria-hidden="true">
+                                    <img src="{% static 'images/1003.png' %}" alt="Tennis" loading="eager">
+                                </div>
+                                <div class="logos__image splide__slide splide__slide--clone" id="splide01-clone03"
+                                     role="group" aria-roledescription="slide" aria-label="5 of 5"
+                                     style="margin-right: 16px;" aria-hidden="true">
+                                    <img src="{% static 'images/1004.png' %}" alt="Chess" loading="eager">
+                                </div>
+                                <div class="logos__image splide__slide splide__slide--clone" id="splide01-clone04"
+                                     role="group" aria-roledescription="slide" aria-label="1 of 5"
+                                     style="margin-right: 16px;" aria-hidden="true">
+                                    <img src="{% static 'images/1000.png' %}" alt="Archery" loading="eager">
+                                </div>
+                                <div class="logos__image splide__slide splide__slide--clone" id="splide01-clone05"
+                                     role="group" aria-roledescription="slide" aria-label="2 of 5"
+                                     style="margin-right: 16px;" aria-hidden="true">
+                                    <img src="{% static 'images/1001.png' %}" alt="Quasar" loading="eager">
+                                </div>
+                                <div class="logos__image splide__slide splide__slide--clone" id="splide01-clone06"
+                                     role="group" aria-roledescription="slide" aria-label="3 of 5"
+                                     style="margin-right: 16px;" aria-hidden="true">
+                                    <img src="{% static 'images/1002.png' %}" alt="LotR" loading="eager">
+                                </div>
+                                <div class="logos__image splide__slide splide__slide--clone is-active"
+                                     id="splide01-clone07"
+                                     role="group" aria-roledescription="slide"
+                                     aria-label="4 of 5" style="margin-right: 16px;" aria-hidden="true">
+                                    <img src="{% static 'images/1003.png' %}" alt="Tennis" loading="eager">
+                                </div>
+                                <div class="logos__image splide__slide splide__slide--clone" id="splide01-clone08"
+                                     role="group" aria-roledescription="slide" aria-label="5 of 5"
+                                     style="margin-right: 16px;" aria-hidden="true">
+                                    <img src="{% static 'images/1004.png' %}" alt="Chess" loading="eager">
                                 </div>
 
-
-                                <h1 class="hero__title">{% translate 'Hi! I’m' %} Nestor 👋</h1>
-
-
-                                <p class="hero__subtitle">{% translate 'Problem solver, explorer, and lifelong student of how things work' %}</p>
-
-
-                                <div class="hero__description">
-
-                                    <p>{% blocktranslate %}Welcome to my little home on the web. This is where code, physics, engineering,
-                                        and curiosity all come together. I write about software, space, systems, and sometimes
-                                        games. If you love building, exploring, or just asking “how does this work?”,
-                                        you’re in the right place.{% endblocktranslate %}</p>
+                                <div class="logos__image splide__slide" id="splide01-slide01" role="group"
+                                     aria-roledescription="slide" aria-label="1 of 5" style="margin-right: 16px;"
+                                     aria-hidden="true">
+                                    <img src="{% static 'images/1000.png' %}" alt="Archery" loading="eager">
+                                </div>
+                                <div class="logos__image splide__slide" id="splide01-slide02" role="group"
+                                     aria-roledescription="slide" aria-label="2 of 5" style="margin-right: 16px;"
+                                     aria-hidden="true">
+                                    <img src="{% static 'images/1001.png' %}" alt="Quasar" loading="eager">
+                                </div>
+                                <div class="logos__image splide__slide is-prev" id="splide01-slide03" role="group"
+                                     aria-roledescription="slide" aria-label="3 of 5" style="margin-right: 16px;"
+                                     aria-hidden="true">
+                                    <img src="{% static 'images/1002.png' %}" alt="LotR" loading="eager">
+                                </div>
+                                <div class="logos__image splide__slide is-visible is-active" id="splide01-slide04"
+                                     role="group" aria-roledescription="slide" aria-label="4 of 5"
+                                     style="margin-right: 16px;">
+                                    <img src="{% static 'images/1003.png' %}" alt="Tennis" loading="eager">
+                                </div>
+                                <div class="logos__image splide__slide is-visible is-next" id="splide01-slide05"
+                                     role="group" aria-roledescription="slide" aria-label="5 of 5"
+                                     style="margin-right: 16px;">
+                                    <a href="https://www.chess.com/member/toto2207" target="_blank"><img
+                                            src="{% static 'images/1004.png' %}" alt="Chess" loading="eager"></a>
 
                                 </div>
 
-
-                                <a href="{% url 'main:contact' %}" class="hero__button button button--primary">{% translate 'Let’s Work Together' %}</a>
-
+                                <div class="logos__image splide__slide splide__slide--clone is-visible"
+                                     id="splide01-clone09"
+                                     role="group" aria-roledescription="slide"
+                                     aria-label="1 of 5" style="margin-right: 16px;">
+                                    <img src="{% static 'images/1000.png' %}" alt="Archery" loading="eager">
+                                </div>
+                                <div class="logos__image splide__slide splide__slide--clone" id="splide01-clone10"
+                                     role="group" aria-roledescription="slide" aria-label="2 of 5"
+                                     style="margin-right: 16px;" aria-hidden="true">
+                                    <img src="{% static 'images/1001.png' %}" alt="Quasar" loading="eager">
+                                </div>
+                                <div class="logos__image splide__slide splide__slide--clone" id="splide01-clone11"
+                                     role="group" aria-roledescription="slide" aria-label="3 of 5"
+                                     style="margin-right: 16px;" aria-hidden="true">
+                                    <img src="{% static 'images/1002.png' %}" alt="Keyboard" loading="eager">
+                                </div>
+                                <div class="logos__image splide__slide splide__slide--clone is-active"
+                                     id="splide01-clone12"
+                                     role="group" aria-roledescription="slide"
+                                     aria-label="4 of 5" style="margin-right: 16px;" aria-hidden="true">
+                                    <img src="{% static 'images/1003.png' %}" alt="Headphones" loading="eager">
+                                </div>
+                                <div class="logos__image splide__slide splide__slide--clone" id="splide01-clone13"
+                                     role="group" aria-roledescription="slide" aria-label="5 of 5"
+                                     style="margin-right: 16px;" aria-hidden="true">
+                                    <img src="{% static 'images/1004.png' %}" alt="Chess" loading="eager">
+                                </div>
+                                <div class="logos__image splide__slide splide__slide--clone" id="splide01-clone14"
+                                     role="group" aria-roledescription="slide" aria-label="1 of 5"
+                                     style="margin-right: 16px;" aria-hidden="true">
+                                    <img src="{% static 'images/1000.png' %}" alt="Archery" loading="eager">
+                                </div>
+                                <div class="logos__image splide__slide splide__slide--clone" id="splide01-clone15"
+                                     role="group" aria-roledescription="slide" aria-label="2 of 5"
+                                     style="margin-right: 16px;" aria-hidden="true">
+                                    <img src="{% static 'images/1001.png' %}" alt="Quasar" loading="eager">
+                                </div>
+                                <div class="logos__image splide__slide splide__slide--clone" id="splide01-clone16"
+                                     role="group" aria-roledescription="slide" aria-label="3 of 5"
+                                     style="margin-right: 16px;" aria-hidden="true">
+                                    <img src="{% static 'images/1002.png' %}" alt="Keyboard" loading="eager">
+                                </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
-        </section>
-        <!-- end hero -->
+        </div>
+    </section>
+    <!-- end section-logos -->
 
 
-        <!-- begin section-logos -->
-        <section class="section section-logos">
+    <!-- section-blog -->
+    <section class="section section-blog">
+
+        <div class="container">
+
+            <div class="row">
+                <div class="col col-12">
+                    <div class="section__head">
+
+                        <h2 class="section__title">{% translate 'The Binary Journal' %}</h2>
+
+                        <div class="blog__view">
+                            <div class="blog__toggle">
+                                <div class="icon">
+                                    <div class="icon-bar"></div>
+                                    <div class="icon-bar"></div>
+                                    <div class="icon-bar"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col col-8 col-d-12">
+                    <div id="bj-results-container" class="row grid">
+
+
+                    </div>
+
+
+                    <!-- begin pagination -->
+                    <div class="pagination animate">
+                        <div class="load-more-section">
+                            <button class="load-more-posts button button--primary"
+                                    data-next-page="1">{% translate 'Load More' %}</button>
+                        </div>
+                    </div>
+                    <!-- end pagination -->
+
+
+                </div>
+                <div class="col col-4 col-d-12">
+                    {% include 'lib/_main_right_sidebar.html' %}
+                </div>
+            </div>
+        </div>
+
+    </section>
+    <!-- section-blog -->
+
+
+    <!-- begin section-tags -->
+    <section class="section section-tags">
+        <div class="section-tags__inner">
             <div class="container">
                 <div class="row">
                     <div class="col col-12">
 
-                        <h2 class="logos-title">{% translate 'Nerd Stuff' %}</h2>
-
-                        <div class="logos splide splide--loop splide--ltr splide--draggable is-active is-initialized"
-                             id="splide01" role="region" aria-roledescription="carousel">
-                            <div class="splide__track splide__track--loop splide__track--ltr splide__track--draggable"
-                                 id="splide01-track" style="padding-left: 0; padding-right: 0;" aria-live="off"
-                                 aria-atomic="true">
-                                <div class="logos__inner splide__list" id="splide01-list" role="presentation"
-                                     style="transform: translateX(-1768.8px);">
-
-                                    <div class="logos__image splide__slide splide__slide--clone" id="splide01-clone01"
-                                         role="group" aria-roledescription="slide" aria-label="3 of 5"
-                                         style="margin-right: 16px;" aria-hidden="true">
-                                        <img src="{% static 'images/1002.png' %}" alt="LotR" loading="eager">
-                                    </div>
-                                    <div class="logos__image splide__slide splide__slide--clone is-active" id="splide01-clone02"
-                                         role="group" aria-roledescription="slide"
-                                         aria-label="4 of 5" style="margin-right: 16px;" aria-hidden="true">
-                                        <img src="{% static 'images/1003.png' %}" alt="Tennis" loading="eager">
-                                    </div>
-                                    <div class="logos__image splide__slide splide__slide--clone" id="splide01-clone03"
-                                         role="group" aria-roledescription="slide" aria-label="5 of 5"
-                                         style="margin-right: 16px;" aria-hidden="true">
-                                        <img src="{% static 'images/1004.png' %}" alt="Chess" loading="eager">
-                                    </div>
-                                    <div class="logos__image splide__slide splide__slide--clone" id="splide01-clone04"
-                                         role="group" aria-roledescription="slide" aria-label="1 of 5"
-                                         style="margin-right: 16px;" aria-hidden="true">
-                                        <img src="{% static 'images/1000.png' %}" alt="Archery" loading="eager">
-                                    </div>
-                                    <div class="logos__image splide__slide splide__slide--clone" id="splide01-clone05"
-                                         role="group" aria-roledescription="slide" aria-label="2 of 5"
-                                         style="margin-right: 16px;" aria-hidden="true">
-                                        <img src="{% static 'images/1001.png' %}" alt="Quasar" loading="eager">
-                                    </div>
-                                    <div class="logos__image splide__slide splide__slide--clone" id="splide01-clone06"
-                                         role="group" aria-roledescription="slide" aria-label="3 of 5"
-                                         style="margin-right: 16px;" aria-hidden="true">
-                                        <img src="{% static 'images/1002.png' %}" alt="LotR" loading="eager">
-                                    </div>
-                                    <div class="logos__image splide__slide splide__slide--clone is-active" id="splide01-clone07"
-                                         role="group" aria-roledescription="slide"
-                                         aria-label="4 of 5" style="margin-right: 16px;" aria-hidden="true">
-                                        <img src="{% static 'images/1003.png' %}" alt="Tennis" loading="eager">
-                                    </div>
-                                    <div class="logos__image splide__slide splide__slide--clone" id="splide01-clone08"
-                                         role="group" aria-roledescription="slide" aria-label="5 of 5"
-                                         style="margin-right: 16px;" aria-hidden="true">
-                                        <img src="{% static 'images/1004.png' %}" alt="Chess" loading="eager">
-                                    </div>
-
-                                    <div class="logos__image splide__slide" id="splide01-slide01" role="group"
-                                         aria-roledescription="slide" aria-label="1 of 5" style="margin-right: 16px;"
-                                         aria-hidden="true">
-                                        <img src="{% static 'images/1000.png' %}" alt="Archery" loading="eager">
-                                    </div>
-                                    <div class="logos__image splide__slide" id="splide01-slide02" role="group"
-                                         aria-roledescription="slide" aria-label="2 of 5" style="margin-right: 16px;"
-                                         aria-hidden="true">
-                                        <img src="{% static 'images/1001.png' %}" alt="Quasar" loading="eager">
-                                    </div>
-                                    <div class="logos__image splide__slide is-prev" id="splide01-slide03" role="group"
-                                         aria-roledescription="slide" aria-label="3 of 5" style="margin-right: 16px;"
-                                         aria-hidden="true">
-                                        <img src="{% static 'images/1002.png' %}" alt="LotR" loading="eager">
-                                    </div>
-                                    <div class="logos__image splide__slide is-visible is-active" id="splide01-slide04"
-                                         role="group" aria-roledescription="slide" aria-label="4 of 5"
-                                         style="margin-right: 16px;">
-                                        <img src="{% static 'images/1003.png' %}" alt="Tennis" loading="eager">
-                                    </div>
-                                    <div class="logos__image splide__slide is-visible is-next" id="splide01-slide05"
-                                         role="group" aria-roledescription="slide" aria-label="5 of 5"
-                                         style="margin-right: 16px;">
-                                        <a href="https://www.chess.com/member/toto2207" target="_blank"><img src="{% static 'images/1004.png' %}" alt="Chess" loading="eager"></a>
-
-                                    </div>
-
-                                    <div class="logos__image splide__slide splide__slide--clone is-visible" id="splide01-clone09"
-                                         role="group" aria-roledescription="slide"
-                                         aria-label="1 of 5" style="margin-right: 16px;">
-                                        <img src="{% static 'images/1000.png' %}" alt="Archery" loading="eager">
-                                    </div>
-                                    <div class="logos__image splide__slide splide__slide--clone" id="splide01-clone10"
-                                         role="group" aria-roledescription="slide" aria-label="2 of 5"
-                                         style="margin-right: 16px;" aria-hidden="true">
-                                        <img src="{% static 'images/1001.png' %}" alt="Quasar" loading="eager">
-                                    </div>
-                                    <div class="logos__image splide__slide splide__slide--clone" id="splide01-clone11"
-                                         role="group" aria-roledescription="slide" aria-label="3 of 5"
-                                         style="margin-right: 16px;" aria-hidden="true">
-                                        <img src="{% static 'images/1002.png' %}" alt="Keyboard" loading="eager">
-                                    </div>
-                                    <div class="logos__image splide__slide splide__slide--clone is-active" id="splide01-clone12"
-                                         role="group" aria-roledescription="slide"
-                                         aria-label="4 of 5" style="margin-right: 16px;" aria-hidden="true">
-                                        <img src="{% static 'images/1003.png' %}" alt="Headphones" loading="eager">
-                                    </div>
-                                    <div class="logos__image splide__slide splide__slide--clone" id="splide01-clone13"
-                                         role="group" aria-roledescription="slide" aria-label="5 of 5"
-                                         style="margin-right: 16px;" aria-hidden="true">
-                                        <img src="{% static 'images/1004.png' %}" alt="Chess" loading="eager">
-                                    </div>
-                                    <div class="logos__image splide__slide splide__slide--clone" id="splide01-clone14"
-                                         role="group" aria-roledescription="slide" aria-label="1 of 5"
-                                         style="margin-right: 16px;" aria-hidden="true">
-                                        <img src="{% static 'images/1000.png' %}" alt="Archery" loading="eager">
-                                    </div>
-                                    <div class="logos__image splide__slide splide__slide--clone" id="splide01-clone15"
-                                         role="group" aria-roledescription="slide" aria-label="2 of 5"
-                                         style="margin-right: 16px;" aria-hidden="true">
-                                        <img src="{% static 'images/1001.png' %}" alt="Quasar" loading="eager">
-                                    </div>
-                                    <div class="logos__image splide__slide splide__slide--clone" id="splide01-clone16"
-                                         role="group" aria-roledescription="slide" aria-label="3 of 5"
-                                         style="margin-right: 16px;" aria-hidden="true">
-                                        <img src="{% static 'images/1002.png' %}" alt="Keyboard" loading="eager">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <!-- end section-logos -->
-
-
-        <!-- section-blog -->
-        <section class="section section-blog">
-
-            <div class="container">
-
-                <div class="row">
-                    <div class="col col-12">
                         <div class="section__head">
 
-                            <h2 class="section__title">{% translate 'The Binary Journal' %}</h2>
+                            <h2 class="section__title">{% translate "Hacker’s Haven" %}</h2>
 
-                            <div class="blog__view">
-                                <div class="blog__toggle">
-                                    <div class="icon">
-                                        <div class="icon-bar"></div>
-                                        <div class="icon-bar"></div>
-                                        <div class="icon-bar"></div>
-                                    </div>
+                        </div>
+
+                        <div class="row">
+
+
+                            <div class="col col-3 col-d-6 col-m-12">
+
+                                <a href="{% url 'blog:category-detail' 'programming' %}" class="section-tags__image"
+                                   style="outline-color: #4643ec;">
+                                    <span class="section-tags__name" style="background: #4643ec;">Programming</span>
+                                    <img class="lazy" data-src="{% static 'images/20.jpg' %}" alt="Programming">
+                                </a>
+
+
+                                <div class="section-tags__content">
+
+
+                                    <h3 class="section-tags__title">
+                                        <a href="/avoiding-common-javascript-mistakes-and-writing-clean-code">Avoiding
+                                            Common JavaScript Mistakes and Writing Clean Code</a>
+                                    </h3>
+
+                                    <h3 class="section-tags__title">
+                                        <a href="/my-top-10-code-editors-for-developers">My Top 10 Code Editors for
+                                            Developers</a>
+                                    </h3>
+
+                                    <h3 class="section-tags__title">
+                                        <a href="/automating-routine-tasks-with-bash-scripts">Automating Routine
+                                            Tasks with Bash Scripts</a>
+                                    </h3>
+
+                                    <h3 class="section-tags__title">
+                                        <a href="/choosing-your-first-programming-language">Choosing Your First
+                                            Programming Language</a>
+                                    </h3>
+
                                 </div>
                             </div>
+
+
+                            <div class="col col-3 col-d-6 col-m-12">
+
+                                <a href="{% url 'blog:category-detail' 'linux' %}" class="section-tags__image"
+                                   style="outline-color: var(--dark-gray);">
+                                    <span class="section-tags__name"
+                                          style="background: var(--dark-gray);">Linux</span>
+                                    <img class="lazy" data-src="{% static 'images/21.jpg' %}" alt="Linux">
+                                </a>
+
+
+                                <div class="section-tags__content">
+
+
+                                    <h3 class="section-tags__title">
+                                        <a href="/setting-up-the-perfect-programming-environment-on-ubuntu">Setting
+                                            Up the Perfect Programming Environment on Ubuntu</a>
+                                    </h3>
+
+                                    <h3 class="section-tags__title">
+                                        <a href="/why-i-switched-to-arch-linux-and-never-looked-back">Why I Switched
+                                            to Arch Linux and Never Looked Back</a>
+                                    </h3>
+
+                                    <h3 class="section-tags__title">
+                                        <a href="/top-7-terminal-commands-every-linux-user-should-know">Top 7
+                                            Terminal Commands Every Linux User Should Know</a>
+                                    </h3>
+
+                                    <h3 class="section-tags__title">
+                                        <a href="/customizing-the-terminal-and-productivity-tools">Customizing the
+                                            Terminal and Productivity Tools</a>
+                                    </h3>
+
+                                </div>
+                            </div>
+
+
+                            <div class="col col-3 col-d-6 col-m-12">
+
+                                <a href="{% url 'blog:category-detail' 'sports' %}" class="section-tags__image"
+                                   style="outline-color: #3eb99a;">
+                                    <span class="section-tags__name"
+                                          style="background: #3eb99a;">Productivity</span>
+                                    <img class="lazy" data-src="{% static 'images/22.png' %}" alt="Productivity">
+                                </a>
+
+
+                                <div class="section-tags__content">
+
+
+                                    <h3 class="section-tags__title">
+                                        <a href="/top-5-productivity-tools-i-use-daily">Top 5 Productivity Tools I
+                                            Use Daily</a>
+                                    </h3>
+
+                                    <h3 class="section-tags__title">
+                                        <a href="/staying-focused-and-avoiding-burnout">Staying Focused and Avoiding
+                                            Burnout</a>
+                                    </h3>
+
+                                    <h3 class="section-tags__title">
+                                        <a href="/time-management-techniques-for-developers">Time Management
+                                            Techniques for Developers</a>
+                                    </h3>
+
+                                    <h3 class="section-tags__title">
+                                        <a href="/digital-minimalism-principles-for-it-professionals">Digital
+                                            Minimalism Principles for IT Professionals</a>
+                                    </h3>
+
+                                </div>
+                            </div>
+
+
+                            <div class="col col-3 col-d-6 col-m-12">
+
+                                <a href="{% url 'blog:category-detail' 'security' %}" class="section-tags__image"
+                                   style="outline-color: #de47e2;">
+                                    <span class="section-tags__name" style="background: #de47e2;">Security</span>
+                                    <img class="lazy" data-src="{% static 'images/23.jpg' %}" alt="Security">
+                                </a>
+
+
+                                <div class="section-tags__content">
+
+
+                                    <h3 class="section-tags__title">
+                                        <a href="/why-two-factor-authentication-is-a-must-have-tool">Why Two-Factor
+                                            Authentication Is a Must-Have Tool</a>
+                                    </h3>
+
+                                    <h3 class="section-tags__title">
+                                        <a href="/tips-for-safeguarding-mobile-devices-and-cloud-storage">Tips for
+                                            Safeguarding Mobile Devices and Cloud Storage</a>
+                                    </h3>
+
+                                    <h3 class="section-tags__title">
+                                        <a href="/which-browsers-truly-protect-your-privacy">Which Browsers Truly
+                                            Protect Your Privacy?</a>
+                                    </h3>
+
+                                    <h3 class="section-tags__title">
+                                        <a href="/keeping-your-files-and-messages-secure">Keeping Your Files and
+                                            Messages Secure</a>
+                                    </h3>
+
+                                </div>
+                            </div>
+
+
                         </div>
+
                     </div>
                 </div>
+            </div>
+        </div>
+    </section>
+    <!-- end section-tags -->
 
+
+    <!-- begin section-videos -->
+    <section class="section section-videos">
+
+        <div class="section-videos__inner">
+            <div class="container">
                 <div class="row">
-                    <div class="col col-8 col-d-12">
-                        <div class="row grid">
+                    <div class="col col-12">
+
+                        <div class="section__head">
+
+                            <h2 class="section__title">{% translate 'Latest Videos' %}</h2>
+
+                        </div>
 
 
-                            <div class="article article--flexible col col-6 col-t-12 grid__post animate">
-                                <div class="article__inner">
+                        <div class="row">
 
-
-                                    <div class="article__head">
-
-
-                                        <a class="article__image"
-                                           href="/avoiding-common-javascript-mistakes-and-writing-clean-code">
-                                            <img class="lazy" data-src="{% static 'images/02.png' %}"
-                                                 alt="Avoiding Common JavaScript Mistakes and Writing Clean Code">
-                                        </a>
-                                    </div>
-
-
-                                    <div class="article__content">
-
-
-                                        <div class="article__tags">
-
-                                            <a href="/tags/?tag=programming" class="article__tag"
-                                               style="background: #4643ec;">
-                                                Programming
-                                            </a>
-
-                                        </div>
-
-
-                                        <h2 class="article__title">
-                                            <a href="/avoiding-common-javascript-mistakes-and-writing-clean-code">Avoiding
-                                                Common JavaScript Mistakes and Writing Clean Code</a>
-                                        </h2>
-
-                                        <p class="article__excerpt">Starting out in programming is thrilling, yet the
-                                            number of languages available makes it difficult to decide where to
-                                            begin.</p>
-
-                                        <div class="article__meta">
-                                            <time class="article__date" datetime="2025-01-05T12:01:35+00:00">05 Jan,
-                                                2025
-                                            </time>
-                                            <div class="article__minutes">
-
-
-                                                3 min read
-
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="article article--flexible col col-6 col-t-12 grid__post animate">
-                                <div class="article__inner">
-
-
-                                    <div class="article__head">
-
-
-                                        <a class="article__image"
-                                           href="/setting-up-the-perfect-programming-environment-on-ubuntu">
-                                            <img class="lazy" data-src="{% static 'images/07.jpg' %}"
-                                                 alt="Setting Up the Perfect Programming Environment on Ubuntu">
-                                        </a>
-                                    </div>
-
-
-                                    <div class="article__content">
-
-
-                                        <div class="article__tags">
-
-                                            <a href="/tags/?tag=linux" class="article__tag"
-                                               style="background: var(--dark-gray);">
-                                                Linux
-                                            </a>
-
-                                        </div>
-
-
-                                        <h2 class="article__title">
-                                            <a href="/setting-up-the-perfect-programming-environment-on-ubuntu">Setting
-                                                Up the Perfect Programming Environment on Ubuntu</a>
-                                        </h2>
-
-                                        <p class="article__excerpt">Rooted in the principles of free software, Linux has
-                                            evolved from a student’s project into a cornerstone of modern technology,
-                                            powering everything from supercomputers to smartphones.</p>
-
-                                        <div class="article__meta">
-                                            <time class="article__date" datetime="2025-01-04T12:01:35+00:00">04 Jan,
-                                                2025
-                                            </time>
-                                            <div class="article__minutes">
-
-
-                                                3 min read
-
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="article article--flexible col col-6 col-t-12 grid__post animate">
+                            <div class="article col col-3 col-d-5 col-m-12 push-1 push-m-0">
                                 <div class="article__inner">
 
 
@@ -349,483 +465,160 @@
 
 
                                     <div class="article__content">
-
-
-                                        <div class="article__tags">
-
-                                            <a href="/tags/?tag=security" class="article__tag"
-                                               style="background: #de47e2;">
-                                                Security
-                                            </a>
-
-                                        </div>
-
-
                                         <h2 class="article__title">
-                                            <a href="/why-two-factor-authentication-is-a-must-have-tool">Why Two-Factor
-                                                Authentication Is a Must-Have Tool</a>
+                                            <a href="/why-two-factor-authentication-is-a-must-have-tool">Why
+                                                Two-Factor Authentication Is a Must-Have Tool</a>
                                         </h2>
-
-                                        <p class="article__excerpt">Protect your digital world with practical guides and
-                                            insights into cybersecurity. Whether you’re just getting started or want to
-                                            deepen your knowledge, you’ll find everything from data protection basics to
-                                            advanced encryption techniques, all designed to keep your information safe
-                                            and private.</p>
-
-                                        <div class="article__meta">
-                                            <time class="article__date" datetime="2025-01-03T12:01:35+00:00">03 Jan,
-                                                2025
-                                            </time>
-                                            <div class="article__minutes">
-
-
-                                                3 min read
-
-                                            </div>
-                                        </div>
-
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="article article--flexible col col-6 col-t-12 grid__post animate">
+                            <div class="article col col-3 col-d-5 col-m-12 push-1 push-m-0">
                                 <div class="article__inner">
 
 
                                     <div class="article__head">
 
+                                        <div class="video-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                                                <polygon points="40,30 70,50 40,70"></polygon>
+                                            </svg>
+                                        </div>
 
-                                        <a class="article__image" href="/top-indie-games-every-geek-should-try">
-                                            <img class="lazy" data-src="{% static 'images/09.jpg' %}"
-                                                 alt="Top Indie Games Every Geek Should Try">
+
+                                        <a class="article__image" href="/top-5-productivity-tools-i-use-daily">
+                                            <img class="lazy" data-src="{% static 'images/06.jpg' %}"
+                                                 alt="Top 5 Productivity Tools I Use Daily">
                                         </a>
                                     </div>
 
 
                                     <div class="article__content">
-
-
-                                        <div class="article__tags">
-
-                                            <a href="/tags/?tag=games" class="article__tag"
-                                               style="background: #ff4500;">
-                                                Games
-                                            </a>
-
-                                        </div>
-
-
                                         <h2 class="article__title">
-                                            <a href="/top-indie-games-every-geek-should-try">Top Indie Games Every Geek
-                                                Should Try</a>
+                                            <a href="/top-5-productivity-tools-i-use-daily">Top 5 Productivity Tools
+                                                I Use Daily</a>
                                         </h2>
-
-                                        <p class="article__excerpt">In recent years, indie games have transformed the
-                                            gaming industry, offering unique experiences that often surpass mainstream
-                                            titles in creativity and innovation.</p>
-
-                                        <div class="article__meta">
-                                            <time class="article__date" datetime="2025-01-02T12:01:35+00:00">02 Jan,
-                                                2025
-                                            </time>
-                                            <div class="article__minutes">
-
-
-                                                4 min read
-
-                                            </div>
-                                        </div>
-
                                     </div>
                                 </div>
                             </div>
 
-
-                        </div>
-
-
-                        <!-- begin pagination -->
-                        <div class="pagination animate">
-                            <div class="load-more-section">
-                                <button class="load-more-posts button button--primary">{% translate 'Load More' %}</button>
-                            </div>
-                        </div>
-                        <!-- end pagination -->
+                            <div class="article col col-3 col-d-5 col-m-12 push-1 push-m-0">
+                                <div class="article__inner">
 
 
-                        <script>
-                            var base_url = "",
-                                pagination_next_url = base_url + "/page2",
-                                pagination_next_page_number = "2",
-                                pagination_available_pages_number = "6";
-                        </script>
-                    </div>
-                    <div class="col col-4 col-d-12">
-                        {% include 'lib/_main_right_sidebar.html' %}
-                    </div>
-                </div>
-            </div>
+                                    <div class="article__head">
 
-        </section>
-        <!-- section-blog -->
+                                        <div class="video-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                                                <polygon points="40,30 70,50 40,70"></polygon>
+                                            </svg>
+                                        </div>
 
 
-        <!-- begin section-tags -->
-        <section class="section section-tags">
-            <div class="section-tags__inner">
-                <div class="container">
-                    <div class="row">
-                        <div class="col col-12">
-
-                            <div class="section__head">
-
-                                <h2 class="section__title">{% translate "Hacker’s Haven" %}</h2>
-
-                            </div>
-
-                            <div class="row">
+                                        <a class="article__image"
+                                           href="/automating-routine-tasks-with-bash-scripts">
+                                            <img class="lazy" data-src="{% static 'images/32.jpg' %}"
+                                                 alt="Automating Routine Tasks with Bash Scripts">
+                                        </a>
+                                    </div>
 
 
-                                <div class="col col-3 col-d-6 col-m-12">
-
-                                    <a href="{% url 'blog:category-detail' 'programming' %}" class="section-tags__image"
-                                       style="outline-color: #4643ec;">
-                                        <span class="section-tags__name" style="background: #4643ec;">Programming</span>
-                                        <img class="lazy" data-src="{% static 'images/20.jpg' %}" alt="Programming">
-                                    </a>
-
-
-                                    <div class="section-tags__content">
-
-
-                                        <h3 class="section-tags__title">
-                                            <a href="/avoiding-common-javascript-mistakes-and-writing-clean-code">Avoiding
-                                                Common JavaScript Mistakes and Writing Clean Code</a>
-                                        </h3>
-
-                                        <h3 class="section-tags__title">
-                                            <a href="/my-top-10-code-editors-for-developers">My Top 10 Code Editors for
-                                                Developers</a>
-                                        </h3>
-
-                                        <h3 class="section-tags__title">
+                                    <div class="article__content">
+                                        <h2 class="article__title">
                                             <a href="/automating-routine-tasks-with-bash-scripts">Automating Routine
                                                 Tasks with Bash Scripts</a>
-                                        </h3>
-
-                                        <h3 class="section-tags__title">
-                                            <a href="/choosing-your-first-programming-language">Choosing Your First
-                                                Programming Language</a>
-                                        </h3>
-
+                                        </h2>
                                     </div>
                                 </div>
-
-
-                                <div class="col col-3 col-d-6 col-m-12">
-
-                                    <a href="{% url 'blog:category-detail' 'linux' %}" class="section-tags__image"
-                                       style="outline-color: var(--dark-gray);">
-                                        <span class="section-tags__name"
-                                              style="background: var(--dark-gray);">Linux</span>
-                                        <img class="lazy" data-src="{% static 'images/21.jpg' %}" alt="Linux">
-                                    </a>
-
-
-                                    <div class="section-tags__content">
-
-
-                                        <h3 class="section-tags__title">
-                                            <a href="/setting-up-the-perfect-programming-environment-on-ubuntu">Setting
-                                                Up the Perfect Programming Environment on Ubuntu</a>
-                                        </h3>
-
-                                        <h3 class="section-tags__title">
-                                            <a href="/why-i-switched-to-arch-linux-and-never-looked-back">Why I Switched
-                                                to Arch Linux and Never Looked Back</a>
-                                        </h3>
-
-                                        <h3 class="section-tags__title">
-                                            <a href="/top-7-terminal-commands-every-linux-user-should-know">Top 7
-                                                Terminal Commands Every Linux User Should Know</a>
-                                        </h3>
-
-                                        <h3 class="section-tags__title">
-                                            <a href="/customizing-the-terminal-and-productivity-tools">Customizing the
-                                                Terminal and Productivity Tools</a>
-                                        </h3>
-
-                                    </div>
-                                </div>
-
-
-                                <div class="col col-3 col-d-6 col-m-12">
-
-                                    <a href="{% url 'blog:category-detail' 'sports' %}" class="section-tags__image"
-                                       style="outline-color: #3eb99a;">
-                                        <span class="section-tags__name"
-                                              style="background: #3eb99a;">Productivity</span>
-                                        <img class="lazy" data-src="{% static 'images/22.png' %}" alt="Productivity">
-                                    </a>
-
-
-                                    <div class="section-tags__content">
-
-
-                                        <h3 class="section-tags__title">
-                                            <a href="/top-5-productivity-tools-i-use-daily">Top 5 Productivity Tools I
-                                                Use Daily</a>
-                                        </h3>
-
-                                        <h3 class="section-tags__title">
-                                            <a href="/staying-focused-and-avoiding-burnout">Staying Focused and Avoiding
-                                                Burnout</a>
-                                        </h3>
-
-                                        <h3 class="section-tags__title">
-                                            <a href="/time-management-techniques-for-developers">Time Management
-                                                Techniques for Developers</a>
-                                        </h3>
-
-                                        <h3 class="section-tags__title">
-                                            <a href="/digital-minimalism-principles-for-it-professionals">Digital
-                                                Minimalism Principles for IT Professionals</a>
-                                        </h3>
-
-                                    </div>
-                                </div>
-
-
-                                <div class="col col-3 col-d-6 col-m-12">
-
-                                    <a href="{% url 'blog:category-detail' 'security' %}" class="section-tags__image"
-                                       style="outline-color: #de47e2;">
-                                        <span class="section-tags__name" style="background: #de47e2;">Security</span>
-                                        <img class="lazy" data-src="{% static 'images/23.jpg' %}" alt="Security">
-                                    </a>
-
-
-                                    <div class="section-tags__content">
-
-
-                                        <h3 class="section-tags__title">
-                                            <a href="/why-two-factor-authentication-is-a-must-have-tool">Why Two-Factor
-                                                Authentication Is a Must-Have Tool</a>
-                                        </h3>
-
-                                        <h3 class="section-tags__title">
-                                            <a href="/tips-for-safeguarding-mobile-devices-and-cloud-storage">Tips for
-                                                Safeguarding Mobile Devices and Cloud Storage</a>
-                                        </h3>
-
-                                        <h3 class="section-tags__title">
-                                            <a href="/which-browsers-truly-protect-your-privacy">Which Browsers Truly
-                                                Protect Your Privacy?</a>
-                                        </h3>
-
-                                        <h3 class="section-tags__title">
-                                            <a href="/keeping-your-files-and-messages-secure">Keeping Your Files and
-                                                Messages Secure</a>
-                                        </h3>
-
-                                    </div>
-                                </div>
-
-
                             </div>
 
                         </div>
+
                     </div>
                 </div>
             </div>
-        </section>
-        <!-- end section-tags -->
+        </div>
+
+    </section>
+    <!-- end section-videos -->
 
 
-        <!-- begin section-videos -->
-        <section class="section section-videos">
+    <!-- begin section-gallery -->
+    <section class="section section-gallery">
+        <div class="container">
+            <div class="row">
+                <div class="col col-12">
 
-            <div class="section-videos__inner">
-                <div class="container">
+                    <div class="section__head">
+
+                        <h2 class="section__title">Byte Frame</h2>
+
+                    </div>
+
                     <div class="row">
                         <div class="col col-12">
+                            <div class="section-gallery__inner">
 
-                            <div class="section__head">
+                                <figure class="gallery__image">
+                                    <img class="lazy" data-src="{% static 'images/100.png' %}" alt="Rest">
 
-                                <h2 class="section__title">{% translate 'Latest Videos' %}</h2>
+                                    <figcaption class="gallery__image__caption">Small steps lead to big results.
+                                    </figcaption>
 
-                            </div>
+                                </figure>
 
+                                <figure class="gallery__image">
+                                    <img class="lazy" data-src="{% static 'images/101.jpg' %}" alt="Lifestyle">
 
-                            <div class="row">
+                                    <figcaption class="gallery__image__caption">A peaceful moment captured during a
+                                        serene evening.
+                                    </figcaption>
 
-                                <div class="article col col-3 col-d-5 col-m-12 push-1 push-m-0">
-                                    <div class="article__inner">
+                                </figure>
 
+                                <figure class="gallery__image">
+                                    <img class="lazy" data-src="{% static 'images/102.jpg' %}" alt="Hobby">
 
-                                        <div class="article__head">
+                                    <figcaption class="gallery__image__caption">True friends are like stars — they
+                                        shine brightest when the world feels dark.
+                                    </figcaption>
 
-                                            <div class="video-icon">
-                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-                                                    <polygon points="40,30 70,50 40,70"></polygon>
-                                                </svg>
-                                            </div>
+                                </figure>
 
+                                <figure class="gallery__image">
+                                    <img class="lazy" data-src="{% static 'images/103.jpg' %}" alt="Computers">
 
-                                            <a class="article__image"
-                                               href="/why-two-factor-authentication-is-a-must-have-tool">
-                                                <img class="lazy" data-src="{% static 'images/04.jpg' %}"
-                                                     alt="Why Two-Factor Authentication Is a Must-Have Tool">
-                                            </a>
-                                        </div>
+                                    <figcaption class="gallery__image__caption">Every click opens a new chapter in
+                                        an endless story.
+                                    </figcaption>
 
+                                </figure>
 
-                                        <div class="article__content">
-                                            <h2 class="article__title">
-                                                <a href="/why-two-factor-authentication-is-a-must-have-tool">Why
-                                                    Two-Factor Authentication Is a Must-Have Tool</a>
-                                            </h2>
-                                        </div>
-                                    </div>
-                                </div>
+                                <figure class="gallery__image">
+                                    <img class="lazy" data-src="{% static 'images/104.jpg' %}" alt="Games">
 
-                                <div class="article col col-3 col-d-5 col-m-12 push-1 push-m-0">
-                                    <div class="article__inner">
+                                    <figcaption class="gallery__image__caption">Every level is a new opportunity to
+                                        test your limits.
+                                    </figcaption>
 
-
-                                        <div class="article__head">
-
-                                            <div class="video-icon">
-                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-                                                    <polygon points="40,30 70,50 40,70"></polygon>
-                                                </svg>
-                                            </div>
-
-
-                                            <a class="article__image" href="/top-5-productivity-tools-i-use-daily">
-                                                <img class="lazy" data-src="{% static 'images/06.jpg' %}"
-                                                     alt="Top 5 Productivity Tools I Use Daily">
-                                            </a>
-                                        </div>
-
-
-                                        <div class="article__content">
-                                            <h2 class="article__title">
-                                                <a href="/top-5-productivity-tools-i-use-daily">Top 5 Productivity Tools
-                                                    I Use Daily</a>
-                                            </h2>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="article col col-3 col-d-5 col-m-12 push-1 push-m-0">
-                                    <div class="article__inner">
-
-
-                                        <div class="article__head">
-
-                                            <div class="video-icon">
-                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-                                                    <polygon points="40,30 70,50 40,70"></polygon>
-                                                </svg>
-                                            </div>
-
-
-                                            <a class="article__image"
-                                               href="/automating-routine-tasks-with-bash-scripts">
-                                                <img class="lazy" data-src="{% static 'images/32.jpg' %}"
-                                                     alt="Automating Routine Tasks with Bash Scripts">
-                                            </a>
-                                        </div>
-
-
-                                        <div class="article__content">
-                                            <h2 class="article__title">
-                                                <a href="/automating-routine-tasks-with-bash-scripts">Automating Routine
-                                                    Tasks with Bash Scripts</a>
-                                            </h2>
-                                        </div>
-                                    </div>
-                                </div>
+                                </figure>
 
                             </div>
-
                         </div>
                     </div>
+
                 </div>
             </div>
+        </div>
+    </section>
+    <!-- end section-tags -->
+{% endblock %}
 
-        </section>
-        <!-- end section-videos -->
+{% block modals %}
+    {% include 'main/_lib/_bj_post_template.html' %}
+{% endblock %}
 
-
-        <!-- begin section-gallery -->
-        <section class="section section-gallery">
-            <div class="container">
-                <div class="row">
-                    <div class="col col-12">
-
-                        <div class="section__head">
-
-                            <h2 class="section__title">Byte Frame</h2>
-
-                        </div>
-
-                        <div class="row">
-                            <div class="col col-12">
-                                <div class="section-gallery__inner">
-
-                                    <figure class="gallery__image">
-                                        <img class="lazy" data-src="{% static 'images/100.png' %}" alt="Rest">
-
-                                        <figcaption class="gallery__image__caption">Small steps lead to big results.
-                                        </figcaption>
-
-                                    </figure>
-
-                                    <figure class="gallery__image">
-                                        <img class="lazy" data-src="{% static 'images/101.jpg' %}" alt="Lifestyle">
-
-                                        <figcaption class="gallery__image__caption">A peaceful moment captured during a
-                                            serene evening.
-                                        </figcaption>
-
-                                    </figure>
-
-                                    <figure class="gallery__image">
-                                        <img class="lazy" data-src="{% static 'images/102.jpg' %}" alt="Hobby">
-
-                                        <figcaption class="gallery__image__caption">True friends are like stars — they
-                                            shine brightest when the world feels dark.
-                                        </figcaption>
-
-                                    </figure>
-
-                                    <figure class="gallery__image">
-                                        <img class="lazy" data-src="{% static 'images/103.jpg' %}" alt="Computers">
-
-                                        <figcaption class="gallery__image__caption">Every click opens a new chapter in
-                                            an endless story.
-                                        </figcaption>
-
-                                    </figure>
-
-                                    <figure class="gallery__image">
-                                        <img class="lazy" data-src="{% static 'images/104.jpg' %}" alt="Games">
-
-                                        <figcaption class="gallery__image__caption">Every level is a new opportunity to
-                                            test your limits.
-                                        </figcaption>
-
-                                    </figure>
-
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-        </section>
-        <!-- end section-tags -->
+{% block extra_js %}
+    <script src="{% static 'main/index/scripts.js' %}" data-lang="{{ LANGUAGE_CODE }}"
+            data-api-url="{% url 'blog:api:post-list' %}"></script>
 {% endblock %}

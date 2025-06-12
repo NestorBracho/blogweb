@@ -58,6 +58,12 @@ class Post(models.Model):
             return self.title_es
         return self.title_en
 
+    def description(self):
+        lang = translation.get_language()
+        if lang == 'es':
+            return self.description_es
+        return self.description_en
+
     def rendered_body(self):
         import markdown
         from markdown.extensions import codehilite, fenced_code, admonition, attr_list, tables

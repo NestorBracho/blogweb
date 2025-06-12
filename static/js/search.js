@@ -23,10 +23,9 @@ $(document).ready(function () {
     }
 
     $('#js-search-input').on('keyup', function (e) {
-        let base_url = apiUrl.replace('__query_param__', $(this).val());
         let results_container = $('#js-results-container');
         $.ajax({
-            url: base_url,
+            url: apiUrl.concat('?search=', $(this).val()),
             headers: {
                 'X-Language': lang
             },

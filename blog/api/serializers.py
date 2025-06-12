@@ -25,13 +25,14 @@ class CreatePostSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
-class PostSerializer(serializers.ModelSerializer):
+class SearchPostSerializer(serializers.ModelSerializer):
 
     href = serializers.SerializerMethodField()
     cover_url = serializers.SerializerMethodField()
     title = serializers.SerializerMethodField()
     category_href = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
+    category_color = serializers.SerializerMethodField()
     description = serializers.SerializerMethodField()
     timestamp = serializers.SerializerMethodField()
     user_friendly_date = serializers.SerializerMethodField()
@@ -39,7 +40,7 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ['href', 'cover_url', 'title', 'category_href', 'category',
+        fields = ['href', 'cover_url', 'title', 'category_href', 'category', 'category_color',
                   'description', 'timestamp', 'user_friendly_date', 'read_time']
 
     def get_href(self, obj):
@@ -62,6 +63,9 @@ class PostSerializer(serializers.ModelSerializer):
         if lang == 'es':
             return obj.category.name_es
         return obj.category.name_en
+
+    def get_category_color(self, obj):
+        return obj.category.color
 
     def get_description(self, obj):
         lang = self.context['request'].headers.get('X-Language')

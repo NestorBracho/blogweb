@@ -99,6 +99,11 @@ DATABASES = {
     }
 }
 
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 4
+}
+
 # Email config
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -165,14 +170,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STORAGES = {
-    "default": {
-        "BACKEND": "config.storage_backends.MediaStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "config.storage_backends.StaticStorage",
-    },
-}
 
 AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY')
@@ -185,13 +182,24 @@ AWS_QUERYSTRING_AUTH = False
 
 AWS_S3_ADDRESSING_STYLE = "virtual"
 
-STATIC_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/static/"
+STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
 
-MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/'
-
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
-
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+if DEBUG:
+    STATICFILES_DIRS = [BASE_DIR / "static"]
+    STATIC_ROOT = BASE_DIR / "staticfiles"
+    MEDIA_ROOT = BASE_DIR / "media"
+else:
+    STORAGES = {
+        "default": {
+            "BACKEND": "config.storage_backends.MediaStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "config.storage_backends.StaticStorage",
+        },
+    }
+    STATIC_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/static/"
+    MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

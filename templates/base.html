@@ -135,6 +135,8 @@
 
 {% include 'lib/_search_result_template.html' %}
 
+{% block modals %}{% endblock %}
+
 <div class="top" title="Top"><i class="fa-solid fa-arrow-up"></i></div>
 
 <div class="images-overlay"></div>
@@ -143,7 +145,7 @@
 <script src="{% static 'js/scripts.js' %}"></script>
 <script src="{% static 'js/common.js' %}"></script>
 <script src="{% static 'js/search.js' %}" data-lang="{{ LANGUAGE_CODE }}"
-        data-api-url="{% url 'blog:api:search' '__query_param__' %}"></script>
+        data-api-url="{% url 'blog:api:post-list' %}"></script>
 <script>
     $( document ).ready( function(){
 

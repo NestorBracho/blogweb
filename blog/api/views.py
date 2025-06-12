@@ -1,19 +1,72 @@
 from django.db.models import Q
-from rest_framework import generics
+from rest_framework import generics, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from blog.models import Post
-from .serializers import PostSerializer, CreatePostSerializer
+from .serializers import SearchPostSerializer, CreatePostSerializer
 
 
-class SearchPostAPIView(generics.ListAPIView):
+# class SearchPostAPIView(generics.ListAPIView):
+#     queryset = Post.objects.filter(is_published=True)
+#     serializer_class = SearchPostSerializer
+#     pagination_class = None
+#
+#     def filter_queryset(self, queryset):
+#
+#         lang = self.request.headers.get('X-Language')
+#         query_string = self.kwargs.get('query')
+#
+#         if lang == 'es':
+#             queryset = queryset.filter(
+#                 Q(title_es__icontains=query_string) |
+#                 Q(description_es__icontains=query_string) |
+#                 Q(body_es__icontains=query_string) |
+#                 Q(category__name_es__contains=query_string)
+#             )
+#         else:
+#             queryset = queryset.filter(
+#                 Q(title_en__icontains=query_string) |
+#                 Q(description_en__icontains=query_string) |
+#                 Q(body_en__icontains=query_string) |
+#                 Q(category__name_en__contains=query_string)
+#             )
+#
+#         for backend in list(self.filter_backends):
+#             queryset = backend().filter_queryset(self.request, queryset, self)
+
+
+class PostModelViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.filter(is_published=True)
-    serializer_class = PostSerializer
-    pagination_class = None
+    write_serializer_class = CreatePostSerializer
+    read_serializer_class = SearchPostSerializer
 
-    def filter_queryset(self, queryset):
+    def list(self, request, *args, **kwargs):
+        if 'search' in request.GET:
+            queryset = self._search_filter_queryset(self.get_queryset())
+        else:
+            queryset = self.filter_queryset(self.get_queryset())
+
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def get_serializer_class(self):
+        if self.action in ['create', 'update']:
+            return self.write_serializer_class
+        return self.read_serializer_class
+
+    def _search_filter_queryset(self, queryset):
 
         lang = self.request.headers.get('X-Language')
-        query_string = self.kwargs.get('query')
+        query_string = self.request.GET.get('search')
+
+        if query_string == '':
+            return queryset.none()
 
         if lang == 'es':
             queryset = queryset.filter(
@@ -32,10 +85,5 @@ class SearchPostAPIView(generics.ListAPIView):
 
         for backend in list(self.filter_backends):
             queryset = backend().filter_queryset(self.request, queryset, self)
+
         return queryset
-
-
-class CreateArticleAPIView(generics.CreateAPIView):
-    queryset = Post.objects.all()
-    serializer_class = CreatePostSerializer
-

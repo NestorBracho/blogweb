@@ -29,7 +29,7 @@ class Post(models.Model):
     description_es = models.CharField(max_length=160)
     description_en = models.CharField(max_length=160)
     cover = models.ImageField(upload_to='images/', blank=True, null=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='posts', null=True, blank=True)
     read_time = models.IntegerField(default=0)
 
     is_published = models.BooleanField(default=False)

@@ -95,7 +95,7 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ['first_5_posts', 'name', 'slug', 'color']
 
     def get_first_5_posts(self, obj):
-        posts = obj.posts.all().order_by('-updated')[:5]
+        posts = obj.posts.filter(is_published=True).order_by('-updated')[:5]
         return SearchPostSerializer(posts, many=True, context=self.context).data
 
     def get_name(self, obj):

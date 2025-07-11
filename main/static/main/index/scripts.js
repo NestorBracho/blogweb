@@ -1,6 +1,7 @@
 const bj_script = document.currentScript;
-const bj_apiUrl = bj_script.getAttribute('data-api-url');
-const bj_lang = bj_script.getAttribute('data-lang');
+const bj_apiUrl = bj_script.getAttribute('data-binary-journal-api-url');
+const hh_apiUrl = bj_script.getAttribute('data-hackers-haven-api-url');
+const st_lang = bj_script.getAttribute('data-lang');
 const LoadMoreButton = $('.load-more-posts');
 
 function renderBinaryJournalPost(post) {
@@ -17,11 +18,30 @@ function renderBinaryJournalPost(post) {
     return post_template;
 }
 
+function render_hackers_heaven_category(category) {
+    let category_template = $($('#hh-category-template')[0].content).clone();
+    let section_tags_content_html = "";
+
+    category_template.find('.section-tags__image').attr('href', category.href).attr('style', 'outline-color: ' + category.color + ';');
+    category_template.find('.section-tags__name').attr('style', 'background: ' + category.color + ';').text(category.name);
+    category_template.find('.category-cover').attr('src', category.first_5_posts[0].cover_url).attr('alt', category.name);
+
+    category.first_5_posts.forEach(post => {
+        section_tags_content_html += '<h3 class="section-tags__title">' +
+            '                <a href="' + post.href + '">' + post.title + '</a>' +
+            '            </h3>'
+    });
+
+    category_template.find('.section-tags__content').html(section_tags_content_html);
+
+    return category_template;
+}
+
 function load_posts_page() {
     let next_page = LoadMoreButton.data('next-page');
     let next_page_url = bj_apiUrl + '?page=' + next_page;
     let button_text = LoadMoreButton.text();
-    let bi_result_container = $('#bj-results-container');
+    let bj_result_container = $('#bj-results-container');
 
     LoadMoreButton.addClass('button--loading');
     LoadMoreButton.text("Loading");
@@ -29,12 +49,12 @@ function load_posts_page() {
     $.ajax({
         url: next_page_url,
         headers: {
-            'X-Language': bj_lang
+            'X-Language': st_lang
         },
         success: function (response) {
             response.results.forEach(function (post) {
                 const rendered_post = renderBinaryJournalPost(post);
-                bi_result_container.append(rendered_post);
+                bj_result_container.append(rendered_post);
             });
 
             LoadMoreButton.removeClass('button--loading');
@@ -49,9 +69,27 @@ function load_posts_page() {
     });
 }
 
+function load_relevant_categories(){
+    let hh_result_container = $('#category__section__body__id');
+
+    $.ajax({
+        url: hh_apiUrl,
+        headers: {
+            'X-Language': st_lang
+        },
+        success: function (response){
+            response.results.forEach(function (category) {
+                const rendered_category = render_hackers_heaven_category(category);
+                hh_result_container.append(rendered_category);
+            });
+        },
+    });
+}
+
 $( document ).ready(function() {
 
     load_posts_page();
+    load_relevant_categories();
 
     LoadMoreButton.on('click', load_posts_page);
 

@@ -7,5 +7,5 @@ router.register(r'post', views.PostModelViewSet, basename='post')
 
 app_name = 'api'
 urlpatterns = [
-    # path('search/<str:query>', views.SearchPostAPIView.as_view(), name='search'),
+    path('categories', views.CategoryModelListAPIView.as_view(), name='categories'),
 ] + router.urls

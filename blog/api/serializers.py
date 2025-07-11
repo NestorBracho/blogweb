@@ -47,7 +47,9 @@ class SearchPostSerializer(serializers.ModelSerializer):
         return reverse('blog:post-detail', kwargs={'slug': obj.slug})
 
     def get_cover_url(self, obj):
-        return obj.cover.url
+        if obj.cover:
+            return obj.cover.url
+        return ''
 
     def get_title(self, obj):
         lang = self.context['request'].headers.get('X-Language')
@@ -82,3 +84,22 @@ class SearchPostSerializer(serializers.ModelSerializer):
 
     def get_read_time(self, obj):
         return '{} {}'.format(obj.read_time, _('min read'))
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    first_5_posts = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Category
+        fields = ['first_5_posts', 'name', 'slug', 'color']
+
+    def get_first_5_posts(self, obj):
+        posts = obj.posts.all().order_by('-updated')[:5]
+        return SearchPostSerializer(posts, many=True, context=self.context).data
+
+    def get_name(self, obj):
+        lang = self.context['request'].headers.get('X-Language')
+        if lang == 'es':
+            return obj.name_es
+        return obj.name_en

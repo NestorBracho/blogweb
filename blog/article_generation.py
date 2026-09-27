@@ -92,13 +92,13 @@ Return only the article body in English, no preamble.
 
     lines = summary_response.choices[0].message.content.strip().splitlines()
     short_description_en = lines[0].split(":", 1)[-1].strip()
-    title_es = lines[2].split(":", 1)[-1].strip()
     short_description_es = lines[1].split(":", 1)[-1].strip()
-    title_en = lines[3].split(":", 1)[-1].strip()
-    slug = slugify(title_en)
+    title_en = lines[2].split(":", 1)[-1].strip()
+    title_es = lines[3].split(":", 1)[-1].strip()
+    slug = Post.unique_slug(title_en)
 
     post = Post.objects.create(
-        slug=slugify(title_en),
+        slug=slug,
         title_es=title_es,
         title_en=title_en,
         body_es=spanish_body,

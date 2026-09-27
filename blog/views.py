@@ -7,28 +7,26 @@ from .models import Post, Category
 
 
 class PostDetailView(generic.DetailView):
-    queryset = Post.objects.filter(is_published=True)
+    queryset = Post.objects.filter(is_published=True).select_related('category')
     template_name = 'blog/post.html'
-
-    page_title = None
-    meta_description = None
-    social_image_url = None
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        post = context['object']
         lang = translation.get_language()
         if lang == 'en':
-            context['page_title'] = context['object'].title_en
-            context['meta_description'] = context['object'].description_en
+            context['page_title'] = post.title_en
+            context['meta_description'] = post.description_en
         else:
-            context['page_title'] = context['object'].title_es
-            context['meta_description'] = context['object'].description_es
-        self.social_image_url = self.request.build_absolute_uri(context['object'].cover.url)
+            context['page_title'] = post.title_es
+            context['meta_description'] = post.description_es
+        if post.cover:
+            context['social_image_url'] = self.request.build_absolute_uri(post.cover.url)
         return context
 
 
 class CategoryDetailView(generic.ListView):
-    queryset = Post.objects.filter(is_published=True)
+    queryset = Post.objects.filter(is_published=True).order_by('-created')
     template_name = 'blog/category.html'
 
     def get(self, request, *args, **kwargs):

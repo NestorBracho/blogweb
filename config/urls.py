@@ -22,11 +22,10 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('i18n/setlang/', set_language, name='set_language'),
-    path('admin/', admin.site.urls),
+    path(settings.ADMIN_URL, admin.site.urls),
     path('', include('main.urls')),
     path('', include('blog.urls')),
-] + static(
-    settings.STATIC_URL, document_root=settings.STATIC_ROOT
-) + static(
-    settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
-)
+]
+
+# In production nginx serves media files; static() is a no-op when DEBUG is False
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

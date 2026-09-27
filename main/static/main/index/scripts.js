@@ -20,19 +20,18 @@ function renderBinaryJournalPost(post) {
 
 function render_hackers_heaven_category(category) {
     let category_template = $($('#hh-category-template')[0].content).clone();
-    let section_tags_content_html = "";
+    let section_tags_content = category_template.find('.section-tags__content').empty();
 
-    category_template.find('.section-tags__image').attr('href', category.href).attr('style', 'outline-color: ' + category.color + ';');
-    category_template.find('.section-tags__name').attr('style', 'background: ' + category.color + ';').text(category.name);
-    category_template.find('.category-cover').attr('src', category.first_5_posts[0].cover_url).attr('alt', category.name);
+    category_template.find('.section-tags__image').attr('href', category.href).css('outline-color', category.color);
+    category_template.find('.section-tags__name').css('background', category.color).text(category.name);
+    if (category.first_5_posts.length) {
+        category_template.find('.category-cover').attr('src', category.first_5_posts[0].cover_url).attr('alt', category.name);
+    }
 
     category.first_5_posts.forEach(post => {
-        section_tags_content_html += '<h3 class="section-tags__title">' +
-            '                <a href="' + post.href + '">' + post.title + '</a>' +
-            '            </h3>'
+        const link = $('<a>').attr('href', post.href).text(post.title);
+        section_tags_content.append($('<h3 class="section-tags__title">').append(link));
     });
-
-    category_template.find('.section-tags__content').html(section_tags_content_html);
 
     return category_template;
 }

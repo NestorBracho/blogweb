@@ -1,6 +1,7 @@
 from django.views import generic
 from django.contrib import messages
 from django.http import HttpResponseRedirect
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 
 from .froms import NewsletterSubscriberModelForm
@@ -21,4 +22,8 @@ class AddNewsletterSubscriberView(generic.CreateView):
         next_url = self.request.GET.get('next') or self.request.POST.get('next')
         if not next_url:
             next_url = self.request.META.get('HTTP_REFERER')
-        return next_url or '/'
+        # Only redirect back to our own site
+        if next_url and url_has_allowed_host_and_scheme(
+                next_url, allowed_hosts={self.request.get_host()}, require_https=self.request.is_secure()):
+            return next_url
+        return '/'

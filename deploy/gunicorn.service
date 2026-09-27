@@ -1,0 +1,25 @@
+# /etc/systemd/system/blog.service
+[Unit]
+Description=Gunicorn for the personal blog
+After=network.target
+
+[Service]
+User=blog
+Group=www-data
+WorkingDirectory=/srv/blog/app
+RuntimeDirectory=blog
+ExecStart=/srv/blog/venv/bin/gunicorn config.wsgi:application \
+    --bind unix:/run/blog/gunicorn.sock \
+    --umask 007 \
+    --workers 3 \
+    --timeout 60 \
+    --access-logfile - \
+    --error-logfile -
+Restart=on-failure
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/srv/blog/data /srv/blog/media
+
+[Install]
+WantedBy=multi-user.target

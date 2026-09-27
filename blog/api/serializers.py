@@ -1,8 +1,6 @@
 from rest_framework import serializers
 from django.urls import reverse
 from babel.dates import format_date
-from django.utils.text import slugify
-from django.utils.safestring import SafeString
 from django.utils.translation import gettext_lazy as _
 
 from blog.models import Post, Category
@@ -17,11 +15,7 @@ class CreatePostSerializer(serializers.ModelSerializer):
                   'description_en', 'category', 'read_time', 'cover']
 
     def create(self, validated_data):
-        validated_data['slug'] = slugify(validated_data['title_en'])
-
-        validated_data['body_en'] = SafeString(validated_data['body_en'])
-
-        validated_data['body_es'] = SafeString(validated_data['body_en'])
+        validated_data['slug'] = Post.unique_slug(validated_data['title_en'])
         return super().create(validated_data)
 
 
@@ -58,15 +52,21 @@ class SearchPostSerializer(serializers.ModelSerializer):
         return obj.title_en
 
     def get_category_href(self, obj):
+        if not obj.category:
+            return ''
         return reverse('blog:category-detail', kwargs={'slug': obj.category.slug})
 
     def get_category(self, obj):
+        if not obj.category:
+            return ''
         lang = self.context['request'].headers.get('X-Language')
         if lang == 'es':
             return obj.category.name_es
         return obj.category.name_en
 
     def get_category_color(self, obj):
+        if not obj.category:
+            return ''
         return obj.category.color
 
     def get_description(self, obj):
@@ -89,10 +89,14 @@ class SearchPostSerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
     first_5_posts = serializers.SerializerMethodField()
     name = serializers.SerializerMethodField()
+    href = serializers.SerializerMethodField()
 
     class Meta:
         model = Category
-        fields = ['first_5_posts', 'name', 'slug', 'color']
+        fields = ['first_5_posts', 'name', 'slug', 'color', 'href']
+
+    def get_href(self, obj):
+        return reverse('blog:category-detail', kwargs={'slug': obj.slug})
 
     def get_first_5_posts(self, obj):
         posts = obj.posts.filter(is_published=True).order_by('-updated')[:5]

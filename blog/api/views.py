@@ -8,7 +8,7 @@ from .serializers import SearchPostSerializer, CreatePostSerializer, CategorySer
 
 
 class PostModelViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.filter(is_published=True)
+    queryset = Post.objects.filter(is_published=True).select_related('category').order_by('-created')
     write_serializer_class = CreatePostSerializer
     read_serializer_class = SearchPostSerializer
 
@@ -27,7 +27,7 @@ class PostModelViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def get_serializer_class(self):
-        if self.action in ['create', 'update']:
+        if self.action in ['create', 'update', 'partial_update']:
             return self.write_serializer_class
         return self.read_serializer_class
 

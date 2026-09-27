@@ -24,16 +24,12 @@ class ContactFormView(generic.CreateView):
         return super().get_context_data(**kwargs)
 
     def form_valid(self, form):
-        print('Valid')
         http_response = super().form_valid(form)
         messages.success(self.request, _("Your contact request has been successfully submitted. "
                                          "I'll get in touch as soon as possible!"))
         return http_response
 
     def form_invalid(self, form):
-        print('INvalid')
-        print('----')
-        print(form.errors)
         messages.error(self.request, _("Something went wrong. Try again latter."))
         return HttpResponseRedirect(self.get_success_url())
 

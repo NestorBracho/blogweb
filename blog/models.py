@@ -39,18 +39,25 @@ class Post(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            base_title = self.title_es or self.title_en
-            base_slug = slugify(base_title)
-            slug = base_slug
-            counter = 1
-
-            while Post.objects.filter(slug=slug).exists():
-                slug = f"{base_slug}-{counter}"
-                counter += 1
-
-            self.slug = slug
+            self.slug = self.unique_slug(self.title_es or self.title_en)
 
         super().save(*args, **kwargs)
+
+    @classmethod
+    def unique_slug(cls, title):
+        base_slug = slugify(title)
+        slug = base_slug
+        counter = 1
+
+        while cls.objects.filter(slug=slug).exists():
+            slug = f"{base_slug}-{counter}"
+            counter += 1
+
+        return slug
+
+    @property
+    def cover_url(self):
+        return self.cover.url if self.cover else ''
 
     def title(self):
         lang = translation.get_language()

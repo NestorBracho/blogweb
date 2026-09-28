@@ -6,8 +6,10 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
+    # blog.0001 copies Category/Post data before this migration deletes them
     dependencies = [
         ('main', '0004_alter_post_cover'),
+        ('blog', '0001_initial'),
     ]
 
     operations = [

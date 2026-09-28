@@ -1,0 +1,72 @@
+name: Check & deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Never run two deploys at the same time
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    env:
+      SECRET_KEY: ci-only-not-a-real-secret
+      DEBUG: "True"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"  # same as the server (Ubuntu 24.04)
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Django system checks
+        run: python manage.py check
+
+      - name: No missing migrations
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: Migrations apply on a fresh DB
+        run: python manage.py migrate --noinput
+        env:
+          SQLITE_PATH: /tmp/ci.sqlite3
+
+      - name: Static files build (production storage)
+        run: python manage.py collectstatic --noinput -v0
+        env:
+          DEBUG: "False"
+          STATIC_ROOT: /tmp/staticfiles
+
+  deploy:
+    needs: check
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    environment: production
+    steps:
+      - name: Set up SSH
+        run: |
+          install -m 700 -d ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy
+          chmod 600 ~/.ssh/deploy
+          echo "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      # The key is restricted on the server (forced command): it can only run deploy/update.sh
+      - name: Deploy
+        run: ssh -i ~/.ssh/deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes blog@${{ secrets.DEPLOY_HOST }}
+
+      - name: Health check
+        run: |
+          for i in 1 2 3 4 5; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' https://nestorbracho.com/)
+            [ "$code" = "200" ] && echo "Site is up" && exit 0
+            echo "Got $code, retrying..."; sleep 5
+          done
+          exit 1

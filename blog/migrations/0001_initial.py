@@ -65,7 +65,9 @@ class Migration(migrations.Migration):
 
     initial = True
 
+    # Copies data out of main.Category/main.Post, so it must run while they still exist
     dependencies = [
+        ('main', '0004_alter_post_cover'),
     ]
 
     operations = [

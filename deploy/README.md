@@ -188,6 +188,7 @@ sudo -iu blog /srv/blog/app/deploy/update.sh
 | 403 CSRF al hacer login/enviar formularios | `CSRF_TRUSTED_ORIGINS` con `https://` |
 | Bucle de redirecciones | Cloudflare debe estar en **Full (strict)**, no en *Flexible* |
 | No carga nada desde fuera | Security List **y** iptables (paso 1.4 y 2) |
+| Error 522 de Cloudflare (GCP) | Rangos de Cloudflare en la regla `allow-web` desactualizados |
 | Imágenes 404 | Permisos de `/srv/blog/media` (grupo `www-data`) |
 
 ---
@@ -201,8 +202,13 @@ Lo que cambia respecto a Oracle (el resto de la guía, desde el paso 2, es igual
 - **Crear la VM** desde Cloud Shell (`https://shell.cloud.google.com`):
 
   ```bash
-  gcloud compute firewall-rules create allow-web --allow=tcp:80,tcp:443 \
-    --target-tags=http-server,https-server
+  # 80/443 solo desde Cloudflare: nadie puede saltárselo atacando la IP directamente
+  CLOUDFLARE_IPS=$(curl -sf https://www.cloudflare.com/ips-v4 | paste -sd, -)
+  test -n "$CLOUDFLARE_IPS" && gcloud compute firewall-rules create allow-web --allow=tcp:80,tcp:443 \
+    --source-ranges="$CLOUDFLARE_IPS" --target-tags=http-server,https-server \
+    --description="HTTP(S) only from Cloudflare: https://www.cloudflare.com/ips-v4"
+  # La red default abre el escritorio remoto de Windows a todo internet; en Linux sobra
+  gcloud compute firewall-rules delete default-allow-rdp
   gcloud compute instances create blog-nestorbracho \
     --zone=us-east1-b --machine-type=e2-micro \
     --image-family=ubuntu-2404-lts-amd64 --image-project=ubuntu-os-cloud \
@@ -212,6 +218,16 @@ Lo que cambia respecto a Oracle (el resto de la guía, desde el paso 2, es igual
   ```
 
 - **No hace falta tocar iptables** (paso 2): el firewall lo gestiona la regla `allow-web`.
+- **Rangos de Cloudflare**: cambian muy de vez en cuando. Si Cloudflare publica rangos nuevos
+  (o la web da error 522), actualiza la regla:
+
+  ```bash
+  CLOUDFLARE_IPS=$(curl -sf https://www.cloudflare.com/ips-v4 | paste -sd, -)
+  test -n "$CLOUDFLARE_IPS" && gcloud compute firewall-rules update allow-web --source-ranges="$CLOUDFLARE_IPS"
+  ```
+
+  Para comprobarlo, la IP directa no debe responder y el dominio sí:
+  `curl -k --connect-timeout 5 https://IP_DEL_SERVIDOR` debe agotar el tiempo.
 - **Swap obligatorio** (1 GB de RAM):
 
   ```bash

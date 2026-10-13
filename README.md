@@ -54,7 +54,7 @@ flowchart LR
 ```
 
 - **Cloudflare** terminates TLS for visitors, caches static files and images, and reaches the origin over HTTPS
-  with a Cloudflare origin certificate.
+  with a Cloudflare origin certificate. The VM's firewall only accepts web traffic from Cloudflare's IP ranges.
 - **nginx** serves uploaded images straight from disk and proxies everything else to Gunicorn over a Unix socket.
 - **Django** serves its own static files with WhiteNoise (compressed, with cache-busting file names).
 - **SQLite** in WAL mode holds all the data. A nightly job backs up the database and the images, and copies them

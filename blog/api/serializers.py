@@ -1,9 +1,9 @@
-from rest_framework import serializers
-from django.urls import reverse
 from babel.dates import format_date
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+from rest_framework import serializers
 
-from blog.models import Post, Category
+from blog.models import Category, Post
 
 
 class CreatePostSerializer(serializers.ModelSerializer):
@@ -11,8 +11,17 @@ class CreatePostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ['title_es', 'title_en', 'body_es', 'body_en', 'description_es',
-                  'description_en', 'category', 'read_time', 'cover']
+        fields = [
+            'title_es',
+            'title_en',
+            'body_es',
+            'body_en',
+            'description_es',
+            'description_en',
+            'category',
+            'read_time',
+            'cover',
+        ]
 
     def create(self, validated_data):
         validated_data['slug'] = Post.unique_slug(validated_data['title_en'])
@@ -20,7 +29,6 @@ class CreatePostSerializer(serializers.ModelSerializer):
 
 
 class SearchPostSerializer(serializers.ModelSerializer):
-
     href = serializers.SerializerMethodField()
     cover_url = serializers.SerializerMethodField()
     title = serializers.SerializerMethodField()
@@ -34,8 +42,18 @@ class SearchPostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ['href', 'cover_url', 'title', 'category_href', 'category', 'category_color',
-                  'description', 'timestamp', 'user_friendly_date', 'read_time']
+        fields = [
+            'href',
+            'cover_url',
+            'title',
+            'category_href',
+            'category',
+            'category_color',
+            'description',
+            'timestamp',
+            'user_friendly_date',
+            'read_time',
+        ]
 
     def get_href(self, obj):
         return reverse('blog:post-detail', kwargs={'slug': obj.slug})
@@ -80,7 +98,7 @@ class SearchPostSerializer(serializers.ModelSerializer):
 
     def get_user_friendly_date(self, obj):
         lang = self.context['request'].headers.get('X-Language')
-        return format_date(obj.created, format="dd MMM, yyyy", locale=lang)
+        return format_date(obj.created, format='dd MMM, yyyy', locale=lang)
 
     def get_read_time(self, obj):
         return '{} {}'.format(obj.read_time, _('min read'))

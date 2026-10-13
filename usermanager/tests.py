@@ -5,7 +5,6 @@ from .models import NewsletterSubscriber
 
 
 class AddNewsletterSubscriberViewTests(TestCase):
-
     def subscribe(self, email, next_url='/about/'):
         return self.client.post(reverse('main:newsletter-subscriber'), {'email': email, 'next': next_url})
 

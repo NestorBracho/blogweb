@@ -1,6 +1,6 @@
 from django.conf import settings
 
-from blog.models import Post, Category
+from blog.models import Category, Post
 
 
 def owner(request):
@@ -20,5 +20,5 @@ def sidebar(request):
     return {
         'categories': Category.objects.all(),
         'featured_posts': Post.objects.filter(is_published=True).order_by('-created')[:3],
-        'recent_posts': Post.objects.filter(is_published=True).order_by('-created')[:3]
+        'recent_posts': Post.objects.filter(is_published=True).order_by('-created')[:3],
     }

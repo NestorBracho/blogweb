@@ -33,7 +33,6 @@ def create_post(title, days_ago=0, **kwargs):
 
 
 class PostDetailViewTests(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         cls.category = create_category()
@@ -88,7 +87,6 @@ class PostDetailViewTests(TestCase):
 
 
 class CategoryDetailViewTests(TestCase):
-
     def test_post_cards_link_to_the_category_slug(self):
         category = create_category()
         create_post('Post', category=category)
@@ -106,7 +104,6 @@ class CategoryDetailViewTests(TestCase):
 
 
 class CategoryDeletionTests(TestCase):
-
     def test_deleting_a_category_keeps_its_posts(self):
         category = create_category()
         post = create_post('Post', category=category)
@@ -118,7 +115,6 @@ class CategoryDeletionTests(TestCase):
 
 
 class FeedTests(TestCase):
-
     def test_feed_lists_published_posts_only(self):
         create_post('Published post')
         create_post('Draft post', is_published=False)
@@ -132,7 +128,6 @@ class FeedTests(TestCase):
 
 
 class SitemapTests(TestCase):
-
     def test_sitemap_lists_pages_and_published_content(self):
         published = create_post('Published', category=create_category('other-topic'))
         draft = create_post('Draft', is_published=False, category=create_category('drafts-only'))

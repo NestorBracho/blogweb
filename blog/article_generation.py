@@ -1,16 +1,17 @@
-import os
-import requests
-import random
 import math
-from openai import OpenAI
+import os
+import random
+
+import requests
 from django.core.files.base import ContentFile
-from django.utils.text import slugify
 from django.utils.safestring import SafeString
+from django.utils.text import slugify
+from openai import OpenAI
 
-from .models import Post, Category
+from .models import Category, Post
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-UNSPLASH_ACCESS_KEY = os.getenv("UNSPLASH_ACCESS_KEY")
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+UNSPLASH_ACCESS_KEY = os.getenv('UNSPLASH_ACCESS_KEY')
 
 
 def estimate_read_time(text):
@@ -19,16 +20,16 @@ def estimate_read_time(text):
 
 
 def get_unsplash_image_url(keyword):
-    endpoint = "https://api.unsplash.com/photos/random"
+    endpoint = 'https://api.unsplash.com/photos/random'
     params = {
-        "query": keyword,
-        "orientation": "landscape",
-        "client_id": UNSPLASH_ACCESS_KEY,
+        'query': keyword,
+        'orientation': 'landscape',
+        'client_id': UNSPLASH_ACCESS_KEY,
     }
     response = requests.get(endpoint, params=params)
     data = response.json()
 
-    return data["urls"]["regular"]
+    return data['urls']['regular']
 
 
 def generate_article(topic):
@@ -44,11 +45,13 @@ Return only the article body in English, no preamble.
     """
 
     response = client.chat.completions.create(
-        model="gpt-4o",
+        model='gpt-4o',
         messages=[
-            {"role": "system",
-             "content": "You are a professional tech writer that explains things clearly and accurately."},
-            {"role": "user", "content": prompt}
+            {
+                'role': 'system',
+                'content': 'You are a professional tech writer that explains things clearly and accurately.',
+            },
+            {'role': 'user', 'content': prompt},
         ],
         temperature=0.8,
     )
@@ -56,13 +59,15 @@ Return only the article body in English, no preamble.
     english_body = response.choices[0].message.content.strip()
 
     # Translate to Spanish
-    translation_prompt = f"Translate the following Markdown article to Spanish:\n\n{english_body}"
+    translation_prompt = f'Translate the following Markdown article to Spanish:\n\n{english_body}'
     response_es = client.chat.completions.create(
-        model="gpt-4o",
+        model='gpt-4o',
         messages=[
-            {"role": "system",
-             "content": "You are a professional tech writer that explains things clearly and accurately."},
-            {"role": "user", "content": translation_prompt}
+            {
+                'role': 'system',
+                'content': 'You are a professional tech writer that explains things clearly and accurately.',
+            },
+            {'role': 'user', 'content': translation_prompt},
         ],
         temperature=0.7,
     )
@@ -81,20 +86,22 @@ Return only the article body in English, no preamble.
     title_es: ...
     """
     summary_response = client.chat.completions.create(
-        model="gpt-4o",
+        model='gpt-4o',
         messages=[
-            {"role": "system",
-             "content": "You are a professional tech writer that explains things clearly and accurately."},
-            {"role": "user", "content": summary_prompt}
+            {
+                'role': 'system',
+                'content': 'You are a professional tech writer that explains things clearly and accurately.',
+            },
+            {'role': 'user', 'content': summary_prompt},
         ],
         temperature=0.7,
     )
 
     lines = summary_response.choices[0].message.content.strip().splitlines()
-    short_description_en = lines[0].split(":", 1)[-1].strip()
-    short_description_es = lines[1].split(":", 1)[-1].strip()
-    title_en = lines[2].split(":", 1)[-1].strip()
-    title_es = lines[3].split(":", 1)[-1].strip()
+    short_description_en = lines[0].split(':', 1)[-1].strip()
+    short_description_es = lines[1].split(':', 1)[-1].strip()
+    title_en = lines[2].split(':', 1)[-1].strip()
+    title_es = lines[3].split(':', 1)[-1].strip()
     slug = Post.unique_slug(title_en)
 
     post = Post.objects.create(
@@ -109,17 +116,13 @@ Return only the article body in English, no preamble.
         read_time=estimate_read_time(english_body),
     )
 
-    image_prompt = (f"High-quality illustration for a blog post titled: '{title_en}'. The image should represent: "
-                    f"{short_description_en}. Professional, modern, engaging.")
-
-    img_response = client.images.generate(
-        model="dall-e-3",
-        prompt=image_prompt,
-        n=1,
-        quality="hd",
-        size="1024x1024"
+    image_prompt = (
+        f"High-quality illustration for a blog post titled: '{title_en}'. The image should represent: "
+        f'{short_description_en}. Professional, modern, engaging.'
     )
-    filename = f"{slug}_cover.jpg"
+
+    img_response = client.images.generate(model='dall-e-3', prompt=image_prompt, n=1, quality='hd', size='1024x1024')
+    filename = f'{slug}_cover.jpg'
     image_url = img_response.data[0].url
     image_response = requests.get(image_url)
     image_content = ContentFile(image_response.content)
@@ -140,14 +143,14 @@ def create_article_from_json():
     # }
 
     article_json = {
-      "title_en": "Special vs General Relativity: What's the Difference?",
-      "title_es": "Relatividad Especial vs General: ¿Cuál es la Diferencia?",
-      "short_description_en": "Unpack the elegant ideas behind Einstein’s two theories of relativity through metaphors, real-world analogies, and engaging visuals.",
-      "short_description_es": "Descubre las elegantes ideas detrás de las dos teorías de la relatividad de Einstein con metáforas, analogías y visuales cautivadoras.",
-      "read_time": 8,
-      "body_en": "## What Is Relativity, Really?\n\nImagine you're sitting on a train. It's moving smoothly, and you toss a ball straight up. To you, it goes up and comes down into your hand. To someone standing on the platform watching the train pass, that same ball follows a curved path. Who's right?\n\nBoth are.\n\nThis simple idea—that motion depends on your frame of reference—is the seed of Einstein's theories of relativity. But Einstein didn’t stop at trains and balls. He took this idea to its ultimate conclusion, reshaping how we think about time, space, and gravity.\n\nThere are two main flavors of relativity: **special** and **general**. Let’s explore what makes them different, and why both are so mind-bending.\n\n![einstein-theory](https://cdn.mos.cms.futurecdn.net/FrTRcvypfQJaiRwrmxsbkh-1200-80.jpg)\n\n---\n\n## Special Relativity: When Speed Changes Reality\n\nSpecial relativity came first. In 1905, Einstein introduced it to explain how the universe works when things move really fast—close to the speed of light.\n\nThe key idea? _Time and space are not fixed._\n\nTo someone zooming through space in a spaceship, clocks tick differently. A ruler might appear shorter. Events that seem simultaneous to one person may not be to another.\n\nIt sounds wild, but it’s been tested over and over. GPS satellites, for example, need to correct for these effects so your location doesn't drift.\n\n### Two Big Rules of Special Relativity:\n\n1. **The speed of light is constant** for all observers, no matter how fast they’re moving.\n2. **The laws of physics are the same** in all non-accelerating (inertial) frames.\n\nThese two principles lead to some surprising consequences—like time dilation, where fast-moving objects experience time more slowly.\n{: .note}\n\n![time-dilation](https://space-india.com/wp-content/uploads/2024/03/space-dilation.jpg)\n\n---\n\n## General Relativity: Gravity Bends Space and Time\n\nTen years later, Einstein went further. What about when objects accelerate, or when gravity comes into play?\n\nGeneral relativity is the answer. It says that **mass and energy warp the fabric of space and time**, like a bowling ball on a trampoline. Planets and stars curve spacetime, and objects move along those curves. That’s what we feel as gravity.\n\nSo instead of thinking of gravity as an invisible force pulling you down, imagine Earth bending spacetime around it—and you're just following the curves.\n\n### A Real-World Analogy:\n\n- Imagine marbles rolling on a stretched rubber sheet. Place a heavy ball in the center: smaller marbles spiral toward it. That’s the effect of mass bending spacetime.\n\n![spacetime-curvature](https://www.wtamu.edu/~cbaird/sq/images/spacetime.jpg)\n\n---\n\n## Comparing the Two Theories\n\nHere’s a quick side-by-side view:\n\n| Feature               | Special Relativity        | General Relativity               |\n|----------------------|---------------------------|----------------------------------|\n| Year Introduced      | 1905                      | 1915                             |\n| Focus                | High-speed motion         | Gravity and acceleration         |\n| Space & Time         | Flexible, relative        | Curved by mass and energy        |\n| Key Principle        | Constancy of light speed  | Gravity is curved spacetime      |\n| Everyday Evidence    | GPS timing corrections    | Gravitational lensing, black holes |\n\n---\n\n## Why It Matters\n\nRelativity isn’t just abstract theory. It shapes our understanding of the cosmos, from black holes to the Big Bang. It explains the strange bending of starlight and even powers the accuracy of your smartphone.\n\nAnd perhaps most beautifully, it reminds us that reality is more flexible—and more mysterious—than it first appears.\n\n![black-hole](https://cnewsliveenglish.com/images/gravitys-grasp-exploring-time-dilation-near-black-holes-tm-175720230331.jpg)\n\n## Conclusion: The Universe, Reimagined\n\nEinstein’s twin theories of relativity show us that time and space are not the static stage we once imagined. Instead, they are active, dynamic players in the cosmic dance.\n\nSpecial relativity teaches us to rethink motion and simultaneity. General relativity transforms gravity from a force into geometry.\n\nTwo theories, one genius, and a universe forever changed.\n",
-      "body_es": "## ¿Qué es realmente la relatividad?\n\nImagina que estás sentado en un tren en movimiento. Lanzas una pelota hacia arriba. Para ti, sube y baja en línea recta. Para alguien parado en el andén viendo pasar el tren, la pelota sigue una trayectoria curva. ¿Quién tiene razón?\n\nAmbos.\n\nEsta idea simple—que el movimiento depende del punto de vista—es la semilla de las teorías de la relatividad de Einstein. Pero Einstein no se quedó en trenes y pelotas. Llevó esta idea al límite, transformando nuestra comprensión del tiempo, el espacio y la gravedad.\n\nExisten dos tipos principales de relatividad: **especial** y **general**. Exploremos qué las diferencia y por qué ambas son tan fascinantes.\n\n![einstein-theory](https://cdn.mos.cms.futurecdn.net/FrTRcvypfQJaiRwrmxsbkh-1200-80.jpg)\n\n---\n\n## Relatividad Especial: Cuando la velocidad cambia la realidad\n\nLa relatividad especial fue la primera. En 1905, Einstein la propuso para explicar cómo funciona el universo cuando las cosas se mueven muy rápido—cerca de la velocidad de la luz.\n\n¿La idea clave? _El tiempo y el espacio no son fijos._\n\nPara alguien viajando a gran velocidad en una nave espacial, los relojes se desaceleran. Las reglas cambian. Lo que para ti es \"ahora\" podría no serlo para otra persona.\n\nAunque suena extraño, se ha comprobado muchas veces. Por ejemplo, los satélites GPS corrigen estos efectos para que tu posición no se desvíe.\n\n### Dos grandes reglas de la relatividad especial:\n\n1. **La velocidad de la luz es constante** para todos, sin importar su velocidad.\n2. **Las leyes de la física son las mismas** en todos los sistemas no acelerados.\n\nEstas dos reglas llevan a consecuencias sorprendentes, como la dilatación del tiempo: los objetos en movimiento lento envejecen más rápido que los que se mueven rápido.\n{: .note}\n\n![time-dilation](https://space-india.com/wp-content/uploads/2024/03/space-dilation.jpg)\n\n---\n\n## Relatividad General: La gravedad curva el espacio y el tiempo\n\nDiez años después, Einstein dio otro paso. ¿Qué pasa cuando hay aceleración o gravedad?\n\nLa relatividad general lo explica. Afirma que **la masa y la energía deforman el tejido del espacio y el tiempo**, como una bola de boliche en un trampolín. Los planetas y estrellas curvan el espacio-tiempo, y los objetos se mueven siguiendo esas curvas. Eso es lo que sentimos como gravedad.\n\nAsí que, en lugar de pensar en la gravedad como una fuerza que te jala, imagina que la Tierra curva el espacio-tiempo a su alrededor—y tú simplemente sigues esas curvas.\n\n### Una analogía práctica:\n\n- Imagina canicas rodando sobre una sábana elástica. Si colocas una bola pesada en el centro, las canicas ruedan hacia ella. Así es como la masa curva el espacio-tiempo.\n\n![spacetime-curvature](https://www.wtamu.edu/~cbaird/sq/images/spacetime.jpg)\n\n---\n\n## Comparando las dos teorías\n\nUna vista rápida, lado a lado:\n\n| Característica        | Relatividad Especial        | Relatividad General                |\n|-----------------------|-----------------------------|------------------------------------|\n| Año de publicación    | 1905                        | 1915                               |\n| Enfoque               | Movimiento a alta velocidad | Gravedad y aceleración             |\n| Espacio y tiempo      | Flexibles, relativos        | Curvados por la masa y la energía  |\n| Principio clave       | Constancia de la luz        | La gravedad es geometría del espacio |\n| Ejemplos cotidianos   | Corrección del GPS          | Lentes gravitacionales, agujeros negros |\n\n---\n\n## ¿Por qué importa?\n\nLa relatividad no es solo teoría abstracta. Da forma a nuestra visión del cosmos, desde los agujeros negros hasta el Big Bang. Explica cómo se curva la luz de las estrellas y permite la precisión de tu celular.\n\nY lo más hermoso: nos recuerda que la realidad es más flexible—y más misteriosa—de lo que parece.\n\n![black-hole](https://cnewsliveenglish.com/images/gravitys-grasp-exploring-time-dilation-near-black-holes-tm-175720230331.jpg)\n\n## Conclusión: El universo, reinventado\n\nLas dos teorías de Einstein nos muestran que el tiempo y el espacio no son escenarios fijos. Son protagonistas activos en el drama cósmico.\n\nLa relatividad especial nos invita a repensar el movimiento. La general convierte la gravedad en una cuestión de geometría.\n\nDos teorías, un genio, y un universo transformado.\n",
-      "unsplash_tags": ["relativity", "einstein", "space", "gravity", "time"]
+        'title_en': "Special vs General Relativity: What's the Difference?",
+        'title_es': 'Relatividad Especial vs General: ¿Cuál es la Diferencia?',
+        'short_description_en': 'Unpack the elegant ideas behind Einstein’s two theories of relativity through metaphors, real-world analogies, and engaging visuals.',
+        'short_description_es': 'Descubre las elegantes ideas detrás de las dos teorías de la relatividad de Einstein con metáforas, analogías y visuales cautivadoras.',
+        'read_time': 8,
+        'body_en': "## What Is Relativity, Really?\n\nImagine you're sitting on a train. It's moving smoothly, and you toss a ball straight up. To you, it goes up and comes down into your hand. To someone standing on the platform watching the train pass, that same ball follows a curved path. Who's right?\n\nBoth are.\n\nThis simple idea—that motion depends on your frame of reference—is the seed of Einstein's theories of relativity. But Einstein didn’t stop at trains and balls. He took this idea to its ultimate conclusion, reshaping how we think about time, space, and gravity.\n\nThere are two main flavors of relativity: **special** and **general**. Let’s explore what makes them different, and why both are so mind-bending.\n\n![einstein-theory](https://cdn.mos.cms.futurecdn.net/FrTRcvypfQJaiRwrmxsbkh-1200-80.jpg)\n\n---\n\n## Special Relativity: When Speed Changes Reality\n\nSpecial relativity came first. In 1905, Einstein introduced it to explain how the universe works when things move really fast—close to the speed of light.\n\nThe key idea? _Time and space are not fixed._\n\nTo someone zooming through space in a spaceship, clocks tick differently. A ruler might appear shorter. Events that seem simultaneous to one person may not be to another.\n\nIt sounds wild, but it’s been tested over and over. GPS satellites, for example, need to correct for these effects so your location doesn't drift.\n\n### Two Big Rules of Special Relativity:\n\n1. **The speed of light is constant** for all observers, no matter how fast they’re moving.\n2. **The laws of physics are the same** in all non-accelerating (inertial) frames.\n\nThese two principles lead to some surprising consequences—like time dilation, where fast-moving objects experience time more slowly.\n{: .note}\n\n![time-dilation](https://space-india.com/wp-content/uploads/2024/03/space-dilation.jpg)\n\n---\n\n## General Relativity: Gravity Bends Space and Time\n\nTen years later, Einstein went further. What about when objects accelerate, or when gravity comes into play?\n\nGeneral relativity is the answer. It says that **mass and energy warp the fabric of space and time**, like a bowling ball on a trampoline. Planets and stars curve spacetime, and objects move along those curves. That’s what we feel as gravity.\n\nSo instead of thinking of gravity as an invisible force pulling you down, imagine Earth bending spacetime around it—and you're just following the curves.\n\n### A Real-World Analogy:\n\n- Imagine marbles rolling on a stretched rubber sheet. Place a heavy ball in the center: smaller marbles spiral toward it. That’s the effect of mass bending spacetime.\n\n![spacetime-curvature](https://www.wtamu.edu/~cbaird/sq/images/spacetime.jpg)\n\n---\n\n## Comparing the Two Theories\n\nHere’s a quick side-by-side view:\n\n| Feature               | Special Relativity        | General Relativity               |\n|----------------------|---------------------------|----------------------------------|\n| Year Introduced      | 1905                      | 1915                             |\n| Focus                | High-speed motion         | Gravity and acceleration         |\n| Space & Time         | Flexible, relative        | Curved by mass and energy        |\n| Key Principle        | Constancy of light speed  | Gravity is curved spacetime      |\n| Everyday Evidence    | GPS timing corrections    | Gravitational lensing, black holes |\n\n---\n\n## Why It Matters\n\nRelativity isn’t just abstract theory. It shapes our understanding of the cosmos, from black holes to the Big Bang. It explains the strange bending of starlight and even powers the accuracy of your smartphone.\n\nAnd perhaps most beautifully, it reminds us that reality is more flexible—and more mysterious—than it first appears.\n\n![black-hole](https://cnewsliveenglish.com/images/gravitys-grasp-exploring-time-dilation-near-black-holes-tm-175720230331.jpg)\n\n## Conclusion: The Universe, Reimagined\n\nEinstein’s twin theories of relativity show us that time and space are not the static stage we once imagined. Instead, they are active, dynamic players in the cosmic dance.\n\nSpecial relativity teaches us to rethink motion and simultaneity. General relativity transforms gravity from a force into geometry.\n\nTwo theories, one genius, and a universe forever changed.\n",
+        'body_es': '## ¿Qué es realmente la relatividad?\n\nImagina que estás sentado en un tren en movimiento. Lanzas una pelota hacia arriba. Para ti, sube y baja en línea recta. Para alguien parado en el andén viendo pasar el tren, la pelota sigue una trayectoria curva. ¿Quién tiene razón?\n\nAmbos.\n\nEsta idea simple—que el movimiento depende del punto de vista—es la semilla de las teorías de la relatividad de Einstein. Pero Einstein no se quedó en trenes y pelotas. Llevó esta idea al límite, transformando nuestra comprensión del tiempo, el espacio y la gravedad.\n\nExisten dos tipos principales de relatividad: **especial** y **general**. Exploremos qué las diferencia y por qué ambas son tan fascinantes.\n\n![einstein-theory](https://cdn.mos.cms.futurecdn.net/FrTRcvypfQJaiRwrmxsbkh-1200-80.jpg)\n\n---\n\n## Relatividad Especial: Cuando la velocidad cambia la realidad\n\nLa relatividad especial fue la primera. En 1905, Einstein la propuso para explicar cómo funciona el universo cuando las cosas se mueven muy rápido—cerca de la velocidad de la luz.\n\n¿La idea clave? _El tiempo y el espacio no son fijos._\n\nPara alguien viajando a gran velocidad en una nave espacial, los relojes se desaceleran. Las reglas cambian. Lo que para ti es "ahora" podría no serlo para otra persona.\n\nAunque suena extraño, se ha comprobado muchas veces. Por ejemplo, los satélites GPS corrigen estos efectos para que tu posición no se desvíe.\n\n### Dos grandes reglas de la relatividad especial:\n\n1. **La velocidad de la luz es constante** para todos, sin importar su velocidad.\n2. **Las leyes de la física son las mismas** en todos los sistemas no acelerados.\n\nEstas dos reglas llevan a consecuencias sorprendentes, como la dilatación del tiempo: los objetos en movimiento lento envejecen más rápido que los que se mueven rápido.\n{: .note}\n\n![time-dilation](https://space-india.com/wp-content/uploads/2024/03/space-dilation.jpg)\n\n---\n\n## Relatividad General: La gravedad curva el espacio y el tiempo\n\nDiez años después, Einstein dio otro paso. ¿Qué pasa cuando hay aceleración o gravedad?\n\nLa relatividad general lo explica. Afirma que **la masa y la energía deforman el tejido del espacio y el tiempo**, como una bola de boliche en un trampolín. Los planetas y estrellas curvan el espacio-tiempo, y los objetos se mueven siguiendo esas curvas. Eso es lo que sentimos como gravedad.\n\nAsí que, en lugar de pensar en la gravedad como una fuerza que te jala, imagina que la Tierra curva el espacio-tiempo a su alrededor—y tú simplemente sigues esas curvas.\n\n### Una analogía práctica:\n\n- Imagina canicas rodando sobre una sábana elástica. Si colocas una bola pesada en el centro, las canicas ruedan hacia ella. Así es como la masa curva el espacio-tiempo.\n\n![spacetime-curvature](https://www.wtamu.edu/~cbaird/sq/images/spacetime.jpg)\n\n---\n\n## Comparando las dos teorías\n\nUna vista rápida, lado a lado:\n\n| Característica        | Relatividad Especial        | Relatividad General                |\n|-----------------------|-----------------------------|------------------------------------|\n| Año de publicación    | 1905                        | 1915                               |\n| Enfoque               | Movimiento a alta velocidad | Gravedad y aceleración             |\n| Espacio y tiempo      | Flexibles, relativos        | Curvados por la masa y la energía  |\n| Principio clave       | Constancia de la luz        | La gravedad es geometría del espacio |\n| Ejemplos cotidianos   | Corrección del GPS          | Lentes gravitacionales, agujeros negros |\n\n---\n\n## ¿Por qué importa?\n\nLa relatividad no es solo teoría abstracta. Da forma a nuestra visión del cosmos, desde los agujeros negros hasta el Big Bang. Explica cómo se curva la luz de las estrellas y permite la precisión de tu celular.\n\nY lo más hermoso: nos recuerda que la realidad es más flexible—y más misteriosa—de lo que parece.\n\n![black-hole](https://cnewsliveenglish.com/images/gravitys-grasp-exploring-time-dilation-near-black-holes-tm-175720230331.jpg)\n\n## Conclusión: El universo, reinventado\n\nLas dos teorías de Einstein nos muestran que el tiempo y el espacio no son escenarios fijos. Son protagonistas activos en el drama cósmico.\n\nLa relatividad especial nos invita a repensar el movimiento. La general convierte la gravedad en una cuestión de geometría.\n\nDos teorías, un genio, y un universo transformado.\n',
+        'unsplash_tags': ['relativity', 'einstein', 'space', 'gravity', 'time'],
     }
 
     Post.objects.create(
@@ -161,4 +164,3 @@ def create_article_from_json():
         category=category,
         read_time=article_json['read_time'],
     )
-

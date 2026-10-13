@@ -10,9 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-import environ
 import os
 from pathlib import Path
+
+import environ
 
 env = environ.Env(
     DEBUG=(bool, False),
@@ -217,7 +218,8 @@ STORAGES = {
     },
     'staticfiles': {
         'BACKEND': (
-            'django.contrib.staticfiles.storage.StaticFilesStorage' if DEBUG
+            'django.contrib.staticfiles.storage.StaticFilesStorage'
+            if DEBUG
             else 'whitenoise.storage.CompressedManifestStaticFilesStorage'
         ),
     },

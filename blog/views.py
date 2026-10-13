@@ -1,9 +1,9 @@
-from django.views import generic
+from django.shortcuts import get_object_or_404
 from django.utils import translation
 from django.utils.translation import gettext as _
-from django.shortcuts import get_object_or_404
+from django.views import generic
 
-from .models import Post, Category
+from .models import Category, Post
 
 
 class PostDetailView(generic.DetailView):
@@ -50,7 +50,7 @@ class CategoryDetailView(generic.ListView):
         kwargs['social_image_url'] = ''
 
         if self.object:
-            kwargs["category"] = self.object
+            kwargs['category'] = self.object
         return super().get_context_data(*args, **kwargs)
 
     def get_queryset(self):

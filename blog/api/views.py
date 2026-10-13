@@ -1,10 +1,11 @@
-from django.db.models import Q, Max
+from django.db.models import Max, Q
 from rest_framework import viewsets
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 
-from blog.models import Post, Category
-from .serializers import SearchPostSerializer, CreatePostSerializer, CategorySerializer
+from blog.models import Category, Post
+
+from .serializers import CategorySerializer, CreatePostSerializer, SearchPostSerializer
 
 
 class PostModelViewSet(viewsets.ModelViewSet):
@@ -41,17 +42,17 @@ class PostModelViewSet(viewsets.ModelViewSet):
 
         if lang == 'es':
             queryset = queryset.filter(
-                Q(title_es__icontains=query_string) |
-                Q(description_es__icontains=query_string) |
-                Q(body_es__icontains=query_string) |
-                Q(category__name_es__contains=query_string)
+                Q(title_es__icontains=query_string)
+                | Q(description_es__icontains=query_string)
+                | Q(body_es__icontains=query_string)
+                | Q(category__name_es__contains=query_string)
             )
         else:
             queryset = queryset.filter(
-                Q(title_en__icontains=query_string) |
-                Q(description_en__icontains=query_string) |
-                Q(body_en__icontains=query_string) |
-                Q(category__name_en__contains=query_string)
+                Q(title_en__icontains=query_string)
+                | Q(description_en__icontains=query_string)
+                | Q(body_en__icontains=query_string)
+                | Q(category__name_en__contains=query_string)
             )
 
         for backend in list(self.filter_backends):
@@ -65,5 +66,8 @@ class CategoryModelListAPIView(ListAPIView):
     serializer_class = CategorySerializer
 
     def get_queryset(self):
-        return self.queryset.annotate(latest_post_created=Max('posts__created')).filter(
-            latest_post_created__isnull=False).order_by('-latest_post_created')[:4]
+        return (
+            self.queryset.annotate(latest_post_created=Max('posts__created'))
+            .filter(latest_post_created__isnull=False)
+            .order_by('-latest_post_created')[:4]
+        )

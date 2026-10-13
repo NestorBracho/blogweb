@@ -8,7 +8,6 @@ from .models import ContactRequest
 
 
 class RobotsTxtTests(TestCase):
-
     def test_points_crawlers_to_the_sitemap(self):
         response = self.client.get(reverse('robots'))
 
@@ -18,7 +17,6 @@ class RobotsTxtTests(TestCase):
 
 
 class AboutViewTests(TestCase):
-
     def test_uses_its_own_meta_tags(self):
         response = self.client.get(reverse('main:about'), HTTP_ACCEPT_LANGUAGE='en')
 
@@ -28,7 +26,6 @@ class AboutViewTests(TestCase):
 
 @override_settings(OWNER_GITHUB_URL='https://github.com/example', OWNER_LINKEDIN_URL='')
 class SocialLinksTests(TestCase):
-
     def test_links_configured_profiles_only(self):
         response = self.client.get(reverse('main:index'))
 

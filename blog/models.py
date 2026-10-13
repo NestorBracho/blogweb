@@ -1,9 +1,9 @@
 from django.db import models
-
-from config.base_models import BaseModel
 from django.urls import reverse
 from django.utils import translation
 from django.utils.text import slugify
+
+from config.base_models import BaseModel
 
 
 class Category(BaseModel):
@@ -59,7 +59,7 @@ class Post(BaseModel):
         counter = 1
 
         while cls.objects.filter(slug=slug).exists():
-            slug = f"{base_slug}-{counter}"
+            slug = f'{base_slug}-{counter}'
             counter += 1
 
         return slug
@@ -82,7 +82,8 @@ class Post(BaseModel):
 
     def rendered_body(self):
         import markdown
-        from markdown.extensions import codehilite, fenced_code, admonition, attr_list, tables
+        from markdown.extensions import admonition, attr_list, codehilite, fenced_code, tables
+
         lang = translation.get_language()
         body = ''
         if lang == 'es':
@@ -97,6 +98,5 @@ class Post(BaseModel):
                 admonition.AdmonitionExtension(),
                 attr_list.AttrListExtension(),
                 tables.TableExtension(),
-            ]
+            ],
         )
-

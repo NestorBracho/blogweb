@@ -1,7 +1,9 @@
 from django.urls import path
-from .views import AboutView, ContactFormView
-from usermanager.views import AddNewsletterSubscriberView
 from django.views.generic import TemplateView
+
+from usermanager.views import AddNewsletterSubscriberView
+
+from .views import AboutView, ContactFormView
 
 app_name = 'main'
 urlpatterns = [

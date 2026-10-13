@@ -17,11 +17,11 @@
 
                     <div class="post-info">
 
-                        <div class="post-tags">
-
-                            <a href="{% url 'blog:category-detail' object.category.slug %}" class="post-tag" style="background: {{  object.category.color }};">{{ object.category.name }}</a>
-
-                        </div>
+                        {% if object.category %}
+                            <div class="post-tags">
+                                <a href="{{ object.category.get_absolute_url }}" class="post-tag" style="background: {{ object.category.color }};">{{ object.category.name }}</a>
+                            </div>
+                        {% endif %}
 
                         <h1 class="post-title">{{ object.title }}</h1>
 

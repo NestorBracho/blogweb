@@ -9,6 +9,19 @@ from .models import ContactRequest
 from .forms import ContactForm
 
 
+class AboutView(generic.TemplateView):
+    template_name = 'main/about.html'
+
+    def get_context_data(self, **kwargs):
+
+        kwargs['page_title'] = _('About Me')
+        kwargs['meta_description'] = _('Get to know Nestor, a fullstack software engineer passionate about backend '
+                                       'systems, Python, AWS, and technology for social impact. Discover his journey, '
+                                       'skills, and mission to build meaningful digital tools.')
+
+        return super().get_context_data(**kwargs)
+
+
 class ContactFormView(generic.CreateView):
     template_name = 'main/contact.html'
     form_class = ContactForm

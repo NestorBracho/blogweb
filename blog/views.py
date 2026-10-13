@@ -21,7 +21,7 @@ class PostDetailView(generic.DetailView):
             context['page_title'] = post.title_es
             context['meta_description'] = post.description_es
         if post.cover:
-            context['social_image_url'] = self.request.build_absolute_uri(post.cover.url)
+            context['social_image_url'] = post.cover.url
         return context
 
 

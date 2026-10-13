@@ -38,7 +38,7 @@
 
                                         <div class="article__tags">
 
-                                            <a href="{% url 'blog:category-detail' post.category.id %}" class="article__tag"
+                                            <a href="{{ post.category.get_absolute_url }}" class="article__tag"
                                                style="background: {{ post.category.color }};">
                                                 {{ post.category.name }}
                                             </a>

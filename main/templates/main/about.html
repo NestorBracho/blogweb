@@ -1,31 +1,6 @@
 {% extends "base.html" %}
 {% load static i18n %}
 
-{% block meta_seo %}
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<title>About Me - Bracho</title>
-<meta name="description" content="Get to know Nestor, a fullstack software engineer passionate about backend systems, Python, AWS, and technology for social impact. Discover his journey, skills, and mission to build meaningful digital tools.">
-
-<link rel="canonical" href="{{ request.build_absolute_uri }}">
-<link rel="alternate" type="application/rss+xml" title="" href="/feed.xml">
-
-<!-- Twitter Card -->
-<meta name="twitter:card" content="summary_large_image">
-<meta property="twitter:title" content="About Me - Bracho">
-<meta property="twitter:description"
-      content="Get to know Nestor, a fullstack software engineer passionate about backend systems, Python, AWS, and technology for social impact. Discover his journey, skills, and mission to build meaningful digital tools.">
-<meta property="twitter:image:src" content="{% static 'images/02.png' %}">
-
-<!-- OpenGraph (Facebook, LinkedIn, etc.) -->
-<meta property="og:title" content="About Me - Bracho">
-<meta property="og:description" content="Get to know Nestor, a fullstack software engineer passionate about backend systems, Python, AWS, and technology for social impact. Discover his journey, skills, and mission to build meaningful digital tools.">
-<meta property="og:image" content="{% static 'images/02.png' %}">
-<meta property="og:url" content="{{ request.build_absolute_uri }}">
-{% endblock %}
-
 {% block content %}
 <!-- begin page -->
 <div class="container">

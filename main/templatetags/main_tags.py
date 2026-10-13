@@ -16,3 +16,9 @@ def iso8601(value):
     if value:
         return value.isoformat()
     return ""
+
+
+@register.simple_tag(takes_context=True)
+def absolute_uri(context, url):
+    # Open Graph and Twitter cards ignore relative URLs
+    return context['request'].build_absolute_uri(url)

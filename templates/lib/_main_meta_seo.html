@@ -13,7 +13,10 @@
 {% endif %}
 
 <link rel="canonical" href="{{ request.build_absolute_uri }}">
-<link rel="alternate" type="application/rss+xml" title="" href="/feed.xml">
+<link rel="alternate" type="application/rss+xml" title="Bracho" href="{% url 'blog:feed' %}">
+
+{% static 'images/02.png' as default_social_image %}
+{% absolute_uri social_image_url|default:default_social_image as social_image %}
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
@@ -26,10 +29,7 @@
     <meta property="twitter:description"
           content="Science, storytelling, and software—bridging code, cosmos, and culture">
 {% endif %}
-{% if social_image_url %}
-    <meta property="twitter:image:src" content="{{ social_image_url }}">{% else %}
-    <meta property="twitter:image:src" content="{% static 'images/02.png' %}">
-{% endif %}
+<meta property="twitter:image:src" content="{{ social_image }}">
 
 <!-- OpenGraph (Facebook, LinkedIn, etc.) -->
 {% if page_title %}
@@ -40,8 +40,5 @@
     <meta property="og:description" content="{{ meta_description }}">{% else %}
     <meta property="og:description" content="Science, storytelling, and software—bridging code, cosmos, and culture">
 {% endif %}
-{% if social_image_url %}
-    <meta property="og:image" content="{{ social_image_url }}">{% else %}
-    <meta property="og:image" content="{% static 'images/02.png' %}">
-{% endif %}
+<meta property="og:image" content="{{ social_image }}">
 <meta property="og:url" content="{{ request.build_absolute_uri }}">

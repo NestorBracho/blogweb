@@ -1,4 +1,5 @@
 from config import base_models as models
+from django.urls import reverse
 from django.utils import translation
 from django.utils.text import slugify
 
@@ -19,6 +20,9 @@ class Category(models.Model):
             return self.name_es
         return self.name_en
 
+    def get_absolute_url(self):
+        return reverse('blog:category-detail', kwargs={'slug': self.slug})
+
 
 class Post(models.Model):
     slug = models.SlugField(max_length=120, unique=True)
@@ -29,7 +33,7 @@ class Post(models.Model):
     description_es = models.CharField(max_length=160)
     description_en = models.CharField(max_length=160)
     cover = models.ImageField(upload_to='images/', blank=True, null=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='posts', null=True, blank=True)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='posts', null=True, blank=True)
     read_time = models.IntegerField(default=0)
 
     is_published = models.BooleanField(default=False)
@@ -42,6 +46,9 @@ class Post(models.Model):
             self.slug = self.unique_slug(self.title_es or self.title_en)
 
         super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('blog:post-detail', kwargs={'slug': self.slug})
 
     @classmethod
     def unique_slug(cls, title):

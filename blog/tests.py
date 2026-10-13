@@ -172,8 +172,27 @@ class PostAPITests(TestCase):
         spanish = self.client.get(self.url, {'search': 'agujeros'}, headers={'X-Language': 'es'})
         english = self.client.get(self.url, {'search': 'agujeros'}, headers={'X-Language': 'en'})
 
-        self.assertEqual([post['title'] for post in spanish.json()], ['Agujeros negros'])
-        self.assertEqual(english.json(), [])
+        self.assertEqual([post['title'] for post in spanish.json()['results']], ['Agujeros negros'])
+        self.assertEqual(english.json()['results'], [])
+
+    def test_search_needs_every_word_somewhere_in_the_post(self):
+        create_post('Ownership in Rust', body_en='How the borrow checker frees memory.')
+
+        found = self.client.get(self.url, {'search': 'rust memory'}, headers={'X-Language': 'en'})
+        missing = self.client.get(self.url, {'search': 'rust python'}, headers={'X-Language': 'en'})
+
+        self.assertEqual(found.json()['count'], 1)
+        self.assertEqual(missing.json()['count'], 0)
+
+    def test_page_size_can_be_raised_up_to_a_limit(self):
+        for number in range(25):
+            create_post(f'Post {number}')
+
+        bigger = self.client.get(self.url, {'page_size': 10})
+        capped = self.client.get(self.url, {'page_size': 100})
+
+        self.assertEqual(len(bigger.json()['results']), 10)
+        self.assertEqual(len(capped.json()['results']), 20)
 
     def test_language_header_applies_to_the_whole_response(self):
         create_post('Black holes', title_es='Agujeros negros', read_time=3)

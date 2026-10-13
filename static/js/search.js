@@ -23,6 +23,7 @@ $(document).ready(function () {
     }
 
     const SEARCH_DEBOUNCE_MS = 300;
+    const SEARCH_PAGE_SIZE = 10;
     let searchTimeout = null;
     let searchRequest = null;
 
@@ -33,15 +34,19 @@ $(document).ready(function () {
         if (searchRequest) {
             searchRequest.abort();
         }
+        if (!query.trim()) {
+            results_container.empty();
+            return;
+        }
         searchRequest = $.ajax({
             url: apiUrl,
-            data: {search: query},
+            data: {search: query, page_size: SEARCH_PAGE_SIZE},
             headers: {
                 'X-Language': lang
             },
-            success: function (results) {
+            success: function (page) {
                 results_container.empty();
-                results.forEach(function (post) {
+                page.results.forEach(function (post) {
                     const rendered_post = renderPost(post);
                     results_container.append(rendered_post);
                 });

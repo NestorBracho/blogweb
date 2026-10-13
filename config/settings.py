@@ -119,8 +119,7 @@ DATABASES = {
 }
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 4,
+    'DEFAULT_PAGINATION_CLASS': 'blog.api.pagination.PageSizePagination',
     'DEFAULT_PERMISSION_CLASSES': [
         'blog.api.permissions.IsAdminOrReadOnly',
     ],

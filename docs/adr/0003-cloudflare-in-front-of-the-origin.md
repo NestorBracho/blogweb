@@ -1,7 +1,7 @@
 # 3. Cloudflare in front of the origin
 
 - **Status:** Accepted
-- **Date:** 2026-09-28
+- **Date:** 2026-09-28 (origin firewall added 2026-10-13)
 
 ## Context
 
@@ -17,6 +17,9 @@ Proxy all traffic through Cloudflare's free plan with SSL/TLS set to **Full (str
 - Cloudflare connects to nginx over HTTPS using a Cloudflare origin certificate. The certificate is issued from a
   CSR generated on the server, so its private key never leaves the machine.
 - Django detects HTTPS from the `X-Forwarded-Proto` header set by nginx, redirects plain HTTP and sends HSTS.
+- The VM's firewall only accepts HTTP and HTTPS from [Cloudflare's published IPv4 ranges](https://www.cloudflare.com/ips-v4),
+  so the origin cannot be reached directly even if its IP address leaks. SSH stays open for deploys
+  ([ADR 4](0004-deploy-with-a-forced-command-ssh-key.md)) and only accepts keys.
 
 ## Consequences
 
@@ -25,5 +28,6 @@ Proxy all traffic through Cloudflare's free plan with SSL/TLS set to **Full (str
 - Most requests for static files and images never reach the VM, which keeps outbound traffic low.
 - Only Cloudflare trusts the origin certificate. Moving away from Cloudflare means installing a publicly trusted
   certificate first.
-- The protection only holds if the origin is reachable exclusively through Cloudflare: its IP address must stay
-  private and the firewall should only accept web traffic from Cloudflare's IP ranges.
+- Cloudflare's protection cannot be bypassed by sending requests straight to the VM.
+- The firewall rule has to follow Cloudflare's IP ranges. They rarely change, and an outdated list shows up as
+  Cloudflare 522 errors; [`deploy/README.md`](../../deploy/README.md) has the command to refresh it.

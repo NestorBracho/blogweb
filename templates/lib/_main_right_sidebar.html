@@ -15,12 +15,17 @@
         <form class="widget-subscribe__form validate" action="{% url 'main:newsletter-subscriber' %}?next={{ request.path }}"
               method="POST" id="membedded-subscribe-form" name="membedded-subscribe-form">
             {% csrf_token %}
+            {% include 'lib/_honeypot_field.html' with id='newsletter-honeypot' %}
             <label class="screen-reader-text" for="mce-EMAIL">{% translate 'Email address' %}</label>
             <input class="widget-subscribe__email required email" id="mce-EMAIL" type="text"
                    name="email" placeholder="{% translate 'Your email address...' %}">
             <button class="button button--secondary button--big widget-subscribe__button"
                     id="membedded-subscribe" type="submit" name="subscribe">{% translate 'Join Now' %}
             </button>
+            <p style="margin: 12px 0 0; font-size: 13px; color: var(--white);">
+                {% translate 'You will receive an email to confirm your subscription.' %}
+                <a href="{% url 'main:privacy' %}" style="color: inherit; text-decoration: underline;">{% translate 'Privacy policy' %}</a>
+            </p>
         </form>
     </div>
 

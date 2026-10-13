@@ -6,7 +6,19 @@ from django.utils.text import slugify
 from config.base_models import BaseModel
 
 
-class Category(BaseModel):
+def content_language():
+    """Language of the content to show: posts exist in Spanish and English, anything else falls back to English."""
+    return 'es' if translation.get_language() == 'es' else 'en'
+
+
+class TranslatedFieldsMixin:
+    """For models that store each translatable field twice, as `<field>_es` and `<field>_en`."""
+
+    def translated(self, field):
+        return getattr(self, f'{field}_{content_language()}')
+
+
+class Category(TranslatedFieldsMixin, BaseModel):
     name_es = models.CharField(max_length=120)
     name_en = models.CharField(max_length=120)
     slug = models.SlugField(max_length=120, unique=True)
@@ -17,16 +29,13 @@ class Category(BaseModel):
         return self.name()
 
     def name(self):
-        lang = translation.get_language()
-        if lang == 'es':
-            return self.name_es
-        return self.name_en
+        return self.translated('name')
 
     def get_absolute_url(self):
         return reverse('blog:category-detail', kwargs={'slug': self.slug})
 
 
-class Post(BaseModel):
+class Post(TranslatedFieldsMixin, BaseModel):
     slug = models.SlugField(max_length=120, unique=True)
     title_es = models.CharField(max_length=60)
     title_en = models.CharField(max_length=60)
@@ -69,29 +78,17 @@ class Post(BaseModel):
         return self.cover.url if self.cover else ''
 
     def title(self):
-        lang = translation.get_language()
-        if lang == 'es':
-            return self.title_es
-        return self.title_en
+        return self.translated('title')
 
     def description(self):
-        lang = translation.get_language()
-        if lang == 'es':
-            return self.description_es
-        return self.description_en
+        return self.translated('description')
 
     def rendered_body(self):
         import markdown
         from markdown.extensions import admonition, attr_list, codehilite, fenced_code, tables
 
-        lang = translation.get_language()
-        body = ''
-        if lang == 'es':
-            body = self.body_es
-        elif lang == 'en':
-            body = self.body_en
         return markdown.markdown(
-            body,
+            self.translated('body'),
             extensions=[
                 fenced_code.FencedCodeExtension(),
                 codehilite.CodeHiliteExtension(css_class='highlight'),

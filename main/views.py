@@ -24,6 +24,16 @@ class AboutView(generic.TemplateView):
         return super().get_context_data(**kwargs)
 
 
+class PrivacyView(generic.TemplateView):
+    template_name = 'main/privacy.html'
+
+    def get_context_data(self, **kwargs):
+        kwargs['page_title'] = _('Privacy policy')
+        kwargs['meta_description'] = _('What personal data this site collects, why, and how to exercise your rights.')
+
+        return super().get_context_data(**kwargs)
+
+
 class ContactFormView(generic.CreateView):
     template_name = 'main/contact.html'
     form_class = ContactForm

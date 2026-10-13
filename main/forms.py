@@ -5,12 +5,14 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 
+from config.forms import HoneypotForm
+
 from .models import ContactRequest
 
 logger = logging.getLogger(__name__)
 
 
-class ContactForm(forms.ModelForm):
+class ContactForm(HoneypotForm, forms.ModelForm):
     class Meta:
         model = ContactRequest
         fields = ('name', 'email', 'message')

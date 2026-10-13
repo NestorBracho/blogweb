@@ -1,18 +1,43 @@
+import logging
+from datetime import timedelta
+
+from django.conf import settings
 from django.contrib import messages
+from django.core import signing
+from django.core.mail import send_mail
 from django.http import HttpResponseRedirect
+from django.shortcuts import redirect
+from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.views import generic
 
-from .froms import NewsletterSubscriberModelForm
+from .forms import SubscribeForm
+from .models import NewsletterSubscriber
+
+logger = logging.getLogger(__name__)
+
+CONFIRMATION_LINK_MAX_AGE = timedelta(days=7)
 
 
-class AddNewsletterSubscriberView(generic.CreateView):
-    form_class = NewsletterSubscriberModelForm
+class AddNewsletterSubscriberView(generic.FormView):
+    form_class = SubscribeForm
+    http_method_names = ['post']
 
     def form_valid(self, form):
-        messages.success(self.request, _("You've subscribed to my newsletter!"))
-        return super().form_valid(form)
+        subscriber, _created = NewsletterSubscriber.objects.get_or_create(email=form.cleaned_data['email'].lower())
+        if subscriber.confirmed_at is None:
+            try:
+                send_confirmation_email(self.request, subscriber)
+            except OSError:
+                logger.exception('Could not send the newsletter confirmation email')
+                messages.error(self.request, _("We couldn't send you the confirmation email. Please try again later."))
+                return HttpResponseRedirect(self.get_success_url())
+
+        # Same answer for new, pending and confirmed addresses, so nobody can find out who is subscribed
+        messages.success(self.request, _('Almost there! Check your inbox and confirm your subscription.'))
+        return HttpResponseRedirect(self.get_success_url())
 
     def form_invalid(self, form):
         messages.error(self.request, _('We were unable to subscribe you to your newsletter. Something went wrong.'))
@@ -28,3 +53,33 @@ class AddNewsletterSubscriberView(generic.CreateView):
         ):
             return next_url
         return '/'
+
+
+class ConfirmSubscriptionView(generic.View):
+    def get(self, request, token):
+        try:
+            subscriber = NewsletterSubscriber.from_confirmation_token(token, max_age=CONFIRMATION_LINK_MAX_AGE)
+        except (signing.BadSignature, NewsletterSubscriber.DoesNotExist):
+            messages.error(
+                request, _('This confirmation link is invalid or has expired. Subscribe again to get a new one.')
+            )
+        else:
+            subscriber.confirm()
+            messages.success(request, _('Your subscription is confirmed. Thank you!'))
+        return redirect('main:index')
+
+
+def send_confirmation_email(request, subscriber):
+    context = {
+        'confirm_url': request.build_absolute_uri(
+            reverse('main:newsletter-confirm', args=[subscriber.confirmation_token()])
+        ),
+        'days': CONFIRMATION_LINK_MAX_AGE.days,
+        'site_url': request.build_absolute_uri('/'),
+    }
+    send_mail(
+        subject=_('Confirm your subscription to Bracho'),
+        message=render_to_string('usermanager/email/confirm_subscription.txt', context, request=request),
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[subscriber.email],
+    )

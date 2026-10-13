@@ -75,6 +75,7 @@
             </div>
             <form class="form" action="." method="POST">
                 {% csrf_token %}
+                {% include 'lib/_honeypot_field.html' with id='contact-honeypot' %}
                 <div class="form__group">
                     <label class="form__label screen-reader-text" for="form-name">{% translate 'Your Name' %}</label>
                     <input class="form__input" id="form-name" type="text" name="name" placeholder="{% translate 'Your name' %}"
@@ -90,6 +91,10 @@
                     <textarea class="form__input" id="form-text" name="message" rows="5" placeholder="{% translate 'Your Message' %}"
                               required=""></textarea>
                 </div>
+                <p style="font-size: 14px;">
+                    {% translate 'I will only use your details to reply to you.' %}
+                    <a href="{% url 'main:privacy' %}" style="text-decoration: underline;">{% translate 'Privacy policy' %}</a>
+                </p>
                 <div class="form__group">
                     <button class="button button--primary" type="submit">{% translate 'Send Now' %}</button>
                 </div>

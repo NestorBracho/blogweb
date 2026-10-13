@@ -1,5 +1,4 @@
 from django.shortcuts import get_object_or_404
-from django.utils import translation
 from django.utils.translation import gettext as _
 from django.views import generic
 
@@ -13,13 +12,8 @@ class PostDetailView(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         post = context['object']
-        lang = translation.get_language()
-        if lang == 'en':
-            context['page_title'] = post.title_en
-            context['meta_description'] = post.description_en
-        else:
-            context['page_title'] = post.title_es
-            context['meta_description'] = post.description_es
+        context['page_title'] = post.title()
+        context['meta_description'] = post.description()
         if post.cover:
             context['social_image_url'] = post.cover.url
         context.update(self.get_navigation(post))

@@ -33,7 +33,9 @@ REST API, tests and linting in CI, and a hardened self-hosted deployment that co
 - "Load more" pagination and live search served by the JSON API.
 - RSS feed, XML sitemap, `robots.txt` and Open Graph / Twitter Card metadata.
 - A contact form that stores every request before emailing it, so a mail outage never loses a message.
-- Newsletter sign-up that only ever redirects back to this site.
+- Newsletter sign-up with double opt-in: a signed, expiring link confirms each address, and the form never reveals
+  who is already subscribed.
+- A honeypot field on both forms against spam bots, and a privacy policy in both languages.
 - Light and dark themes.
 - An optional command that drafts posts with OpenAI for me to review (see [AI-assisted drafts](#ai-assisted-drafts)).
 
@@ -156,14 +158,15 @@ API.
 
 ## API
 
-| Method                         | Endpoint                 | Description                                                    |
-|--------------------------------|--------------------------|----------------------------------------------------------------|
-| `GET`                          | `/api/post/?page=N`      | Published posts, newest first, four per page                   |
-| `GET`                          | `/api/post/?search=term` | Posts whose title, description, body or category match         |
-| `GET`                          | `/api/categories`        | The four most recently active categories and their latest posts |
-| `POST`, `PUT`, `PATCH`, `DELETE` | `/api/post/…`          | Staff only                                                     |
+| Method                           | Endpoint                 | Description                                                         |
+|----------------------------------|--------------------------|---------------------------------------------------------------------|
+| `GET`                            | `/api/post/?page=N`      | Published posts, newest first, four per page                        |
+| `GET`                            | `/api/post/?search=words`| Posts with every word somewhere in their title, description, body or category |
+| `GET`                            | `/api/categories`        | The four most recently active categories and their latest posts     |
+| `POST`, `PUT`, `PATCH`, `DELETE` | `/api/post/…`            | Staff only                                                          |
 
-The `X-Language` header (`en` or `es`) selects the language of the returned fields.
+Post lists are paginated; `page_size` raises the page size up to 20. Responses use the site's language (the
+language cookie or `Accept-Language`), and an `X-Language` header (`en` or `es`) overrides it.
 
 ## Deployment
 

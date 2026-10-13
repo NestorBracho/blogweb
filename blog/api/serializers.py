@@ -1,9 +1,8 @@
-from babel.dates import format_date
-from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from blog.models import Category, Post
+from main.templatetags.main_tags import localized_date
 
 
 class CreatePostSerializer(serializers.ModelSerializer):
@@ -29,13 +28,15 @@ class CreatePostSerializer(serializers.ModelSerializer):
 
 
 class SearchPostSerializer(serializers.ModelSerializer):
-    href = serializers.SerializerMethodField()
-    cover_url = serializers.SerializerMethodField()
-    title = serializers.SerializerMethodField()
+    """A published post in the active language, shaped for the front-end templates."""
+
+    href = serializers.CharField(source='get_absolute_url', read_only=True)
+    cover_url = serializers.CharField(read_only=True)
+    title = serializers.CharField(read_only=True)
     category_href = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
     category_color = serializers.SerializerMethodField()
-    description = serializers.SerializerMethodField()
+    description = serializers.CharField(read_only=True)
     timestamp = serializers.SerializerMethodField()
     user_friendly_date = serializers.SerializerMethodField()
     read_time = serializers.SerializerMethodField()
@@ -55,50 +56,20 @@ class SearchPostSerializer(serializers.ModelSerializer):
             'read_time',
         ]
 
-    def get_href(self, obj):
-        return reverse('blog:post-detail', kwargs={'slug': obj.slug})
-
-    def get_cover_url(self, obj):
-        if obj.cover:
-            return obj.cover.url
-        return ''
-
-    def get_title(self, obj):
-        lang = self.context['request'].headers.get('X-Language')
-        if lang == 'es':
-            return obj.title_es
-        return obj.title_en
-
     def get_category_href(self, obj):
-        if not obj.category:
-            return ''
-        return reverse('blog:category-detail', kwargs={'slug': obj.category.slug})
+        return obj.category.get_absolute_url() if obj.category else ''
 
     def get_category(self, obj):
-        if not obj.category:
-            return ''
-        lang = self.context['request'].headers.get('X-Language')
-        if lang == 'es':
-            return obj.category.name_es
-        return obj.category.name_en
+        return obj.category.name() if obj.category else ''
 
     def get_category_color(self, obj):
-        if not obj.category:
-            return ''
-        return obj.category.color
-
-    def get_description(self, obj):
-        lang = self.context['request'].headers.get('X-Language')
-        if lang == 'es':
-            return obj.description_es
-        return obj.description_en
+        return obj.category.color if obj.category else ''
 
     def get_timestamp(self, obj):
         return obj.created.isoformat()
 
     def get_user_friendly_date(self, obj):
-        lang = self.context['request'].headers.get('X-Language')
-        return format_date(obj.created, format='dd MMM, yyyy', locale=lang)
+        return localized_date(obj.created)
 
     def get_read_time(self, obj):
         return '{} {}'.format(obj.read_time, _('min read'))
@@ -106,22 +77,13 @@ class SearchPostSerializer(serializers.ModelSerializer):
 
 class CategorySerializer(serializers.ModelSerializer):
     first_5_posts = serializers.SerializerMethodField()
-    name = serializers.SerializerMethodField()
-    href = serializers.SerializerMethodField()
+    name = serializers.CharField(read_only=True)
+    href = serializers.CharField(source='get_absolute_url', read_only=True)
 
     class Meta:
         model = Category
         fields = ['first_5_posts', 'name', 'slug', 'color', 'href']
 
-    def get_href(self, obj):
-        return reverse('blog:category-detail', kwargs={'slug': obj.slug})
-
     def get_first_5_posts(self, obj):
-        posts = obj.posts.filter(is_published=True).order_by('-updated')[:5]
+        posts = obj.posts.filter(is_published=True).select_related('category').order_by('-updated')[:5]
         return SearchPostSerializer(posts, many=True, context=self.context).data
-
-    def get_name(self, obj):
-        lang = self.context['request'].headers.get('X-Language')
-        if lang == 'es':
-            return obj.name_es
-        return obj.name_en

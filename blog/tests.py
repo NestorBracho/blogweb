@@ -172,8 +172,45 @@ class PostAPITests(TestCase):
         spanish = self.client.get(self.url, {'search': 'agujeros'}, headers={'X-Language': 'es'})
         english = self.client.get(self.url, {'search': 'agujeros'}, headers={'X-Language': 'en'})
 
-        self.assertEqual([post['title'] for post in spanish.json()], ['Agujeros negros'])
-        self.assertEqual(english.json(), [])
+        self.assertEqual([post['title'] for post in spanish.json()['results']], ['Agujeros negros'])
+        self.assertEqual(english.json()['results'], [])
+
+    def test_search_needs_every_word_somewhere_in_the_post(self):
+        create_post('Ownership in Rust', body_en='How the borrow checker frees memory.')
+
+        found = self.client.get(self.url, {'search': 'rust memory'}, headers={'X-Language': 'en'})
+        missing = self.client.get(self.url, {'search': 'rust python'}, headers={'X-Language': 'en'})
+
+        self.assertEqual(found.json()['count'], 1)
+        self.assertEqual(missing.json()['count'], 0)
+
+    def test_page_size_can_be_raised_up_to_a_limit(self):
+        for number in range(25):
+            create_post(f'Post {number}')
+
+        bigger = self.client.get(self.url, {'page_size': 10})
+        capped = self.client.get(self.url, {'page_size': 100})
+
+        self.assertEqual(len(bigger.json()['results']), 10)
+        self.assertEqual(len(capped.json()['results']), 20)
+
+    def test_language_header_applies_to_the_whole_response(self):
+        create_post('Black holes', title_es='Agujeros negros', read_time=3)
+
+        # The site defaults to Spanish, but the header asks for English
+        response = self.client.get(self.url, headers={'X-Language': 'en'})
+
+        post = response.json()['results'][0]
+        self.assertEqual((post['title'], post['read_time']), ('Black holes', '3 min read'))
+        self.assertIn('X-Language', response['Vary'])
+
+    def test_language_follows_the_site_without_the_header(self):
+        create_post('Black holes', title_es='Agujeros negros', read_time=3)
+
+        response = self.client.get(self.url, headers={'Accept-Language': 'es'})
+
+        post = response.json()['results'][0]
+        self.assertEqual((post['title'], post['read_time']), ('Agujeros negros', '3 min de lectura'))
 
     def test_anonymous_users_cannot_create_posts(self):
         response = self.client.post(self.url, {'title_en': 'Spam'})
@@ -314,3 +351,21 @@ class DraftArticleCommandTests(TestCase):
     def test_requires_an_api_key(self):
         with self.assertRaisesMessage(CommandError, 'OPENAI_API_KEY'):
             self.draft_article()
+
+
+class AdminTests(TestCase):
+    def setUp(self):
+        self.client.force_login(get_user_model().objects.create_superuser('admin'))
+        self.post = create_post('Admin post', category=create_category())
+
+    def test_post_and_category_pages_load(self):
+        urls = [
+            reverse('admin:blog_post_changelist'),
+            reverse('admin:blog_post_add'),
+            reverse('admin:blog_post_change', args=[self.post.pk]),
+            reverse('admin:blog_category_changelist'),
+            reverse('admin:blog_category_change', args=[self.post.category.pk]),
+        ]
+        for url in urls:
+            with self.subTest(url=url):
+                self.assertEqual(self.client.get(url).status_code, 200)

@@ -22,7 +22,17 @@ class PostDetailView(generic.DetailView):
             context['meta_description'] = post.description_es
         if post.cover:
             context['social_image_url'] = post.cover.url
+        context.update(self.get_navigation(post))
         return context
+
+    def get_navigation(self, post):
+        published = self.get_queryset()
+        related = published.filter(category=post.category) if post.category else published.none()
+        return {
+            'previous_post': published.filter(created__lt=post.created).order_by('-created').first(),
+            'next_post': published.filter(created__gt=post.created).order_by('created').first(),
+            'related_posts': related.exclude(pk=post.pk).order_by('-created')[:3],
+        }
 
 
 class CategoryDetailView(generic.ListView):

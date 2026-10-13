@@ -1,4 +1,5 @@
 from datetime import timedelta
+from urllib.parse import quote
 
 from django.test import TestCase
 from django.urls import reverse
@@ -61,6 +62,24 @@ class PostDetailViewTests(TestCase):
         response = self.get(self.draft)
 
         self.assertEqual(response.status_code, 404)
+
+    def test_navigation_skips_drafts(self):
+        response = self.get(self.post)
+
+        self.assertEqual(response.context['previous_post'], self.older)
+        self.assertEqual(response.context['next_post'], self.newer)
+
+    def test_related_posts_share_the_category(self):
+        response = self.get(self.post)
+
+        self.assertEqual(list(response.context['related_posts']), [self.older])
+
+    def test_share_links_point_to_the_post(self):
+        response = self.get(self.post)
+
+        post_url = quote(f'http://testserver{self.post.get_absolute_url()}', safe='')
+        self.assertContains(response, f'url={post_url}')
+        self.assertNotContains(response, 'coderon')
 
     def test_social_image_is_an_absolute_url(self):
         response = self.get(self.post)

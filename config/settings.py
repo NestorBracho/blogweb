@@ -150,6 +150,10 @@ OWNER_EMAIL = env('OWNER_EMAIL', default='')
 OWNER_PHONE = env('OWNER_PHONE', default='')
 OWNER_LOCATION = env('OWNER_LOCATION', default='')
 
+# Public profiles linked from the footer and sidebar. Leave one empty to hide its icon.
+OWNER_GITHUB_URL = env('OWNER_GITHUB_URL', default='https://github.com/NestorBracho')
+OWNER_LINKEDIN_URL = env('OWNER_LINKEDIN_URL', default='')
+
 
 # OpenAI config (only needed by blog/article_generation.py)
 

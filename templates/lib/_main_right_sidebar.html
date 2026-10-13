@@ -26,39 +26,7 @@
 
 
     <div class="widget widget-social">
-        <ul class="widget-social__list list-reset">
-
-            <li class="widget-social__item">
-                <a class="widget-social__link" href="https://twitter.com" target="_blank" rel="noopener"
-                   aria-label="Twitter link"><i class="fa-brands fa-x-twitter"></i></a>
-            </li>
-
-            <li class="widget-social__item">
-                <a class="widget-social__link" href="https://facebook.com" target="_blank"
-                   rel="noopener" aria-label="Facebook link"><i class="fa-brands fa-facebook"></i></a>
-            </li>
-
-            <li class="widget-social__item">
-                <a class="widget-social__link" href="https://mastodon.social" target="_blank"
-                   rel="noopener" aria-label="Mastodon link"><i class="fa-brands fa-mastodon"></i></a>
-            </li>
-
-            <li class="widget-social__item">
-                <a class="widget-social__link" href="https://reddit.com" target="_blank" rel="noopener"
-                   aria-label="Reddit link"><i class="fa-brands fa-reddit-alien"></i></a>
-            </li>
-
-            <li class="widget-social__item">
-                <a class="widget-social__link" href="https://github.com" target="_blank" rel="noopener"
-                   aria-label="Github link"><i class="fa-brands fa-github"></i></a>
-            </li>
-
-            <li class="widget-social__item">
-                <a class="widget-social__link" href="/feed.xml" target="_blank" rel="noopener"
-                   aria-label="Rss link"><i class="fa-solid fa-rss"></i></a>
-            </li>
-
-        </ul>
+        {% include 'lib/_social_links.html' with prefix='widget-social' %}
     </div>
 
 

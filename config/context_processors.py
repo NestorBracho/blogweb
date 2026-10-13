@@ -10,6 +10,8 @@ def owner(request):
             'email': settings.OWNER_EMAIL,
             'phone': settings.OWNER_PHONE,
             'location': settings.OWNER_LOCATION,
+            'github_url': settings.OWNER_GITHUB_URL,
+            'linkedin_url': settings.OWNER_LINKEDIN_URL,
         }
     }
 

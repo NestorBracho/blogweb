@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
@@ -26,3 +27,13 @@ class AddNewsletterSubscriberViewTests(TestCase):
 
         self.assertRedirects(response, '/about/', fetch_redirect_response=False)
         self.assertEqual(NewsletterSubscriber.objects.count(), 1)
+
+
+class NewsletterSubscriberAdminTests(TestCase):
+    def test_list_loads(self):
+        self.client.force_login(get_user_model().objects.create_superuser('admin'))
+        NewsletterSubscriber.objects.create(email='reader@example.com')
+
+        response = self.client.get(reverse('admin:usermanager_newslettersubscriber_changelist'))
+
+        self.assertContains(response, 'reader@example.com')

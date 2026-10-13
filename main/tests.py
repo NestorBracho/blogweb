@@ -1,5 +1,6 @@
 from unittest import mock
 
+from django.contrib.auth import get_user_model
 from django.core import mail
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -60,3 +61,19 @@ class ContactFormViewTests(TestCase):
 
         self.assertRedirects(response, reverse('main:index'), fetch_redirect_response=False)
         self.assertTrue(ContactRequest.objects.filter(email='ada@example.com').exists())
+
+
+class ContactRequestAdminTests(TestCase):
+    def setUp(self):
+        self.client.force_login(get_user_model().objects.create_superuser('admin'))
+        self.request = ContactRequest.objects.create(name='Ada', email='ada@example.com', message='Hello!')
+
+    def test_requests_can_be_read_but_not_created(self):
+        expected_status = {
+            reverse('admin:main_contactrequest_changelist'): 200,
+            reverse('admin:main_contactrequest_change', args=[self.request.pk]): 200,
+            reverse('admin:main_contactrequest_add'): 403,
+        }
+        for url, status in expected_status.items():
+            with self.subTest(url=url):
+                self.assertEqual(self.client.get(url).status_code, status)

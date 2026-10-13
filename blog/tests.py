@@ -314,3 +314,21 @@ class DraftArticleCommandTests(TestCase):
     def test_requires_an_api_key(self):
         with self.assertRaisesMessage(CommandError, 'OPENAI_API_KEY'):
             self.draft_article()
+
+
+class AdminTests(TestCase):
+    def setUp(self):
+        self.client.force_login(get_user_model().objects.create_superuser('admin'))
+        self.post = create_post('Admin post', category=create_category())
+
+    def test_post_and_category_pages_load(self):
+        urls = [
+            reverse('admin:blog_post_changelist'),
+            reverse('admin:blog_post_add'),
+            reverse('admin:blog_post_change', args=[self.post.pk]),
+            reverse('admin:blog_category_changelist'),
+            reverse('admin:blog_category_change', args=[self.post.category.pk]),
+        ]
+        for url in urls:
+            with self.subTest(url=url):
+                self.assertEqual(self.client.get(url).status_code, 200)

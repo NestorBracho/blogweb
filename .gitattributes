@@ -1,0 +1,10 @@
+# Keep GitHub's language stats and PR diffs about this project's own code.
+
+# Front-end from the Coderon Jekyll theme (includes Font Awesome) and bundled libraries
+static/css/main.css linguist-vendored
+static/js/common.js linguist-vendored
+static/js/scripts.js linguist-vendored
+static/js/jquery-*.min.js linguist-vendored
+
+# Output of `pygmentize -S default -f html`
+static/css/pygments.css linguist-generated

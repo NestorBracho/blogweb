@@ -1,9 +1,10 @@
 import logging
 
 from django import forms
+from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
-from django.conf import settings
+
 from .models import ContactRequest
 
 logger = logging.getLogger(__name__)
@@ -15,7 +16,7 @@ class ContactForm(forms.ModelForm):
         fields = ('name', 'email', 'message')
 
     def save(self, commit=True):
-        instance = super(ContactForm, self).save(commit)
+        instance = super().save(commit)
         try:
             self.send_mail(
                 context={
@@ -33,13 +34,15 @@ class ContactForm(forms.ModelForm):
             logger.exception('Could not send contact request email')
         return instance
 
-    def send_mail(self, context, from_email, to_email, subject, reply_to=None,
-                  html_email_template_name='main/email/contact.html'):
+    def send_mail(
+        self, context, from_email, to_email, subject, reply_to=None, html_email_template_name='main/email/contact.html'
+    ):
         html_content = render_to_string(html_email_template_name, context)
         text_content = '{name} <{email}>\n\n{message}'.format(**context)
 
-        email_msg = EmailMultiAlternatives(subject, text_content, from_email, [to_email],
-                                           reply_to=[reply_to] if reply_to else None)
-        email_msg.attach_alternative(html_content, "text/html")
+        email_msg = EmailMultiAlternatives(
+            subject, text_content, from_email, [to_email], reply_to=[reply_to] if reply_to else None
+        )
+        email_msg.attach_alternative(html_content, 'text/html')
 
         email_msg.send()

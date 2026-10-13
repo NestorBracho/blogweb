@@ -1,4 +1,8 @@
-# Despliegue en Oracle Cloud (Always Free)
+# Despliegue (Google Cloud e2-micro / Oracle Cloud Always Free)
+
+> **Producción actual:** Google Cloud, VM `e2-micro` en `us-east1-b` (Ubuntu 24.04, 1 GB RAM
+> + 2 GB swap, Gunicorn con 2 workers). Ver [Google Cloud](#google-cloud-e2-micro) abajo;
+> los pasos de Oracle quedan como alternativa si algún día hay capacidad para una A1.
 
 Arquitectura final:
 
@@ -185,3 +189,83 @@ sudo -iu blog /srv/blog/app/deploy/update.sh
 | Bucle de redirecciones | Cloudflare debe estar en **Full (strict)**, no en *Flexible* |
 | No carga nada desde fuera | Security List **y** iptables (paso 1.4 y 2) |
 | Imágenes 404 | Permisos de `/srv/blog/media` (grupo `www-data`) |
+
+---
+
+## Google Cloud (e2-micro)
+
+Lo que cambia respecto a Oracle (el resto de la guía, desde el paso 2, es igual):
+
+- **Gratis solo si** la VM es `e2-micro`, está en `us-west1`, `us-central1` o `us-east1`,
+  y el disco es `pd-standard` de ≤ 30 GB. Una sola VM.
+- **Crear la VM** desde Cloud Shell (`https://shell.cloud.google.com`):
+
+  ```bash
+  gcloud compute firewall-rules create allow-web --allow=tcp:80,tcp:443 \
+    --target-tags=http-server,https-server
+  gcloud compute instances create blog-nestorbracho \
+    --zone=us-east1-b --machine-type=e2-micro \
+    --image-family=ubuntu-2404-lts-amd64 --image-project=ubuntu-os-cloud \
+    --boot-disk-size=30GB --boot-disk-type=pd-standard \
+    --tags=http-server,https-server \
+    --metadata=ssh-keys="nestor:$(cat ~/.ssh/oracle-blog.pub)"
+  ```
+
+- **No hace falta tocar iptables** (paso 2): el firewall lo gestiona la regla `allow-web`.
+- **Swap obligatorio** (1 GB de RAM):
+
+  ```bash
+  sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
+  echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+  echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-swappiness.conf
+  ```
+
+- **Gunicorn con 2 workers**: `sed 's/--workers 3/--workers 2/'` al copiar `gunicorn.service`.
+- **Repo público**: se clona por HTTPS, sin deploy key.
+- **Certificado de origen** generado con CSR propia para que la clave privada no salga del servidor:
+
+  ```bash
+  sudo openssl req -new -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes \
+    -keyout /etc/ssl/cloudflare/origin.key -out /etc/ssl/cloudflare/origin.csr -subj "/CN=nestorbracho.com"
+  ```
+
+  En Cloudflare: *SSL/TLS → Origin Server → Create Certificate → Use my private key and CSR*,
+  pega la CSR y guarda el certificado resultante en `/etc/ssl/cloudflare/origin.pem`.
+- **Tráfico de salida**: el plan gratuito incluye 1 GB/mes. Cloudflare cachea estáticos e
+  imágenes, así que la mayor parte del tráfico no sale de la VM.
+- **Fin del periodo de prueba (90 días)**: para que la VM siga encendida hay que pasar la
+  cuenta de facturación a pago ("Upgrade"). Mientras solo uses recursos Always Free no hay cargos.
+
+Acceso SSH:
+
+```bash
+ssh -i ~/.ssh/oracle-blog nestor@IP_DEL_SERVIDOR
+```
+
+---
+
+## CI/CD (GitHub Actions)
+
+`.github/workflows/deploy.yml`:
+
+- **Pull requests y pushes a `main`**: `ruff` (lint y formato), `manage.py check`,
+  migraciones pendientes, `migrate` sobre una base de datos vacía, los tests con informe de
+  cobertura (también en el resumen del job) y `collectstatic` en modo producción.
+- **Push/merge a `main`** (si lo anterior pasa): se conecta por SSH como `blog`, ejecuta
+  `deploy/update.sh` y comprueba que `https://nestorbracho.com` responde 200.
+
+La clave de GitHub está **restringida en el servidor** (`restrict,command=".../update.sh"` en
+`/srv/blog/.ssh/authorized_keys`): solo puede lanzar el deploy, no abrir una shell.
+
+Configuración inicial (una sola vez, desde tu Mac):
+
+```bash
+ssh-keygen -t ed25519 -f ~/.ssh/github-deploy -N "" -C "github-actions-deploy"
+ssh -i ~/.ssh/oracle-blog nestor@IP_DEL_SERVIDOR "sudo -u blog install -d -m 700 /srv/blog/.ssh && echo 'restrict,command=\"/srv/blog/app/deploy/update.sh\" $(cat ~/.ssh/github-deploy.pub)' | sudo -u blog tee -a /srv/blog/.ssh/authorized_keys >/dev/null && sudo chmod 600 /srv/blog/.ssh/authorized_keys"
+gh secret set DEPLOY_SSH_KEY < ~/.ssh/github-deploy
+gh secret set DEPLOY_HOST --body IP_DEL_SERVIDOR
+ssh-keyscan -t ed25519 IP_DEL_SERVIDOR | gh secret set DEPLOY_KNOWN_HOSTS
+```
+
+Para revocar el acceso de GitHub: borra la línea correspondiente de
+`/srv/blog/.ssh/authorized_keys` y el secreto `DEPLOY_SSH_KEY`.

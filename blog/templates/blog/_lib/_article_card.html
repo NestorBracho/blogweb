@@ -1,0 +1,26 @@
+{% load i18n main_tags %}
+<div class="article {{ card_class }}">
+    <div class="article__inner">
+        <div class="article__head">
+            <a class="article__image" href="{{ post.get_absolute_url }}">
+                <img class="lazy" data-src="{{ post.cover_url }}" alt="{{ post.title }}">
+            </a>
+        </div>
+        <div class="article__content">
+            {% if post.category %}
+                <div class="article__tags">
+                    <a href="{{ post.category.get_absolute_url }}" class="article__tag"
+                       style="background: {{ post.category.color }};">{{ post.category.name }}</a>
+                </div>
+            {% endif %}
+            <h2 class="article__title">
+                <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+            </h2>
+            <p class="article__excerpt">{{ post.description }}</p>
+            <div class="article__meta">
+                <time class="article__date" datetime="{{ post.created|iso8601 }}">{{ post.created|localized_date }}</time>
+                <div class="article__minutes">{{ post.read_time }} {% translate 'min read' %}</div>
+            </div>
+        </div>
+    </div>
+</div>

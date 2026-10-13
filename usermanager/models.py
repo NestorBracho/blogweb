@@ -1,5 +1,7 @@
-from config import base_models as models
+from django.db import models
+
+from config.base_models import BaseModel
 
 
-class NewsletterSubscriber(models.Model):
+class NewsletterSubscriber(BaseModel):
     email = models.EmailField(unique=True)

@@ -10,9 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-import environ
 import os
 from pathlib import Path
+
+import environ
 
 env = environ.Env(
     DEBUG=(bool, False),
@@ -53,6 +54,7 @@ DJANGO_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sitemaps',
 ]
 LOCAL_APPS = [
     'blog.apps.BlogConfig',
@@ -149,10 +151,15 @@ OWNER_EMAIL = env('OWNER_EMAIL', default='')
 OWNER_PHONE = env('OWNER_PHONE', default='')
 OWNER_LOCATION = env('OWNER_LOCATION', default='')
 
+# Public profiles linked from the footer and sidebar. Leave one empty to hide its icon.
+OWNER_GITHUB_URL = env('OWNER_GITHUB_URL', default='https://github.com/NestorBracho')
+OWNER_LINKEDIN_URL = env('OWNER_LINKEDIN_URL', default='')
 
-# OpenAI config (only needed by blog/article_generation.py)
+
+# OpenAI, only needed by the draft_article command
 
 OPENAI_API_KEY = env('OPENAI_API_KEY', default='')
+OPENAI_MODEL = env('OPENAI_MODEL', default='gpt-4o')
 
 
 # Password validation
@@ -212,7 +219,8 @@ STORAGES = {
     },
     'staticfiles': {
         'BACKEND': (
-            'django.contrib.staticfiles.storage.StaticFilesStorage' if DEBUG
+            'django.contrib.staticfiles.storage.StaticFilesStorage'
+            if DEBUG
             else 'whitenoise.storage.CompressedManifestStaticFilesStorage'
         ),
     },

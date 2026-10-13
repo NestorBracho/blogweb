@@ -1,9 +1,12 @@
-from config import base_models as models
+from django.db import models
+from django.urls import reverse
 from django.utils import translation
 from django.utils.text import slugify
 
+from config.base_models import BaseModel
 
-class Category(models.Model):
+
+class Category(BaseModel):
     name_es = models.CharField(max_length=120)
     name_en = models.CharField(max_length=120)
     slug = models.SlugField(max_length=120, unique=True)
@@ -19,8 +22,11 @@ class Category(models.Model):
             return self.name_es
         return self.name_en
 
+    def get_absolute_url(self):
+        return reverse('blog:category-detail', kwargs={'slug': self.slug})
 
-class Post(models.Model):
+
+class Post(BaseModel):
     slug = models.SlugField(max_length=120, unique=True)
     title_es = models.CharField(max_length=60)
     title_en = models.CharField(max_length=60)
@@ -29,7 +35,7 @@ class Post(models.Model):
     description_es = models.CharField(max_length=160)
     description_en = models.CharField(max_length=160)
     cover = models.ImageField(upload_to='images/', blank=True, null=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='posts', null=True, blank=True)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='posts', null=True, blank=True)
     read_time = models.IntegerField(default=0)
 
     is_published = models.BooleanField(default=False)
@@ -43,6 +49,9 @@ class Post(models.Model):
 
         super().save(*args, **kwargs)
 
+    def get_absolute_url(self):
+        return reverse('blog:post-detail', kwargs={'slug': self.slug})
+
     @classmethod
     def unique_slug(cls, title):
         base_slug = slugify(title)
@@ -50,7 +59,7 @@ class Post(models.Model):
         counter = 1
 
         while cls.objects.filter(slug=slug).exists():
-            slug = f"{base_slug}-{counter}"
+            slug = f'{base_slug}-{counter}'
             counter += 1
 
         return slug
@@ -73,7 +82,8 @@ class Post(models.Model):
 
     def rendered_body(self):
         import markdown
-        from markdown.extensions import codehilite, fenced_code, admonition, attr_list, tables
+        from markdown.extensions import admonition, attr_list, codehilite, fenced_code, tables
+
         lang = translation.get_language()
         body = ''
         if lang == 'es':
@@ -88,6 +98,5 @@ class Post(models.Model):
                 admonition.AdmonitionExtension(),
                 attr_list.AttrListExtension(),
                 tables.TableExtension(),
-            ]
+            ],
         )
-

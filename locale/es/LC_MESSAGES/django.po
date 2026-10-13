@@ -37,6 +37,17 @@ msgstr ""
 msgid "About Me"
 msgstr "Sobre Mi"
 
+#: main/views.py:18
+msgid ""
+"Get to know Nestor, a fullstack software engineer passionate about backend "
+"systems, Python, AWS, and technology for social impact. Discover his journey, "
+"skills, and mission to build meaningful digital tools."
+msgstr ""
+"Conoce a Nestor, ingeniero de software fullstack apasionado por los sistemas "
+"backend, Python, AWS y la tecnología con impacto social. Descubre su "
+"trayectoria, sus habilidades y su misión de crear herramientas digitales con "
+"sentido."
+
 #: main/templates/main/about.html:53
 msgid ""
 "Hey, I’m Nestor, a fullstack developer by trade, a problem-solver by "

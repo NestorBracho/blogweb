@@ -22,10 +22,20 @@ $(document).ready(function () {
         return post_template;
     }
 
-    $('#js-search-input').on('keyup', function (e) {
+    const SEARCH_DEBOUNCE_MS = 300;
+    let searchTimeout = null;
+    let searchRequest = null;
+
+    function search(query) {
         let results_container = $('#js-results-container');
-        $.ajax({
-            url: apiUrl.concat('?search=', $(this).val()),
+
+        // A slow response for an older query must never overwrite a newer one
+        if (searchRequest) {
+            searchRequest.abort();
+        }
+        searchRequest = $.ajax({
+            url: apiUrl,
+            data: {search: query},
             headers: {
                 'X-Language': lang
             },
@@ -44,6 +54,14 @@ $(document).ready(function () {
             error: function (xhr) {
             },
         });
+    }
+
+    $('#js-search-input').on('input', function () {
+        const query = $(this).val();
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(function () {
+            search(query);
+        }, SEARCH_DEBOUNCE_MS);
     })
 
 })

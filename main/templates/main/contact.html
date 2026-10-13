@@ -75,6 +75,7 @@
             </div>
             <form class="form" action="." method="POST">
                 {% csrf_token %}
+                {% include 'lib/_honeypot_field.html' with id='contact-honeypot' %}
                 <div class="form__group">
                     <label class="form__label screen-reader-text" for="form-name">{% translate 'Your Name' %}</label>
                     <input class="form__input" id="form-name" type="text" name="name" placeholder="{% translate 'Your name' %}"

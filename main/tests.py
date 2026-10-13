@@ -52,6 +52,13 @@ class ContactFormViewTests(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].reply_to, ['ada@example.com'])
 
+    def test_ignores_bots_that_fill_the_hidden_field(self):
+        response = self.client.post(reverse('main:contact'), {**self.data, 'contact_me_by_fax_only': 'spam'})
+
+        self.assertRedirects(response, reverse('main:index'), fetch_redirect_response=False)
+        self.assertFalse(ContactRequest.objects.exists())
+        self.assertEqual(mail.outbox, [])
+
     def test_keeps_the_request_when_the_email_fails(self):
         with (
             mock.patch('main.forms.EmailMultiAlternatives.send', side_effect=OSError('SMTP is down')),

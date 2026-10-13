@@ -1,0 +1,8 @@
+{% comment %}
+    Pairs with config.forms.HoneypotForm. Moved off-screen, skipped by the keyboard and hidden from screen
+    readers, so only bots fill it in. `id` must be unique on the page.
+{% endcomment %}
+<div style="position: absolute; left: -10000px;" aria-hidden="true">
+    <label for="{{ id }}">Leave this field empty</label>
+    <input type="text" id="{{ id }}" name="contact_me_by_fax_only" value="" tabindex="-1" autocomplete="off">
+</div>

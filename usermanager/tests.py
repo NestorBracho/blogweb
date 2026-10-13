@@ -15,6 +15,13 @@ class AddNewsletterSubscriberViewTests(TestCase):
         self.assertRedirects(response, '/about/', fetch_redirect_response=False)
         self.assertTrue(NewsletterSubscriber.objects.filter(email='reader@example.com').exists())
 
+    def test_ignores_bots_that_fill_the_hidden_field(self):
+        self.client.post(
+            reverse('main:newsletter-subscriber'), {'email': 'bot@example.com', 'contact_me_by_fax_only': 'spam'}
+        )
+
+        self.assertFalse(NewsletterSubscriber.objects.exists())
+
     def test_never_redirects_to_another_site(self):
         response = self.subscribe('reader@example.com', next_url='https://evil.example/')
 

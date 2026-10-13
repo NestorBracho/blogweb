@@ -58,6 +58,9 @@ coverage.xml
 # Django stuff:
 *.log*
 media/
+# collectstatic output; admin assets come from the installed Django version
+staticfiles/
+static/admin/
 
 # Sphinx documentation
 docs/_build/

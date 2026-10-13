@@ -8,6 +8,15 @@ from django.urls import reverse
 from .models import ContactRequest
 
 
+class HomeTests(TestCase):
+    def test_intro_is_translated(self):
+        spanish = self.client.get(reverse('main:index'), headers={'Accept-Language': 'es'})
+        english = self.client.get(reverse('main:index'), headers={'Accept-Language': 'en'})
+
+        self.assertContains(spanish, 'Bienvenido a mi pequeño rincón en internet.')
+        self.assertContains(english, 'Welcome to my little home on the web.')
+
+
 class RobotsTxtTests(TestCase):
     def test_points_crawlers_to_the_sitemap(self):
         response = self.client.get(reverse('robots'))

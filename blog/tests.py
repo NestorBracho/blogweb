@@ -175,6 +175,24 @@ class PostAPITests(TestCase):
         self.assertEqual([post['title'] for post in spanish.json()], ['Agujeros negros'])
         self.assertEqual(english.json(), [])
 
+    def test_language_header_applies_to_the_whole_response(self):
+        create_post('Black holes', title_es='Agujeros negros', read_time=3)
+
+        # The site defaults to Spanish, but the header asks for English
+        response = self.client.get(self.url, headers={'X-Language': 'en'})
+
+        post = response.json()['results'][0]
+        self.assertEqual((post['title'], post['read_time']), ('Black holes', '3 min read'))
+        self.assertIn('X-Language', response['Vary'])
+
+    def test_language_follows_the_site_without_the_header(self):
+        create_post('Black holes', title_es='Agujeros negros', read_time=3)
+
+        response = self.client.get(self.url, headers={'Accept-Language': 'es'})
+
+        post = response.json()['results'][0]
+        self.assertEqual((post['title'], post['read_time']), ('Agujeros negros', '3 min de lectura'))
+
     def test_anonymous_users_cannot_create_posts(self):
         response = self.client.post(self.url, {'title_en': 'Spam'})
 

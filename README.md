@@ -33,7 +33,9 @@ REST API, tests and linting in CI, and a hardened self-hosted deployment that co
 - "Load more" pagination and live search served by the JSON API.
 - RSS feed, XML sitemap, `robots.txt` and Open Graph / Twitter Card metadata.
 - A contact form that stores every request before emailing it, so a mail outage never loses a message.
-- Newsletter sign-up that only ever redirects back to this site.
+- Newsletter sign-up with double opt-in: a signed, expiring link confirms each address, and the form never reveals
+  who is already subscribed.
+- A honeypot field on both forms against spam bots, and a privacy policy in both languages.
 - Light and dark themes.
 - An optional command that drafts posts with OpenAI for me to review (see [AI-assisted drafts](#ai-assisted-drafts)).
 

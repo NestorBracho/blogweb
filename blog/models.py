@@ -1,10 +1,12 @@
-from config import base_models as models
+from django.db import models
+
+from config.base_models import BaseModel
 from django.urls import reverse
 from django.utils import translation
 from django.utils.text import slugify
 
 
-class Category(models.Model):
+class Category(BaseModel):
     name_es = models.CharField(max_length=120)
     name_en = models.CharField(max_length=120)
     slug = models.SlugField(max_length=120, unique=True)
@@ -24,7 +26,7 @@ class Category(models.Model):
         return reverse('blog:category-detail', kwargs={'slug': self.slug})
 
 
-class Post(models.Model):
+class Post(BaseModel):
     slug = models.SlugField(max_length=120, unique=True)
     title_es = models.CharField(max_length=60)
     title_en = models.CharField(max_length=60)

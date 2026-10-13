@@ -37,7 +37,7 @@ def generate_article(topic):
     category = Category.objects.get(slug='programming')
 
     prompt = f"""
-Generate a blog article in Markdown format about "{topic}". The article should have {sections} sections, 
+Generate a blog article in Markdown format about "{topic}". The article should have {sections} sections,
 a clear introduction and a conclusion.
 Write it in a human style with natural variation in sentence structure and tone. Target around {word_target} words.
 Return only the article body in English, no preamble.
@@ -70,7 +70,7 @@ Return only the article body in English, no preamble.
     spanish_body = response_es.choices[0].message.content.strip()
 
     # Get summary and title
-    summary_prompt = f"""Summarize the following article in less than 160 characters. Then, provide a short SEO-friendly 
+    summary_prompt = f"""Summarize the following article in less than 160 characters. Then, provide a short SEO-friendly
     title (max 60 characters) in both English and Spanish. Markdown format:
     Article:
     {english_body}
@@ -150,7 +150,7 @@ def create_article_from_json():
       "unsplash_tags": ["relativity", "einstein", "space", "gravity", "time"]
     }
 
-    post = Post.objects.create(
+    Post.objects.create(
         slug=slugify(article_json['title_en']),
         title_es=article_json['title_es'],
         title_en=article_json['title_en'],

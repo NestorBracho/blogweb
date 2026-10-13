@@ -1,5 +1,10 @@
+from unittest import mock
+
+from django.core import mail
 from django.test import TestCase, override_settings
 from django.urls import reverse
+
+from .models import ContactRequest
 
 
 class RobotsTxtTests(TestCase):
@@ -36,3 +41,25 @@ class SocialLinksTests(TestCase):
         response = self.client.get(reverse('main:index'))
 
         self.assertContains(response, 'href="https://www.linkedin.com/in/example"', count=2)
+
+
+class ContactFormViewTests(TestCase):
+    data = {'name': 'Ada', 'email': 'ada@example.com', 'message': 'Hello!'}
+
+    def test_stores_the_request_and_emails_it(self):
+        response = self.client.post(reverse('main:contact'), self.data)
+
+        self.assertRedirects(response, reverse('main:index'), fetch_redirect_response=False)
+        self.assertTrue(ContactRequest.objects.filter(email='ada@example.com').exists())
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].reply_to, ['ada@example.com'])
+
+    def test_keeps_the_request_when_the_email_fails(self):
+        with (
+            mock.patch('main.forms.EmailMultiAlternatives.send', side_effect=OSError('SMTP is down')),
+            self.assertLogs('main.forms', level='ERROR'),
+        ):
+            response = self.client.post(reverse('main:contact'), self.data)
+
+        self.assertRedirects(response, reverse('main:index'), fetch_redirect_response=False)
+        self.assertTrue(ContactRequest.objects.filter(email='ada@example.com').exists())

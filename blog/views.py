@@ -1,7 +1,7 @@
 from django.views import generic
 from django.utils import translation
 from django.utils.translation import gettext as _
-from django.http import Http404
+from django.shortcuts import get_object_or_404
 
 from .models import Post, Category
 
@@ -66,17 +66,4 @@ class CategoryDetailView(generic.ListView):
         return queryset
 
     def get_object(self):
-        queryset = Category.objects.all()
-
-        slug = self.kwargs.get('slug')
-        queryset = queryset.filter(slug=slug)
-
-        try:
-            # Get the single item from the filtered queryset
-            obj = queryset.get()
-        except queryset.model.DoesNotExist:
-            raise Http404(
-                _("No %(verbose_name)s found matching the query")
-                % {"verbose_name": queryset.model._meta.verbose_name}
-            )
-        return obj
+        return get_object_or_404(Category, slug=self.kwargs['slug'])

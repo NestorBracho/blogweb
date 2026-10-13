@@ -15,7 +15,7 @@ class ContactForm(forms.ModelForm):
         fields = ('name', 'email', 'message')
 
     def save(self, commit=True):
-        instance = super(ContactForm, self).save(commit)
+        instance = super().save(commit)
         try:
             self.send_mail(
                 context={

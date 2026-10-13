@@ -152,7 +152,7 @@ OWNER_LOCATION = env('OWNER_LOCATION', default='')
 
 # Public profiles linked from the footer and sidebar. Leave one empty to hide its icon.
 OWNER_GITHUB_URL = env('OWNER_GITHUB_URL', default='https://github.com/NestorBracho')
-OWNER_LINKEDIN_URL = env('OWNER_LINKEDIN_URL', default='')
+OWNER_LINKEDIN_URL = env('OWNER_LINKEDIN_URL', default='https://www.linkedin.com/in/nestor-bracho')
 
 
 # OpenAI, only needed by the draft_article command

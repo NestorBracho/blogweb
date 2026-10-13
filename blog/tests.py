@@ -1,8 +1,9 @@
 from datetime import timedelta
 from urllib.parse import quote
 
+from django.contrib.auth import get_user_model
 from django.test import TestCase
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 
 from .models import Category, Post
@@ -140,3 +141,70 @@ class SitemapTests(TestCase):
         self.assertContains(response, f'<loc>http://testserver{published.category.get_absolute_url()}</loc>')
         self.assertNotContains(response, draft.get_absolute_url())
         self.assertNotContains(response, draft.category.get_absolute_url())
+
+
+class PostAPITests(TestCase):
+    url = reverse_lazy('blog:api:post-list')
+
+    def test_lists_published_posts_a_page_at_a_time(self):
+        for number in range(5):
+            create_post(f'Post {number}', days_ago=number)
+        create_post('Draft', is_published=False)
+
+        response = self.client.get(self.url)
+
+        page = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(page['count'], 5)
+        self.assertEqual([post['title'] for post in page['results']], ['Post 0', 'Post 1', 'Post 2', 'Post 3'])
+
+    def test_searches_in_the_requested_language(self):
+        create_post('Black holes', title_es='Agujeros negros')
+
+        spanish = self.client.get(self.url, {'search': 'agujeros'}, headers={'X-Language': 'es'})
+        english = self.client.get(self.url, {'search': 'agujeros'}, headers={'X-Language': 'en'})
+
+        self.assertEqual([post['title'] for post in spanish.json()], ['Agujeros negros'])
+        self.assertEqual(english.json(), [])
+
+    def test_anonymous_users_cannot_create_posts(self):
+        response = self.client.post(self.url, {'title_en': 'Spam'})
+
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(Post.objects.filter(title_en='Spam').exists())
+
+    def test_staff_can_create_draft_posts(self):
+        self.client.force_login(get_user_model().objects.create_user(username='editor', is_staff=True))
+        category = create_category()
+
+        response = self.client.post(
+            self.url,
+            {
+                'title_es': 'Hola mundo',
+                'title_en': 'Hello world',
+                'body_es': 'Cuerpo',
+                'body_en': 'Body',
+                'description_es': 'Descripción',
+                'description_en': 'Description',
+                'category': category.slug,
+                'read_time': 3,
+            },
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertFalse(Post.objects.get(slug='hello-world').is_published)
+
+
+class CategoryAPITests(TestCase):
+    def test_lists_categories_with_their_latest_published_posts(self):
+        category = create_category()
+        create_post('Old', category=category)
+        create_post('New', category=category)
+        create_post('Draft', category=category, is_published=False)
+        create_category('empty-topic')
+
+        response = self.client.get(reverse('blog:api:categories'))
+
+        categories = response.json()['results']
+        self.assertEqual([category['slug'] for category in categories], ['test-topic'])
+        self.assertEqual([post['title'] for post in categories[0]['first_5_posts']], ['New', 'Old'])

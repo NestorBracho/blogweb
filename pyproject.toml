@@ -13,10 +13,6 @@ select = [
     "DJ",      # Django-specific checks
 ]
 
-[tool.ruff.lint.per-file-ignores]
-# Embeds a whole article as data; those long lines are content, not code
-"blog/article_generation.py" = ["E501"]
-
 [tool.ruff.lint.isort]
 known-first-party = ["blog", "config", "main", "usermanager"]
 

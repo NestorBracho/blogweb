@@ -19,6 +19,7 @@ REST API, tests and linting in CI, and a hardened self-hosted deployment that co
 |----------------------------------------|------------------------------------------------------------------------------------------------------|
 | Models, views, i18n                    | [`blog/`](blog), [`main/`](main), [`config/`](config)                                                 |
 | A REST API with Django REST Framework  | [`blog/api/`](blog/api): separate read/write serializers, staff-only writes                          |
+| An LLM integration                     | [`blog/drafting.py`](blog/drafting.py): OpenAI structured outputs validated with Pydantic            |
 | Tests                                  | `*/tests.py`: views, API permissions, feeds, forms, open-redirect protection                         |
 | CI/CD                                  | [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)                                       |
 | Server configuration                   | [`deploy/`](deploy): nginx, a hardened systemd unit, backup and update scripts                       |
@@ -34,6 +35,7 @@ REST API, tests and linting in CI, and a hardened self-hosted deployment that co
 - A contact form that stores every request before emailing it, so a mail outage never loses a message.
 - Newsletter sign-up that only ever redirects back to this site.
 - Light and dark themes.
+- An optional command that drafts posts with OpenAI for me to review (see [AI-assisted drafts](#ai-assisted-drafts)).
 
 ## Architecture
 
@@ -90,7 +92,7 @@ Every push and pull request runs the checks; the coverage report is published in
 
 ```
 config/        settings, root URLs, base model, context processors
-blog/          posts and categories: views, REST API, RSS feed, sitemaps
+blog/          posts and categories: views, REST API, RSS feed, sitemaps, drafting command
 main/          home, about and contact pages, template tags
 usermanager/   newsletter subscribers
 templates/     base layout and shared partials
@@ -139,6 +141,18 @@ coverage run manage.py test && coverage report
 ```
 
 Tests expect `DEBUG=True`, as in CI: with `DEBUG=False` the production settings redirect every request to HTTPS.
+
+## AI-assisted drafts
+
+```bash
+python manage.py draft_article "Ownership in Rust" --category programming [--no-cover]
+```
+
+The command asks OpenAI for an article in both languages as structured output (a Pydantic model the SDK turns into
+a strict JSON schema), saves it as an **unpublished draft** and, unless `--no-cover` is passed, generates a cover
+image. Nothing is published automatically: drafts are meant to be reviewed and edited in the admin. It needs
+`OPENAI_API_KEY`; the model can be changed with `OPENAI_MODEL`. The tests use a fake client, so they never call the
+API.
 
 ## API
 

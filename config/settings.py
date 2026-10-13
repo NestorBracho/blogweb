@@ -156,9 +156,10 @@ OWNER_GITHUB_URL = env('OWNER_GITHUB_URL', default='https://github.com/NestorBra
 OWNER_LINKEDIN_URL = env('OWNER_LINKEDIN_URL', default='')
 
 
-# OpenAI config (only needed by blog/article_generation.py)
+# OpenAI, only needed by the draft_article command
 
 OPENAI_API_KEY = env('OPENAI_API_KEY', default='')
+OPENAI_MODEL = env('OPENAI_MODEL', default='gpt-4o')
 
 
 # Password validation

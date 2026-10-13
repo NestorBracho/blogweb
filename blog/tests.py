@@ -1,11 +1,19 @@
+import base64
 from datetime import timedelta
+from io import StringIO
+from tempfile import TemporaryDirectory
+from types import SimpleNamespace
+from unittest import mock
 from urllib.parse import quote
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.core.management import CommandError, call_command
+from django.test import TestCase, override_settings
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from openai import OpenAIError
 
+from .drafting import ArticleDraft
 from .models import Category, Post
 
 
@@ -208,3 +216,101 @@ class CategoryAPITests(TestCase):
         categories = response.json()['results']
         self.assertEqual([category['slug'] for category in categories], ['test-topic'])
         self.assertEqual([post['title'] for post in categories[0]['first_5_posts']], ['New', 'Old'])
+
+
+def parsed_completion(draft=None, refusal=None):
+    return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(parsed=draft, refusal=refusal))])
+
+
+@override_settings(OPENAI_API_KEY='test-key', OPENAI_MODEL='test-model')
+class DraftArticleCommandTests(TestCase):
+    draft = ArticleDraft(
+        title_en='Ownership in Rust',
+        title_es='Propiedad en Rust',
+        description_en='How Rust frees memory without a garbage collector.',
+        description_es='Cómo Rust libera memoria sin recolector de basura.',
+        body_en='word ' * 450,
+        body_es='palabra ' * 450,
+    )
+
+    def setUp(self):
+        self.category = create_category()
+        # No request ever leaves the test: the command gets this fake client instead of a real one
+        self.openai = mock.MagicMock()
+        self.openai.beta.chat.completions.parse.return_value = parsed_completion(self.draft)
+        self.openai.images.generate.return_value = SimpleNamespace(
+            data=[SimpleNamespace(b64_json=base64.b64encode(b'image').decode())]
+        )
+        patcher = mock.patch('blog.management.commands.draft_article.OpenAI', return_value=self.openai)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def draft_article(self, *args):
+        output = StringIO()
+        call_command('draft_article', 'Rust ownership', '--category', self.category.slug, *args, stdout=output)
+        return output.getvalue()
+
+    def test_saves_an_unpublished_bilingual_draft(self):
+        output = self.draft_article('--no-cover')
+
+        post = Post.objects.get(slug='ownership-in-rust')
+        self.assertFalse(post.is_published)
+        self.assertEqual(post.category, self.category)
+        self.assertEqual((post.title_es, post.body_es), (self.draft.title_es, self.draft.body_es))
+        self.assertEqual(post.read_time, 3)
+        self.assertIn(reverse('admin:blog_post_change', args=[post.pk]), output)
+        self.openai.images.generate.assert_not_called()
+
+    def test_asks_for_structured_output(self):
+        self.draft_article('--no-cover')
+
+        request = self.openai.beta.chat.completions.parse.call_args.kwargs
+        self.assertEqual(request['model'], 'test-model')
+        self.assertIs(request['response_format'], ArticleDraft)
+        self.assertIn('Rust ownership', request['messages'][-1]['content'])
+
+    def test_shortens_texts_that_do_not_fit_their_columns(self):
+        self.openai.beta.chat.completions.parse.return_value = parsed_completion(
+            self.draft.model_copy(update={'title_en': 'A' * 80, 'description_es': 'B' * 200})
+        )
+
+        self.draft_article('--no-cover')
+
+        post = Post.objects.get(category=self.category)
+        self.assertEqual(len(post.title_en), 60)
+        self.assertEqual(len(post.description_es), 160)
+
+    def test_attaches_a_generated_cover(self):
+        with TemporaryDirectory() as media_root, override_settings(MEDIA_ROOT=media_root):
+            self.draft_article()
+
+            post = Post.objects.get(slug='ownership-in-rust')
+            with post.cover.open('rb') as cover:
+                self.assertEqual(cover.read(), b'image')
+
+    def test_keeps_the_draft_when_the_cover_fails(self):
+        self.openai.images.generate.side_effect = OpenAIError('Image service unavailable')
+
+        output = self.draft_article()
+
+        self.assertFalse(Post.objects.get(slug='ownership-in-rust').cover)
+        self.assertIn('without a cover', output)
+
+    def test_reports_a_refusal_without_saving_anything(self):
+        self.openai.beta.chat.completions.parse.return_value = parsed_completion(refusal='I cannot write that.')
+
+        with self.assertRaisesMessage(CommandError, 'I cannot write that.'):
+            self.draft_article()
+
+        self.assertFalse(Post.objects.filter(category=self.category).exists())
+
+    def test_rejects_an_unknown_category(self):
+        with self.assertRaisesMessage(CommandError, 'Unknown category "missing"'):
+            call_command('draft_article', 'Rust ownership', '--category', 'missing')
+
+        self.openai.beta.chat.completions.parse.assert_not_called()
+
+    @override_settings(OPENAI_API_KEY='')
+    def test_requires_an_api_key(self):
+        with self.assertRaisesMessage(CommandError, 'OPENAI_API_KEY'):
+            self.draft_article()

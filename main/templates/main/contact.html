@@ -91,6 +91,10 @@
                     <textarea class="form__input" id="form-text" name="message" rows="5" placeholder="{% translate 'Your Message' %}"
                               required=""></textarea>
                 </div>
+                <p style="font-size: 14px;">
+                    {% translate 'I will only use your details to reply to you.' %}
+                    <a href="{% url 'main:privacy' %}" style="text-decoration: underline;">{% translate 'Privacy policy' %}</a>
+                </p>
                 <div class="form__group">
                     <button class="button button--primary" type="submit">{% translate 'Send Now' %}</button>
                 </div>

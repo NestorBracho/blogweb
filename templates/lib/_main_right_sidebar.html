@@ -22,6 +22,10 @@
             <button class="button button--secondary button--big widget-subscribe__button"
                     id="membedded-subscribe" type="submit" name="subscribe">{% translate 'Join Now' %}
             </button>
+            <p style="margin: 12px 0 0; font-size: 13px; color: var(--white);">
+                {% translate 'You will receive an email to confirm your subscription.' %}
+                <a href="{% url 'main:privacy' %}" style="color: inherit; text-decoration: underline;">{% translate 'Privacy policy' %}</a>
+            </p>
         </form>
     </div>
 

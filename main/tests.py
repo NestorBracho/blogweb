@@ -17,6 +17,32 @@ class HomeTests(TestCase):
         self.assertContains(english, 'Welcome to my little home on the web.')
 
 
+class PrivacyViewTests(TestCase):
+    def test_shows_the_whole_policy_in_each_language(self):
+        spanish = self.client.get(reverse('main:privacy'), headers={'Accept-Language': 'es'})
+        english = self.client.get(reverse('main:privacy'), headers={'Accept-Language': 'en'})
+
+        self.assertContains(spanish, '<title>Política de privacidad - Bracho</title>')
+        self.assertContains(spanish, 'Quién es responsable')
+        self.assertNotContains(spanish, 'Who is responsible')
+        self.assertContains(english, '<title>Privacy policy - Bracho</title>')
+        self.assertContains(english, 'Who is responsible')
+
+    @override_settings(OWNER_EMAIL='nestor@example.com')
+    def test_gives_the_owner_email_when_configured(self):
+        response = self.client.get(reverse('main:privacy'))
+
+        self.assertContains(response, 'href="mailto:nestor@example.com"')
+
+    def test_is_linked_from_every_form_and_the_sitemap(self):
+        privacy_link = f'href="{reverse("main:privacy")}"'
+
+        self.assertContains(self.client.get(reverse('main:contact')), privacy_link)
+        # The home page has the newsletter form and the footer
+        self.assertContains(self.client.get(reverse('main:index')), privacy_link, count=2)
+        self.assertContains(self.client.get(reverse('sitemap')), f'http://testserver{reverse("main:privacy")}')
+
+
 class RobotsTxtTests(TestCase):
     def test_points_crawlers_to_the_sitemap(self):
         response = self.client.get(reverse('robots'))

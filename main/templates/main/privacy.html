@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+{% get_current_language as LANGUAGE_CODE %}
+{% url 'main:contact' as contact_url %}
+<div class="container">
+    <div class="row">
+        <div class="col col-8 col-d-12">
+            <div class="page-head">
+                <div class="page-info">
+                    <h1 class="page-title">{% translate 'Privacy policy' %}</h1>
+                </div>
+            </div>
+
+            <article class="page">
+                <div class="page__content">
+                    {% comment %}
+                        A legal text reads better whole in each language than split into translation strings.
+                        Keep both versions in sync, and update the date when either changes.
+                    {% endcomment %}
+                    {% if LANGUAGE_CODE == 'es' %}
+                        <p><em>Última actualización: 13 de octubre de 2026</em></p>
+
+                        <h2>Quién es responsable</h2>
+                        <p>
+                            Este sitio lo gestiona Nestor Bracho. Para cualquier cuestión sobre tus datos, escríbeme
+                            {% if owner.email %}a <a href="mailto:{{ owner.email }}">{{ owner.email }}</a> o {% endif %}a
+                            través del <a href="{{ contact_url }}">formulario de contacto</a>.
+                        </p>
+
+                        <h2>Qué datos recojo y para qué</h2>
+                        <ul>
+                            <li>
+                                <strong>Formulario de contacto:</strong> tu nombre, tu email y tu mensaje, para poder
+                                responderte. Se guardan en la base de datos del sitio y me llegan por email. Los conservo
+                                mientras sean necesarios para la conversación y los borro si me lo pides.
+                            </li>
+                            <li>
+                                <strong>Newsletter:</strong> tu email y las fechas de alta y de confirmación. Solo te
+                                escribiré si confirmas la suscripción con el enlace que te envío (doble confirmación); las
+                                direcciones sin confirmar nunca reciben la newsletter. Puedes darte de baja cuando quieras
+                                escribiéndome, y cada newsletter incluirá un enlace para hacerlo.
+                            </li>
+                            <li>
+                                <strong>Registros del servidor:</strong> como cualquier web, el servidor anota la dirección
+                                IP, la fecha, la página pedida y el navegador de cada visita. Sirven para la seguridad y
+                                para resolver problemas, y se borran automáticamente al cabo de poco tiempo.
+                            </li>
+                        </ul>
+                        <p>
+                            La base legal es tu consentimiento en el caso de la newsletter, y tu propia petición o mi
+                            interés legítimo en responderte y mantener el sitio seguro en los demás casos. No vendo ni
+                            cedo tus datos a nadie.
+                        </p>
+
+                        <h2>Cookies y almacenamiento local</h2>
+                        <p>Este sitio no usa cookies de analítica, de publicidad ni de seguimiento. Solo usa:</p>
+                        <ul>
+                            <li><code>csrftoken</code>: protege los formularios frente a envíos falsificados.</li>
+                            <li><code>django_language</code>: recuerda el idioma si lo cambias, hasta que cierres el navegador.</li>
+                            <li><code>messages</code>: muestra avisos como «mensaje enviado» y desaparece en cuanto se ven.</li>
+                            <li><code>sessionid</code>: solo para iniciar sesión en el panel de administración.</li>
+                            <li>
+                                Almacenamiento local del navegador (no es una cookie y no sale de tu dispositivo): recuerda
+                                si prefieres el tema claro u oscuro y cómo ver la lista de artículos.
+                            </li>
+                        </ul>
+
+                        <h2>Servicios de terceros</h2>
+                        <ul>
+                            <li>
+                                <strong>Cloudflare</strong> entrega el sitio y lo protege frente a ataques. Procesa tu
+                                dirección IP y los datos de cada petición, y puede poner cookies técnicas de seguridad.
+                            </li>
+                            <li><strong>Google Cloud</strong> aloja el servidor y la base de datos, en Estados Unidos.</li>
+                            <li>
+                                <strong>Google Fonts</strong> sirve las tipografías, así que tu navegador se conecta a
+                                servidores de Google, que reciben tu dirección IP.
+                            </li>
+                            <li>
+                                Un <strong>proveedor de envío de correo</strong> entrega los emails del formulario de
+                                contacto y de la newsletter.
+                            </li>
+                        </ul>
+                        <p>Estos proveedores pueden tratar datos fuera de tu país, también en Estados Unidos.</p>
+
+                        <h2>Tus derechos</h2>
+                        <p>
+                            Puedes pedirme acceso a tus datos, que los corrija o los borre, limitar u oponerte a su uso,
+                            recibirlos en un formato portable y retirar tu consentimiento en cualquier momento. Basta con
+                            escribirme por los medios de arriba. Si crees que no he tratado bien tus datos, también puedes
+                            reclamar ante la autoridad de protección de datos de tu país.
+                        </p>
+
+                        <h2>Cambios</h2>
+                        <p>Si esta política cambia, lo verás en la fecha de arriba.</p>
+                    {% else %}
+                        <p><em>Last updated: October 13, 2026</em></p>
+
+                        <h2>Who is responsible</h2>
+                        <p>
+                            This site is run by Nestor Bracho. For anything about your data, write to me
+                            {% if owner.email %}at <a href="mailto:{{ owner.email }}">{{ owner.email }}</a> or {% endif %}through
+                            the <a href="{{ contact_url }}">contact form</a>.
+                        </p>
+
+                        <h2>What I collect and why</h2>
+                        <ul>
+                            <li>
+                                <strong>Contact form:</strong> your name, email and message, so I can reply. They are stored
+                                in the site's database and sent to my inbox. I keep them while the conversation needs them
+                                and delete them if you ask.
+                            </li>
+                            <li>
+                                <strong>Newsletter:</strong> your email and the dates you signed up and confirmed. I will only
+                                write to you after you confirm through the link I send (double opt-in); unconfirmed
+                                addresses never receive the newsletter. You can leave at any time by writing to me, and
+                                every newsletter will include a link to unsubscribe.
+                            </li>
+                            <li>
+                                <strong>Server logs:</strong> like any website, the server records the IP address, date,
+                                requested page and browser of each visit. They are used for security and troubleshooting
+                                and are deleted automatically after a short time.
+                            </li>
+                        </ul>
+                        <p>
+                            The legal basis is your consent for the newsletter, and your own request or my legitimate
+                            interest in replying to you and keeping the site secure otherwise. I don't sell or share your
+                            data with anyone.
+                        </p>
+
+                        <h2>Cookies and local storage</h2>
+                        <p>This site uses no analytics, advertising or tracking cookies. It only uses:</p>
+                        <ul>
+                            <li><code>csrftoken</code>: protects the forms against forged submissions.</li>
+                            <li><code>django_language</code>: remembers your language if you change it, until you close the browser.</li>
+                            <li><code>messages</code>: shows notices such as "message sent" and disappears once shown.</li>
+                            <li><code>sessionid</code>: only for signing in to the admin.</li>
+                            <li>
+                                Your browser's local storage (not a cookie, and it never leaves your device): remembers
+                                whether you prefer the light or dark theme and how to display the list of posts.
+                            </li>
+                        </ul>
+
+                        <h2>Third-party services</h2>
+                        <ul>
+                            <li>
+                                <strong>Cloudflare</strong> delivers the site and protects it from attacks. It processes
+                                your IP address and request data, and may set technical security cookies.
+                            </li>
+                            <li><strong>Google Cloud</strong> hosts the server and database, in the United States.</li>
+                            <li>
+                                <strong>Google Fonts</strong> serves the fonts, so your browser connects to Google's
+                                servers, which receive your IP address.
+                            </li>
+                            <li>
+                                An <strong>email delivery provider</strong> sends the contact form and newsletter emails.
+                            </li>
+                        </ul>
+                        <p>These providers may process data outside your country, including in the United States.</p>
+
+                        <h2>Your rights</h2>
+                        <p>
+                            You can ask me for access to your data, to correct or delete it, to restrict or object to its
+                            use, to receive it in a portable format, and to withdraw your consent at any time. Just write
+                            to me as described above. If you think I haven't handled your data properly, you can also
+                            complain to the data protection authority in your country.
+                        </p>
+
+                        <h2>Changes</h2>
+                        <p>If this policy changes, the date at the top will change too.</p>
+                    {% endif %}
+                </div>
+            </article>
+        </div>
+
+        <div class="col col-4 col-d-12">
+            {% include 'lib/_main_right_sidebar.html' %}
+        </div>
+    </div>
+</div>
+{% endblock %}

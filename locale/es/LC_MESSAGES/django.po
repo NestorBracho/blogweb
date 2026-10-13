@@ -591,6 +591,29 @@ msgstr "Tu suscripción está confirmada. ¡Gracias!"
 msgid "Confirm your subscription to Bracho"
 msgstr "Confirma tu suscripción a Bracho"
 
+#: main/templates/main/contact.html:95
+msgid "I will only use your details to reply to you."
+msgstr "Solo usaré tus datos para responderte."
+
+#: main/templates/main/contact.html:96 main/templates/main/privacy.html:12
+#: main/views.py:31 templates/lib/_main_right_sidebar.html:27
+msgid "Privacy policy"
+msgstr "Política de privacidad"
+
+#: main/views.py:32
+msgid ""
+"What personal data this site collects, why, and how to exercise your rights."
+msgstr ""
+"Qué datos personales recoge este sitio, para qué y cómo ejercer tus derechos."
+
+#: templates/lib/_main_footer.html:75
+msgid "Privacy"
+msgstr "Privacidad"
+
+#: templates/lib/_main_right_sidebar.html:26
+msgid "You will receive an email to confirm your subscription."
+msgstr "Recibirás un correo para confirmar tu suscripción."
+
 #~ msgid "A digital explorer, coder, and Linux advocate"
 #~ msgstr "Un explorador digital, codificador, y defensor de Linux"
 

@@ -28,8 +28,12 @@ A minimalist, SEO-optimized personal blog built with **Django**, supporting:
 python3 -m venv venv
 source venv/bin/activate
 
-# Install dependencies
-pip install -r requirements.txt
+# Install dependencies (runtime + ruff, coverage)
+pip install -r requirements-dev.txt
+pre-commit install  # optional: run ruff on every commit
+
+# Configure: set SECRET_KEY and DEBUG=True
+cp .env.example .env
 
 # Setup database
 python manage.py migrate
@@ -37,3 +41,14 @@ python manage.py createsuperuser
 
 # Run server
 python manage.py runserver
+```
+
+## ✅ Checks
+
+The same checks run in GitHub Actions on every push and pull request:
+
+```bash
+ruff check .
+ruff format --check .
+coverage run manage.py test && coverage report
+```

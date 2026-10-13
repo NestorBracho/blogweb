@@ -248,8 +248,9 @@ ssh -i ~/.ssh/oracle-blog nestor@IP_DEL_SERVIDOR
 
 `.github/workflows/deploy.yml`:
 
-- **Pull requests y pushes a `main`**: `manage.py check`, migraciones pendientes,
-  `migrate` sobre una base de datos vacía y `collectstatic` en modo producción.
+- **Pull requests y pushes a `main`**: `ruff` (lint y formato), `manage.py check`,
+  migraciones pendientes, `migrate` sobre una base de datos vacía, los tests con informe de
+  cobertura (también en el resumen del job) y `collectstatic` en modo producción.
 - **Push/merge a `main`** (si lo anterior pasa): se conecta por SSH como `blog`, ejecuta
   `deploy/update.sh` y comprueba que `https://nestorbracho.com` responde 200.
 

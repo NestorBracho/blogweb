@@ -1,7 +1,7 @@
 from django.urls import path
 from django.views.generic import TemplateView
 
-from usermanager.views import AddNewsletterSubscriberView
+from usermanager.views import AddNewsletterSubscriberView, ConfirmSubscriptionView
 
 from .views import AboutView, ContactFormView
 
@@ -11,4 +11,5 @@ urlpatterns = [
     path('about/', AboutView.as_view(), name='about'),
     path('contact/', ContactFormView.as_view(), name='contact'),
     path('newsletter/', AddNewsletterSubscriberView.as_view(), name='newsletter-subscriber'),
+    path('newsletter/confirm/<str:token>/', ConfirmSubscriptionView.as_view(), name='newsletter-confirm'),
 ]

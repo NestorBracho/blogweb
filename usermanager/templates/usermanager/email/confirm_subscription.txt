@@ -1,0 +1,11 @@
+{% load i18n %}{% autoescape off %}{% blocktranslate %}Hi!
+
+Someone, hopefully you, asked to subscribe this address to Bracho's newsletter. To confirm, open this link within {{ days }} days:{% endblocktranslate %}
+
+{{ confirm_url }}
+
+{% blocktranslate %}If it wasn't you, just ignore this email: unconfirmed addresses never receive the newsletter.{% endblocktranslate %}
+
+Nestor
+{{ site_url }}
+{% endautoescape %}

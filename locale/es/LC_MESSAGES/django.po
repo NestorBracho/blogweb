@@ -547,6 +547,53 @@ msgid ""
 "We were unable to subscribe you to your newsletter. Something went wrong."
 msgstr "No pude suscribirte a tu boletín informativo. Algo salió mal."
 
+#: usermanager/templates/usermanager/email/confirm_subscription.txt:1
+#, python-format
+msgid ""
+"Hi!\n"
+"\n"
+"Someone, hopefully you, asked to subscribe this address to Bracho's "
+"newsletter. To confirm, open this link within %(days)s days:"
+msgstr ""
+"¡Hola!\n"
+"\n"
+"Alguien, esperemos que tú, ha pedido suscribir esta dirección a la "
+"newsletter de Bracho. Para confirmarlo, abre este enlace en los próximos "
+"%(days)s días:"
+
+#: usermanager/templates/usermanager/email/confirm_subscription.txt:7
+msgid ""
+"If it wasn't you, just ignore this email: unconfirmed addresses never "
+"receive the newsletter."
+msgstr ""
+"Si no fuiste tú, ignora este correo: las direcciones sin confirmar nunca "
+"reciben la newsletter."
+
+#: usermanager/views.py:35
+msgid "We couldn't send you the confirmation email. Please try again later."
+msgstr ""
+"No pudimos enviarte el correo de confirmación. Inténtalo de nuevo más tarde."
+
+#: usermanager/views.py:39
+msgid "Almost there! Check your inbox and confirm your subscription."
+msgstr "¡Ya casi está! Revisa tu correo y confirma tu suscripción."
+
+#: usermanager/views.py:64
+msgid ""
+"This confirmation link is invalid or has expired. Subscribe again to get a "
+"new one."
+msgstr ""
+"Este enlace de confirmación no es válido o ha caducado. Suscríbete de nuevo "
+"para recibir otro."
+
+#: usermanager/views.py:68
+msgid "Your subscription is confirmed. Thank you!"
+msgstr "Tu suscripción está confirmada. ¡Gracias!"
+
+#: usermanager/views.py:81
+msgid "Confirm your subscription to Bracho"
+msgstr "Confirma tu suscripción a Bracho"
+
 #~ msgid "A digital explorer, coder, and Linux advocate"
 #~ msgstr "Un explorador digital, codificador, y defensor de Linux"
 

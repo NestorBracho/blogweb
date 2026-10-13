@@ -4,7 +4,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.views import generic
 
-from .froms import NewsletterSubscriberModelForm
+from .forms import NewsletterSubscriberModelForm
 
 
 class AddNewsletterSubscriberView(generic.CreateView):

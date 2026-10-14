@@ -71,7 +71,7 @@ filelock==4.2.0
     #   cachecontrol
     #   python-discovery
     #   virtualenv
-gunicorn==23.0.0
+gunicorn==26.2.0
     # via
     #   -c requirements.txt
     #   -r requirements.in
@@ -121,9 +121,7 @@ packageurl-python==0.17.6
     # via cyclonedx-python-lib
 packaging==26.3
     # via
-    #   -c requirements.txt
     #   build
-    #   gunicorn
     #   pip-audit
     #   pip-requirements-parser
     #   virtualenv

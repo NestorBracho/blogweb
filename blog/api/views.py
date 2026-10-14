@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.db.models import Max
 from django.utils import translation
 from django.utils.cache import patch_vary_headers
 from rest_framework import viewsets
@@ -45,12 +44,7 @@ class PostModelViewSet(LanguageHeaderMixin, viewsets.ModelViewSet):
 
 
 class CategoryModelListAPIView(LanguageHeaderMixin, ListAPIView):
-    queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
     def get_queryset(self):
-        return (
-            self.queryset.annotate(latest_post_created=Max('posts__created'))
-            .filter(latest_post_created__isnull=False)
-            .order_by('-latest_post_created')[:4]
-        )
+        return Category.objects.with_published_posts().order_by('-latest_post')[:4]

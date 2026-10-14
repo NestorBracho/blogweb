@@ -60,4 +60,5 @@ class CategoryDetailView(generic.ListView):
         return queryset
 
     def get_object(self):
-        return get_object_or_404(Category, slug=self.kwargs['slug'])
+        # Categories without published posts are kept for the future but not shown yet
+        return get_object_or_404(Category.objects.with_published_posts(), slug=self.kwargs['slug'])

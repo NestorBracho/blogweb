@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Max, Q
 from django.urls import reverse
 from django.utils import translation
 from django.utils.text import slugify
@@ -18,12 +19,24 @@ class TranslatedFieldsMixin:
         return getattr(self, f'{field}_{content_language()}')
 
 
+class CategoryQuerySet(models.QuerySet):
+    def with_published_posts(self):
+        """
+        Categories readers can see: those with at least one published post. Empty ones stay in the admin, ready
+        for future posts, and show up on their own once one is published. `latest_post` is the newest one's date.
+        """
+        latest_post = Max('posts__created', filter=Q(posts__is_published=True))
+        return self.annotate(latest_post=latest_post).filter(latest_post__isnull=False)
+
+
 class Category(TranslatedFieldsMixin, BaseModel):
     name_es = models.CharField(max_length=120)
     name_en = models.CharField(max_length=120)
     slug = models.SlugField(max_length=120, unique=True)
     color = models.CharField(max_length=120)
     sub_category = models.ForeignKey('Category', on_delete=models.CASCADE, null=True, blank=True)
+
+    objects = CategoryQuerySet.as_manager()
 
     def __str__(self):
         return self.name()

@@ -18,7 +18,7 @@ def owner(request):
 
 def sidebar(request):
     return {
-        'categories': Category.objects.all(),
+        'categories': Category.objects.with_published_posts().order_by('-latest_post'),
         'featured_posts': Post.objects.filter(is_published=True).order_by('-created')[:3],
         'recent_posts': Post.objects.filter(is_published=True).order_by('-created')[:3],
     }

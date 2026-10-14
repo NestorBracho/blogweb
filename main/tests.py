@@ -1,7 +1,11 @@
+import json
+from pathlib import Path
 from unittest import mock
 
 from django.contrib.auth import get_user_model
+from django.contrib.staticfiles import finders
 from django.core import mail
+from django.templatetags.static import static
 from django.test import TestCase, override_settings
 from django.urls import reverse, reverse_lazy
 
@@ -59,6 +63,30 @@ class BrandTests(TestCase):
 
         self.assertContains(spanish, 'aria-label="Bracho, inicio"')
         self.assertContains(english, 'aria-label="Bracho, home"')
+
+
+class FaviconTests(TestCase):
+    def test_root_favicon_redirects_to_the_static_file(self):
+        response = self.client.get('/favicon.ico')
+
+        self.assertRedirects(response, static('favicon/favicon.ico'), status_code=302, fetch_redirect_response=False)
+
+    def test_every_page_declares_the_icons_and_theme_color(self):
+        # The contact page doesn't extend base.html, so it gets its own check
+        for url in [reverse('main:index'), reverse('main:contact')]:
+            with self.subTest(url=url):
+                response = self.client.get(url)
+
+                self.assertContains(response, f'<link rel="manifest" href="{static("favicon/site.webmanifest")}"/>')
+                self.assertContains(response, '<meta name="theme-color" content="#10141f">')
+
+    def test_manifest_icons_are_relative_to_the_manifest_and_exist(self):
+        manifest = json.loads(Path(finders.find('favicon/site.webmanifest')).read_text())
+
+        for icon in manifest['icons']:
+            with self.subTest(icon=icon['src']):
+                self.assertFalse(icon['src'].startswith('/'))
+                self.assertIsNotNone(finders.find(f'favicon/{icon["src"]}'))
 
 
 class PrivacyViewTests(TestCase):

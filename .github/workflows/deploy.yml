@@ -35,6 +35,10 @@ jobs:
       - name: Formatting
         run: ruff format --check .
 
+      # Only what the project pins: the runner's own pip isn't ours to fix
+      - name: Known vulnerabilities in dependencies
+        run: pip-audit -r requirements-dev.txt
+
       - name: Django system checks
         run: python manage.py check
 

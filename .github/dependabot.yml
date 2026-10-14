@@ -1,0 +1,20 @@
+# Weekly pull requests to keep the pinned dependencies and the CI actions up to date.
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      # One pull request for all minor and patch updates instead of one per package
+      python:
+        update-types: [minor, patch]
+    ignore:
+      # Stay on Django's LTS release; moving to a new major version is a decision, not a routine update
+      - dependency-name: django
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly

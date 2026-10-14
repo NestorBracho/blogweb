@@ -35,6 +35,13 @@ jobs:
       - name: Formatting
         run: ruff format --check .
 
+      # Fails when requirements*.in were edited without recompiling the pinned files
+      - name: Pinned requirements match requirements*.in
+        run: |
+          pip-compile --quiet --strip-extras --output-file=requirements.txt requirements.in
+          pip-compile --quiet --strip-extras --output-file=requirements-dev.txt requirements-dev.in
+          git diff --exit-code requirements.txt requirements-dev.txt
+
       # Only what the project pins: the runner's own pip isn't ours to fix
       - name: Known vulnerabilities in dependencies
         run: pip-audit -r requirements-dev.txt

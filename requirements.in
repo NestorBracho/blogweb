@@ -1,0 +1,20 @@
+# What the site depends on directly. requirements.txt pins these and everything they pull in:
+#   pip-compile requirements.in            (add or change a dependency here, then recompile)
+#   pip-compile --upgrade-package NAME requirements.in
+
+# Stay on the 5.2 LTS release; a new major version is a decision, not an update
+Django>=5.2,<6
+djangorestframework
+django-environ
+whitenoise
+gunicorn
+
+# Posts: Markdown with highlighted code, cover images, localized dates
+Markdown
+Pygments
+pillow
+babel
+
+# The draft_article command. openai 2+ changes the SDK it uses (blog/drafting.py)
+openai<2
+pydantic

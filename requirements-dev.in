@@ -1,0 +1,11 @@
+# Development and CI tools, on top of the site's own dependencies (same pins, through the constraint).
+#   pip-compile requirements-dev.in
+-c requirements.txt
+-r requirements.in
+
+coverage
+pip-audit
+pip-tools
+pre-commit
+# Keep in sync with .pre-commit-config.yaml
+ruff

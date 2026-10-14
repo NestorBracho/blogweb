@@ -1,0 +1,19 @@
+/* Contact page: main/templates/main/contact.html */
+
+:root {
+    --form-error-color: #c62828;
+}
+
+[dark]:root {
+    --form-error-color: #ff6b6b;
+}
+
+.form__input[aria-invalid="true"] {
+    border-color: var(--form-error-color);
+}
+
+.form__error {
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--form-error-color);
+}

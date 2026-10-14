@@ -144,6 +144,24 @@ class ContactFormViewTests(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].reply_to, ['ada@example.com'])
 
+    def test_gives_the_form_back_with_what_was_typed_and_what_to_fix(self):
+        response = self.client.post(
+            reverse('main:contact'), {**self.data, 'email': 'ada@'}, headers={'Accept-Language': 'en'}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'value="Ada"')
+        self.assertContains(response, '>Hello!</textarea>')
+        self.assertContains(response, 'aria-describedby="form-email-error"')
+        self.assertContains(response, 'Enter a valid email address.')
+        self.assertFalse(ContactRequest.objects.exists())
+        self.assertEqual(mail.outbox, [])
+
+    def test_is_marked_with_the_page_language(self):
+        response = self.client.get(reverse('main:contact'), headers={'Accept-Language': 'es'})
+
+        self.assertContains(response, '<html lang="es"')
+
     def test_ignores_bots_that_fill_the_hidden_field(self):
         response = self.client.post(reverse('main:contact'), {**self.data, 'contact_me_by_fax_only': 'spam'})
 

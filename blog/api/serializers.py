@@ -29,7 +29,7 @@ class PostWriteSerializer(serializers.ModelSerializer):
             'cover',
             'is_published',
         ]
-        read_only_fields = ['id', 'slug']
+        read_only_fields = ['id', 'slug', 'read_time']
 
 
 class SearchPostSerializer(serializers.ModelSerializer):

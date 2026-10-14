@@ -8,7 +8,9 @@ from urllib.parse import quote
 
 from django.contrib.auth import get_user_model
 from django.core.management import CommandError, call_command
-from django.test import TestCase, override_settings
+from django.db import connection
+from django.db.migrations.executor import MigrationExecutor
+from django.test import TestCase, TransactionTestCase, override_settings
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from openai import OpenAIError
@@ -274,7 +276,7 @@ class PostAPITests(TestCase):
         self.assertEqual(len(capped.json()['results']), 20)
 
     def test_language_header_applies_to_the_whole_response(self):
-        create_post('Black holes', title_es='Agujeros negros', read_time=3)
+        create_post('Black holes', title_es='Agujeros negros', body_en='word ' * 450)
 
         # The site defaults to Spanish, but the header asks for English
         response = self.client.get(self.url, headers={'X-Language': 'en'})
@@ -284,7 +286,7 @@ class PostAPITests(TestCase):
         self.assertIn('X-Language', response['Vary'])
 
     def test_language_follows_the_site_without_the_header(self):
-        create_post('Black holes', title_es='Agujeros negros', read_time=3)
+        create_post('Black holes', title_es='Agujeros negros', body_en='word ' * 450)
 
         response = self.client.get(self.url, headers={'Accept-Language': 'es'})
 
@@ -362,6 +364,57 @@ class PostAPITests(TestCase):
         self.assertEqual(response.status_code, 403)
         draft.refresh_from_db()
         self.assertFalse(draft.is_published)
+
+
+class ReadTimeTests(TestCase):
+    def test_is_worked_out_from_the_text(self):
+        post = create_post('Long read', body_en='word ' * 450, body_es='palabra ' * 300)
+
+        # 450 words at 200 per minute, rounded up; the longer language wins
+        self.assertEqual(post.read_time, 3)
+
+    def test_is_at_least_a_minute(self):
+        self.assertEqual(create_post('Short').read_time, 1)
+
+    def test_follows_edits(self):
+        post = create_post('Growing')
+
+        post.body_en = 'word ' * 1000
+        post.save()
+
+        self.assertEqual(post.read_time, 5)
+
+    def test_cannot_be_set_by_hand(self):
+        post = create_post('Short', read_time=30)
+
+        self.assertEqual(post.read_time, 1)
+
+
+class ReadTimeMigrationTests(TransactionTestCase):
+    before = [('blog', '0004_post_category_set_null')]
+    after = [('blog', '0005_post_read_time_from_text')]
+
+    def migrate(self, targets):
+        executor = MigrationExecutor(connection)
+        executor.migrate(targets)
+        return executor.loader.project_state(targets).apps
+
+    def test_works_out_the_read_time_of_existing_posts(self):
+        old_post = self.migrate(self.before).get_model('blog', 'Post')
+        old_post.objects.create(
+            slug='typed-by-hand',
+            title_en='Typed by hand',
+            title_es='A mano',
+            body_en='word ' * 450,
+            body_es='palabra',
+            description_en='Description',
+            description_es='Descripción',
+            read_time=7,
+        )
+
+        new_post = self.migrate(self.after).get_model('blog', 'Post')
+
+        self.assertEqual(new_post.objects.get(slug='typed-by-hand').read_time, 3)
 
 
 class PostSlugTests(TestCase):

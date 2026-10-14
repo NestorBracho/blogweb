@@ -1,3 +1,5 @@
+import math
+
 from django.db import models
 from django.db.models import Max, Q
 from django.urls import reverse
@@ -5,6 +7,13 @@ from django.utils import translation
 from django.utils.text import slugify
 
 from config.base_models import BaseModel
+
+WORDS_PER_MINUTE = 200
+
+
+def estimate_read_time(text):
+    """Minutes to read a text at an average pace, never less than one."""
+    return max(1, math.ceil(len(text.split()) / WORDS_PER_MINUTE))
 
 
 def content_language():
@@ -58,7 +67,8 @@ class Post(TranslatedFieldsMixin, BaseModel):
     description_en = models.CharField(max_length=160)
     cover = models.ImageField(upload_to='images/', blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='posts', null=True, blank=True)
-    read_time = models.IntegerField(default=0)
+    # Minutes, worked out from the text on every save
+    read_time = models.IntegerField(default=1, editable=False)
 
     is_published = models.BooleanField(default=False)
 
@@ -69,6 +79,8 @@ class Post(TranslatedFieldsMixin, BaseModel):
         # The only place slugs are made, whether a post comes from the admin, the API or draft_article
         if not self.slug:
             self.slug = self.unique_slug(self.title_en or self.title_es)
+        # Both languages show the same figure, so use the longer text
+        self.read_time = max(estimate_read_time(self.body_en), estimate_read_time(self.body_es))
 
         super().save(*args, **kwargs)
 

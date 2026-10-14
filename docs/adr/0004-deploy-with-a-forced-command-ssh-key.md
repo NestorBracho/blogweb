@@ -2,6 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-09-28
+- **Updated:** 2026-10-15 (Gunicorn reloads gracefully instead of restarting)
 
 ## Context
 
@@ -19,9 +20,9 @@ GitHub Actions deploys every push to `main` once the checks pass
   script and nothing else: no shell, no port forwarding, no agent forwarding.
 - The server's host key is pinned in a secret and checked strictly.
 - [`deploy/update.sh`](../../deploy/update.sh) fast-forwards to `main`, installs dependencies, runs migrations,
-  collects static files and restarts the service. The `blog` user may only run that one `systemctl restart`
-  through sudo.
-- A health check fails the job unless the site answers `200` after the restart.
+  collects static files and reloads Gunicorn gracefully, or restarts it when Gunicorn itself was upgraded. Through
+  sudo, the `blog` user may only run those two `systemctl` commands on its own service.
+- A health check fails the job unless the site answers `200` after the deploy.
 - Deploys never overlap (a concurrency group with no cancellation).
 
 ## Consequences
@@ -29,5 +30,8 @@ GitHub Actions deploys every push to `main` once the checks pass
 - A leaked key can only redeploy what is already on `main`.
 - There is no automatic rollback: rolling back means reverting the change on `main`, which deploys again.
 - Migrations run while the previous version is still serving requests, so they must stay compatible with it.
-- Gunicorn is restarted rather than gracefully reloaded, so each deploy causes a short interruption, which is
-  acceptable for this site.
+- Deploys don't drop requests: on a reload (`HUP`) Gunicorn keeps its socket open, starts workers with the new code
+  and lets the old ones finish their requests. Until 2026-10-15 every deploy restarted it and the site answered
+  `502` for a few seconds.
+- A deploy that upgrades Gunicorn still restarts it, because the master process keeps running the version it started
+  with, so that one causes the short interruption.

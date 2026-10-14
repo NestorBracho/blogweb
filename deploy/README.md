@@ -118,10 +118,12 @@ sudo systemctl enable --now blog
 sudo systemctl status blog
 ```
 
-Permite al usuario `blog` reiniciar el servicio (lo usa `deploy/update.sh`):
+Permite al usuario `blog` recargar y reiniciar el servicio (lo usa `deploy/update.sh`). El fichero se valida con
+`visudo` antes de instalarlo, porque un error en `/etc/sudoers.d` deja `sudo` inservible:
 
 ```bash
-echo 'blog ALL=(root) NOPASSWD: /usr/bin/systemctl restart blog' | sudo tee /etc/sudoers.d/blog
+echo 'blog ALL=(root) NOPASSWD: /usr/bin/systemctl reload-or-restart blog, /usr/bin/systemctl restart blog' > /tmp/blog.sudoers
+sudo visudo -cf /tmp/blog.sudoers && sudo install -m 440 /tmp/blog.sudoers /etc/sudoers.d/blog
 ```
 
 ## 6. Cloudflare + nginx
@@ -221,6 +223,15 @@ Las imágenes: `sudo -u blog tar -xzf media-FECHA.tar.gz -C /srv/blog`, tras des
 ```bash
 sudo -iu blog /srv/blog/app/deploy/update.sh
 ```
+
+El script recarga Gunicorn sin cortar la web: `systemctl reload` le manda `HUP`, el socket sigue abierto, los workers
+nuevos cargan el código nuevo y los viejos terminan las peticiones que tenían a medias. Lo que llega mientras tanto
+espera un momento en vez de dar 502. Solo reinicia del todo cuando se actualiza el propio Gunicorn, porque el proceso
+maestro sigue ejecutando la versión con la que arrancó; ese despliegue sí corta unos segundos.
+
+Si cambias `gunicorn.service`, cópialo otra vez a `/etc/systemd/system/blog.service` (en Google Cloud, con el `sed`
+de los workers) y ejecuta `sudo systemctl daemon-reload`. Un cambio en `ExecStart` necesita además
+`sudo systemctl restart blog`.
 
 ## Problemas frecuentes
 

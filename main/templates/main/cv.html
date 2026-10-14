@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load i18n static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'main/cv/styles.css' %}">
+{% endblock %}
+
+{% block content %}
+{% get_current_language as LANGUAGE_CODE %}
+<div class="container">
+    <div class="row">
+        <div class="col col-8 push-2 col-d-12 push-d-0">
+            <div class="page-head">
+                <div class="page-info">
+                    <h1 class="page-title cv__name">Nestor Bracho</h1>
+                    <p class="cv__headline">{% translate 'Senior Backend Engineer' %} · Python/Django</p>
+
+                    <ul class="cv__contact list-reset">
+                        {% if owner.location %}<li>{{ owner.location }}</li>{% endif %}
+                        {% if owner.email %}<li><a href="mailto:{{ owner.email }}">{{ owner.email }}</a></li>{% endif %}
+                        {% if owner.linkedin_url %}<li><a href="{{ owner.linkedin_url }}" target="_blank" rel="noopener">LinkedIn</a></li>{% endif %}
+                        {% if owner.github_url %}<li><a href="{{ owner.github_url }}" target="_blank" rel="noopener">GitHub</a></li>{% endif %}
+                    </ul>
+
+                    {% if pdf_url %}
+                        <a class="button button--primary" href="{{ pdf_url }}" download>{% translate 'Download PDF' %}</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <article class="page cv">
+                <div class="page__content">
+                    {% comment %}
+                        Like the privacy policy, the CV reads better whole in each language than split into translation
+                        strings. Keep both versions in sync with the PDFs.
+                    {% endcomment %}
+                    {% if LANGUAGE_CODE == 'es' %}
+                        {% include 'main/_lib/_cv_es.html' %}
+                    {% else %}
+                        {% include 'main/_lib/_cv_en.html' %}
+                    {% endif %}
+                </div>
+            </article>
+        </div>
+    </div>
+</div>
+{% endblock %}

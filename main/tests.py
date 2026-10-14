@@ -3,7 +3,7 @@ from unittest import mock
 from django.contrib.auth import get_user_model
 from django.core import mail
 from django.test import TestCase, override_settings
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 
 from .models import ContactRequest
 
@@ -13,8 +13,21 @@ class HomeTests(TestCase):
         spanish = self.client.get(reverse('main:index'), headers={'Accept-Language': 'es'})
         english = self.client.get(reverse('main:index'), headers={'Accept-Language': 'en'})
 
-        self.assertContains(spanish, 'Bienvenido a mi pequeño rincón en internet.')
-        self.assertContains(english, 'Welcome to my little home on the web.')
+        self.assertContains(spanish, 'Llevo más de 12 años construyendo plataformas web')
+        self.assertContains(english, 'I have spent more than 12 years building web platforms')
+
+    def test_says_who_i_am_in_search_results_and_link_previews(self):
+        response = self.client.get(reverse('main:index'), headers={'Accept-Language': 'en'})
+
+        self.assertContains(response, '<title>Nestor Bracho, Senior Backend Engineer</title>')
+        self.assertContains(response, '<meta property="og:title" content="Nestor Bracho, Senior Backend Engineer">')
+        self.assertContains(response, '<meta property="og:description" content="Senior backend engineer with more than')
+
+    def test_leads_to_the_cv_and_the_contact_form(self):
+        response = self.client.get(reverse('main:index'))
+
+        self.assertContains(response, f'href="{reverse("main:cv")}" class="button button--primary"')
+        self.assertContains(response, f'href="{reverse("main:contact")}" class="button button--secondary"')
 
 
 class PrivacyViewTests(TestCase):
@@ -22,10 +35,10 @@ class PrivacyViewTests(TestCase):
         spanish = self.client.get(reverse('main:privacy'), headers={'Accept-Language': 'es'})
         english = self.client.get(reverse('main:privacy'), headers={'Accept-Language': 'en'})
 
-        self.assertContains(spanish, '<title>Política de privacidad - Bracho</title>')
+        self.assertContains(spanish, '<title>Política de privacidad - Nestor Bracho</title>')
         self.assertContains(spanish, 'Quién es responsable')
         self.assertNotContains(spanish, 'Who is responsible')
-        self.assertContains(english, '<title>Privacy policy - Bracho</title>')
+        self.assertContains(english, '<title>Privacy policy - Nestor Bracho</title>')
         self.assertContains(english, 'Who is responsible')
 
     @override_settings(OWNER_EMAIL='nestor@example.com')
@@ -56,8 +69,51 @@ class AboutViewTests(TestCase):
     def test_uses_its_own_meta_tags(self):
         response = self.client.get(reverse('main:about'), HTTP_ACCEPT_LANGUAGE='en')
 
-        self.assertContains(response, '<title>About Me - Bracho</title>')
+        self.assertContains(response, '<title>About Me - Nestor Bracho</title>')
         self.assertContains(response, '<meta property="og:image" content="http://testserver/static/')
+
+
+@override_settings(OWNER_CV_PDF_URLS={'en': '/media/cv/cv-en.pdf', 'es': '/media/cv/cv-es.pdf'})
+class CVViewTests(TestCase):
+    url = reverse_lazy('main:cv')
+
+    def test_shows_the_whole_cv_in_each_language(self):
+        spanish = self.client.get(self.url, headers={'Accept-Language': 'es'})
+        english = self.client.get(self.url, headers={'Accept-Language': 'en'})
+
+        self.assertContains(spanish, 'Experiencia profesional')
+        self.assertNotContains(spanish, 'Professional experience')
+        self.assertContains(english, 'Professional experience')
+        self.assertContains(english, '<title>CV - Nestor Bracho</title>')
+
+    def test_offers_the_pdf_in_the_page_language(self):
+        spanish = self.client.get(self.url, headers={'Accept-Language': 'es'})
+        english = self.client.get(self.url, headers={'Accept-Language': 'en'})
+
+        self.assertContains(spanish, 'href="/media/cv/cv-es.pdf"')
+        self.assertContains(english, 'href="/media/cv/cv-en.pdf"')
+
+    @override_settings(OWNER_CV_PDF_URLS={'en': '', 'es': ''})
+    def test_hides_the_download_without_a_pdf(self):
+        response = self.client.get(self.url, headers={'Accept-Language': 'en'})
+
+        self.assertNotContains(response, 'Download PDF')
+
+    @override_settings(OWNER_EMAIL='nestor@example.com', OWNER_LOCATION='Madrid, Spain')
+    def test_gives_the_contact_details_when_configured(self):
+        response = self.client.get(self.url)
+
+        self.assertContains(response, 'href="mailto:nestor@example.com"')
+        self.assertContains(response, 'Madrid, Spain')
+
+    def test_is_linked_from_the_menu_and_the_sitemap(self):
+        self.assertContains(self.client.get(reverse('main:index')), f'href="{self.url}"')
+        self.assertContains(self.client.get(reverse('sitemap')), f'http://testserver{self.url}')
+
+    def test_the_old_resume_post_redirects_here(self):
+        response = self.client.get('/post/resume')
+
+        self.assertRedirects(response, self.url, status_code=301)
 
 
 @override_settings(OWNER_GITHUB_URL='https://github.com/example', OWNER_LINKEDIN_URL='')
@@ -65,7 +121,7 @@ class SocialLinksTests(TestCase):
     def test_links_configured_profiles_only(self):
         response = self.client.get(reverse('main:index'))
 
-        # Footer and sidebar both render the list
+        # Footer and sidebar both render the list; the intro only links the profiles when both are set
         self.assertContains(response, 'href="https://github.com/example"', count=2)
         self.assertNotContains(response, 'fa-linkedin"')
 
@@ -73,7 +129,8 @@ class SocialLinksTests(TestCase):
     def test_links_linkedin_when_configured(self):
         response = self.client.get(reverse('main:index'))
 
-        self.assertContains(response, 'href="https://www.linkedin.com/in/example"', count=2)
+        # Footer, sidebar and the intro
+        self.assertContains(response, 'href="https://www.linkedin.com/in/example"', count=3)
 
 
 class ContactFormViewTests(TestCase):

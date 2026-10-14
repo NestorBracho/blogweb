@@ -1,9 +1,12 @@
+from django.conf import settings
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.shortcuts import reverse
 from django.templatetags.static import static
 from django.utils.translation import gettext as _
 from django.views import generic
+
+from blog.models import content_language
 
 from .forms import ContactForm
 from .models import ContactRequest
@@ -20,6 +23,20 @@ class AboutView(generic.TemplateView):
             'systems, Python, AWS, and technology for social impact. Discover his journey, '
             'skills, and mission to build meaningful digital tools.'
         )
+
+        return super().get_context_data(**kwargs)
+
+
+class CVView(generic.TemplateView):
+    template_name = 'main/cv.html'
+
+    def get_context_data(self, **kwargs):
+        kwargs['page_title'] = _('CV')
+        kwargs['meta_description'] = _(
+            'CV of Nestor Bracho, Senior Backend Engineer with more than 12 years building web platforms with Python '
+            'and Django.'
+        )
+        kwargs['pdf_url'] = settings.OWNER_CV_PDF_URLS[content_language()]
 
         return super().get_context_data(**kwargs)
 

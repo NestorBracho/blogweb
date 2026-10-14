@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 {% load i18n static main_tags l10n %}
 
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'main/index/styles.css' %}">
+{% endblock %}
+
 {% block content %}
     <!-- begin hero -->
     <section class="hero">
@@ -31,26 +35,36 @@
                             </div>
 
 
-                            <h1 class="hero__title">{% translate 'Hi! I’m' %} Nestor 👋</h1>
+                            <h1 class="hero__title">Nestor Bracho</h1>
 
 
-                            <p class="hero__subtitle">{% translate 'Problem solver, explorer, and lifelong student of how things work' %}</p>
+                            <p class="hero__subtitle">{% translate 'Senior Backend Engineer' %} · Python/Django</p>
 
 
                             <div class="hero__description">
 
-                                <p>{% blocktranslate trimmed %}Welcome to my little home on the web. This is where code,
-                                    physics, engineering,
-                                    and curiosity all come together. I write about software, space, systems, and
-                                    sometimes
-                                    games. If you love building, exploring, or just asking “how does this work?”,
-                                    you’re in the right place.{% endblocktranslate %}</p>
+                                <p>{% blocktranslate trimmed %}
+                                    I have spent more than 12 years building web platforms with Python and Django,
+                                    focused on backend design and system architecture. Since 2022 I have been building
+                                    data platforms for the World Bank Group that are used across several African
+                                    countries. Before that: the payment platform at Selia, Nokia’s Zina CRM and six
+                                    years leading teams at Turpial.
+                                {% endblocktranslate %}</p>
+
+                                {% if owner.linkedin_url and owner.github_url %}
+                                    <p>{% blocktranslate trimmed with linkedin_url=owner.linkedin_url github_url=owner.github_url %}
+                                        You can also find me on <a href="{{ linkedin_url }}" target="_blank" rel="noopener">LinkedIn</a>
+                                        and <a href="{{ github_url }}" target="_blank" rel="noopener">GitHub</a>.
+                                    {% endblocktranslate %}</p>
+                                {% endif %}
 
                             </div>
 
 
-                            <a href="{% url 'main:contact' %}"
-                               class="hero__button button button--primary">{% translate 'Let’s Work Together' %}</a>
+                            <div class="hero__actions">
+                                <a href="{% url 'main:cv' %}" class="button button--primary">{% translate 'See my CV' %}</a>
+                                <a href="{% url 'main:contact' %}" class="button button--secondary">{% translate 'Let’s Work Together' %}</a>
+                            </div>
 
                         </div>
                     </div>
@@ -60,42 +74,6 @@
         </div>
     </section>
     <!-- end hero -->
-
-
-    <!-- begin section-logos -->
-    <section class="section section-logos">
-        <div class="container">
-            <div class="row">
-                <div class="col col-12">
-
-                    <h2 class="logos-title">{% translate 'Nerd Stuff' %}</h2>
-
-                    <div class="logos splide">
-                        <div class="splide__track">
-                            <div class="logos__inner splide__list">
-                                <div class="logos__image splide__slide">
-                                    <img src="{% static 'images/1000.png' %}" alt="Archery">
-                                </div>
-                                <div class="logos__image splide__slide">
-                                    <img src="{% static 'images/1001.png' %}" alt="Quasar">
-                                </div>
-                                <div class="logos__image splide__slide">
-                                    <img src="{% static 'images/1002.png' %}" alt="LotR">
-                                </div>
-                                <div class="logos__image splide__slide">
-                                    <img src="{% static 'images/1003.png' %}" alt="Tennis">
-                                </div>
-                                <div class="logos__image splide__slide">
-                                    <a href="https://www.chess.com/member/toto2207" target="_blank" rel="noopener"><img src="{% static 'images/1004.png' %}" alt="Chess"></a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- end section-logos -->
 
 
     <!-- section-blog -->
@@ -172,6 +150,42 @@
         </div>
     </section>
     <!-- end section-tags -->
+
+
+    <!-- begin section-logos -->
+    <section class="section section-logos">
+        <div class="container">
+            <div class="row">
+                <div class="col col-12">
+
+                    <h2 class="logos-title">{% translate 'Nerd Stuff' %}</h2>
+
+                    <div class="logos splide">
+                        <div class="splide__track">
+                            <div class="logos__inner splide__list">
+                                <div class="logos__image splide__slide">
+                                    <img src="{% static 'images/1000.png' %}" alt="Archery">
+                                </div>
+                                <div class="logos__image splide__slide">
+                                    <img src="{% static 'images/1001.png' %}" alt="Quasar">
+                                </div>
+                                <div class="logos__image splide__slide">
+                                    <img src="{% static 'images/1002.png' %}" alt="LotR">
+                                </div>
+                                <div class="logos__image splide__slide">
+                                    <img src="{% static 'images/1003.png' %}" alt="Tennis">
+                                </div>
+                                <div class="logos__image splide__slide">
+                                    <a href="https://www.chess.com/member/toto2207" target="_blank" rel="noopener"><img src="{% static 'images/1004.png' %}" alt="Chess"></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- end section-logos -->
 
 
     <!-- begin section-gallery -->

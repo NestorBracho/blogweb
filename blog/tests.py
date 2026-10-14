@@ -105,6 +105,21 @@ class CategoryDetailViewTests(TestCase):
         self.assertContains(response, '<title>Rust - Nestor Bracho</title>')
         self.assertContains(response, '<meta name="description" content="Posts about Rust by Nestor Bracho.">')
 
+    def test_post_count_agrees_in_number(self):
+        one = create_category('one-post')
+        create_post('Only', category=one)
+        two = create_category('two-posts')
+        create_post('First', category=two)
+        create_post('Second', category=two)
+
+        def get(category, language):
+            return self.client.get(category.get_absolute_url(), headers={'Accept-Language': language})
+
+        self.assertContains(get(one, 'en'), 'A collection of <span>1 post</span>')
+        self.assertContains(get(two, 'en'), 'A collection of <span>2 posts</span>')
+        self.assertContains(get(one, 'es'), 'Una colección de <span>1 publicación</span>')
+        self.assertContains(get(two, 'es'), 'Una colección de <span>2 publicaciones</span>')
+
     def test_long_categories_are_paginated(self):
         category = create_category()
         for number in range(13):

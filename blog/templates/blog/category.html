@@ -13,7 +13,11 @@
                         <div class="tag__info">
                             <div class="tag__info__box">
                                 <h2 class="tag__title">{{ category.name }}</h2>
-                                <p class="tag__description">{% translate 'A collection of' %} <span>{{ paginator.count }} {% translate 'Posts' %}</span></p>
+                                <p class="tag__description">{% blocktranslate trimmed count counter=paginator.count %}
+                                    A collection of <span>{{ counter }} post</span>
+                                {% plural %}
+                                    A collection of <span>{{ counter }} posts</span>
+                                {% endblocktranslate %}</p>
                             </div>
                         </div>
                         {# Empty categories are a 404 (CategoryDetailView), so there is always at least one post #}

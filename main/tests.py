@@ -45,6 +45,22 @@ class HomeTests(TestCase):
         self.assertContains(response, f'href="{reverse("main:contact")}" class="button button--secondary"')
 
 
+class BrandTests(TestCase):
+    wordmark = '<span class="brand-wordmark"><span class="brand-wordmark__prefix" aria-hidden="true">~/</span>bracho'
+
+    def test_header_and_footer_show_the_wordmark(self):
+        response = self.client.get(reverse('main:index'))
+
+        self.assertContains(response, self.wordmark, count=2)
+
+    def test_logo_link_has_a_name_in_each_language(self):
+        spanish = self.client.get(reverse('main:index'), headers={'Accept-Language': 'es'})
+        english = self.client.get(reverse('main:index'), headers={'Accept-Language': 'en'})
+
+        self.assertContains(spanish, 'aria-label="Bracho, inicio"')
+        self.assertContains(english, 'aria-label="Bracho, home"')
+
+
 class PrivacyViewTests(TestCase):
     def test_shows_the_whole_policy_in_each_language(self):
         spanish = self.client.get(reverse('main:privacy'), headers={'Accept-Language': 'es'})

@@ -6,7 +6,7 @@
         <div class="header__inner col col-12">
 
             <div class="logo">
-                <a class="logo__link" href="{% url 'main:index' %}">Bracho</a>
+                <a class="logo__link" href="{% url 'main:index' %}" aria-label="{% translate 'Bracho, home' %}">{% include 'lib/_brand_wordmark.html' %}</a>
             </div>
 
             {% with request.resolver_match.url_name as url_name %}

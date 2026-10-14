@@ -1,0 +1,54 @@
+/*
+ * The "~/bracho_" wordmark (templates/lib/_brand_wordmark.html). Spec: brand/BRAND.md.
+ * Kept apart from main.css, which is the Coderon theme's stylesheet.
+ */
+
+.brand-wordmark {
+    font-family: "Roboto Mono", "Courier New", monospace;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    color: var(--heading-font-color);
+    white-space: nowrap;
+}
+
+.brand-wordmark__prefix {
+    color: var(--text-alt-color);
+}
+
+/* Fixed colour on purpose: the theme's --primary-color turns pink in dark mode, the logo doesn't */
+.brand-wordmark__cursor {
+    display: inline-block;
+    width: 0.5em;
+    height: 0.11em;
+    margin-left: 0.08em;
+    background: #ae00ee;
+    vertical-align: baseline;
+}
+
+/* Header */
+.logo__link .brand-wordmark {
+    font-size: 28px;
+}
+
+.logo__link,
+.logo__link:hover {
+    text-decoration: none;
+    color: inherit;
+}
+
+.logo__link:focus-visible {
+    outline: 2px solid var(--heading-font-color);
+    outline-offset: 6px;
+    border-radius: 4px;
+}
+
+@media (max-width: 576px) {
+    .logo__link .brand-wordmark {
+        font-size: 22px;
+    }
+}
+
+/* Footer */
+.footer__info__title .brand-wordmark {
+    font-size: 28px;
+}

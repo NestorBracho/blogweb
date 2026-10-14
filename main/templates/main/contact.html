@@ -1,7 +1,7 @@
 {% load i18n static l10n %}
 {% get_current_language as LANGUAGE_CODE %}
 <!DOCTYPE html>
-<html lang="en" dark="" class="dark-mode">
+<html lang="{{ LANGUAGE_CODE }}" dark="" class="dark-mode">
 <head>
 
     {% include 'lib/_main_meta_seo.html' %}
@@ -45,6 +45,7 @@
     </script>
 
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'main/contact/styles.css' %}">
 </head>
 
 <body class="contact-page">
@@ -76,20 +77,27 @@
             <form class="form" action="." method="POST">
                 {% csrf_token %}
                 {% include 'lib/_honeypot_field.html' with id='contact-honeypot' %}
+                {# After a failed submission the fields keep what was typed and say what to fix #}
                 <div class="form__group">
                     <label class="form__label screen-reader-text" for="form-name">{% translate 'Your Name' %}</label>
-                    <input class="form__input" id="form-name" type="text" name="name" placeholder="{% translate 'Your name' %}"
-                           required="">
+                    <input class="form__input" id="form-name" type="text" name="name" maxlength="100" placeholder="{% translate 'Your name' %}"
+                           value="{{ form.name.value|default_if_none:'' }}" required=""
+                           {% if form.name.errors %}aria-invalid="true" aria-describedby="form-name-error"{% endif %}>
+                    {% if form.name.errors %}<p class="form__error" id="form-name-error">{{ form.name.errors|join:' ' }}</p>{% endif %}
                 </div>
                 <div class="form__group">
                     <label class="form__label screen-reader-text" for="form-email">{% translate 'Your Email' %}</label>
                     <input class="form__input" id="form-email" type="email" name="email" placeholder="{% translate 'Your Email' %}"
-                           required="">
+                           value="{{ form.email.value|default_if_none:'' }}" required=""
+                           {% if form.email.errors %}aria-invalid="true" aria-describedby="form-email-error"{% endif %}>
+                    {% if form.email.errors %}<p class="form__error" id="form-email-error">{{ form.email.errors|join:' ' }}</p>{% endif %}
                 </div>
                 <div class="form__group">
                     <label class="form__label screen-reader-text" for="form-text">{% translate 'Your Message' %}</label>
                     <textarea class="form__input" id="form-text" name="message" rows="5" placeholder="{% translate 'Your Message' %}"
-                              required=""></textarea>
+                              required=""
+                              {% if form.message.errors %}aria-invalid="true" aria-describedby="form-text-error"{% endif %}>{{ form.message.value|default_if_none:'' }}</textarea>
+                    {% if form.message.errors %}<p class="form__error" id="form-text-error">{{ form.message.errors|join:' ' }}</p>{% endif %}
                 </div>
                 <p style="font-size: 14px;">
                     {% translate 'I will only use your details to reply to you.' %}

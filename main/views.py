@@ -7,6 +7,7 @@ from django.utils.translation import gettext as _
 from django.views import generic
 
 from blog.models import content_language
+from config.forms import HONEYPOT_FIELD
 
 from .forms import ContactForm
 from .models import ContactRequest
@@ -76,8 +77,12 @@ class ContactFormView(generic.CreateView):
         return http_response
 
     def form_invalid(self, form):
-        messages.error(self.request, _('Something went wrong. Try again latter.'))
-        return HttpResponseRedirect(self.get_success_url())
+        if form.has_error(HONEYPOT_FIELD):
+            # Only bots fill in the hidden field: drop the request without telling them which field gave them away
+            messages.error(self.request, _('Something went wrong. Try again later.'))
+            return HttpResponseRedirect(self.get_success_url())
+        # People get the form back with their text and an error next to each field to fix
+        return super().form_invalid(form)
 
     def get_success_url(self):
         return reverse('main:index')

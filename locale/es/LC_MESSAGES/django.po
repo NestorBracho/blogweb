@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-14 18:17+0000\n"
+"POT-Creation-Date: 2026-10-14 20:45+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -34,24 +34,19 @@ msgstr "Un grupo de"
 
 #: blog/templates/blog/category.html:16
 msgid "Posts"
-msgstr "Publicaiones"
-
-#: blog/templates/blog/category.html:26
-msgid "EMPTY"
-msgstr "VACÍO"
+msgstr "publicaciones"
 
 #: blog/templates/blog/category.html:27
-msgid ""
-"No intel here… yet. The grid’s quiet in this sector. Check back soon. "
-"<br><i>Information always finds a way.</i>"
-msgstr ""
-"Vacío… por ahora. Esta zona del sistema está en silencio. Vuelve pronto. "
-"<br><i>La información siempre encuentra un camino.</i>"
+msgid "More posts"
+msgstr "Más publicaciones"
 
-#: blog/templates/blog/category.html:28 templates/404.html:12
-#: templates/500.html:13
-msgid "Back to homepage"
-msgstr "Vuelve al inicio"
+#: blog/templates/blog/category.html:29
+msgid "Newer posts"
+msgstr "Publicaciones más recientes"
+
+#: blog/templates/blog/category.html:32
+msgid "Older posts"
+msgstr "Publicaciones anteriores"
 
 #: blog/templates/blog/post.html:51
 msgid "Share this"
@@ -63,20 +58,21 @@ msgstr "Publicación anterior"
 
 #: blog/templates/blog/post.html:87
 msgid "Newer post"
-msgstr "Última publicación"
+msgstr "Publicación siguiente"
 
 #: blog/templates/blog/post.html:102
 msgid "Related"
 msgstr "Relacionados"
 
-#: blog/views.py:42
-msgid "Categories"
-msgstr "Categorías"
+#: blog/views.py:49
+#, python-format
+msgid "Posts about %(category)s by Nestor Bracho."
+msgstr "Publicaciones sobre %(category)s de Nestor Bracho."
 
 #: main/templates/main/about.html:14 main/templates/main/about.html:19
 #: main/views.py:21
 msgid "About Me"
-msgstr "Sobre Mi"
+msgstr "Sobre mí"
 
 #: main/templates/main/about.html:28
 msgid ""
@@ -245,7 +241,7 @@ msgstr "Mantente curioso"
 
 #: main/templates/main/about.html:125
 msgid ""
-"This site isn’t just a portfolio , it’s a reflection of what drives me. "
+"This site isn’t just a portfolio, it’s a reflection of what drives me. "
 "Programming is just one\n"
 "                        tool in a universe full of wonders, and I hope that "
 "reading this reminds you of how much there\n"
@@ -261,15 +257,15 @@ msgstr ""
 "No dejes de aprender. No pierdas la curiosidad. Y construye cosas que de "
 "verdad importen."
 
-#: main/templates/main/contact.html:59 main/templates/main/contact.html:69
+#: main/templates/main/contact.html:60 main/templates/main/contact.html:70
 msgid "Get In Touch"
-msgstr "Ponte en Contacto"
+msgstr "Ponte en contacto"
 
-#: main/templates/main/contact.html:66
+#: main/templates/main/contact.html:67
 msgid "Back to home"
 msgstr "Vuelve al inicio"
 
-#: main/templates/main/contact.html:72
+#: main/templates/main/contact.html:73
 msgid ""
 "Plug into the grid, whether you’re building\n"
 "                    something bold or need a sharp mind in the system, this "
@@ -279,34 +275,34 @@ msgstr ""
 "¿Buscas un dev que hable en código y entienda el sistema? Transmite por "
 "aquí. <br><i>Construyamos el futuro juntos.</i>"
 
-#: main/templates/main/contact.html:82
-msgid "Your Name"
-msgstr "Tu Nombre"
-
 #: main/templates/main/contact.html:83
+msgid "Your Name"
+msgstr "Tu nombre"
+
+#: main/templates/main/contact.html:84
 msgid "Your name"
 msgstr "Tu nombre"
 
-#: main/templates/main/contact.html:89 main/templates/main/contact.html:90
+#: main/templates/main/contact.html:90 main/templates/main/contact.html:91
 msgid "Your Email"
-msgstr "Tu Correo"
+msgstr "Tu correo"
 
-#: main/templates/main/contact.html:96 main/templates/main/contact.html:97
+#: main/templates/main/contact.html:97 main/templates/main/contact.html:98
 msgid "Your Message"
-msgstr "Tu Mensaje"
+msgstr "Tu mensaje"
 
-#: main/templates/main/contact.html:103
+#: main/templates/main/contact.html:104
 msgid "I will only use your details to reply to you."
 msgstr "Solo usaré tus datos para responderte."
 
-#: main/templates/main/contact.html:104 main/templates/main/privacy.html:12
+#: main/templates/main/contact.html:105 main/templates/main/privacy.html:12
 #: main/views.py:49 templates/lib/_main_right_sidebar.html:27
 msgid "Privacy policy"
 msgstr "Política de privacidad"
 
-#: main/templates/main/contact.html:107
+#: main/templates/main/contact.html:108
 msgid "Send Now"
-msgstr "Enviar Ahora"
+msgstr "Enviar ahora"
 
 #: main/templates/main/cv.html:16 main/templates/main/index.html:41
 msgid "Senior Backend Engineer"
@@ -363,7 +359,7 @@ msgstr "Ver mi CV"
 
 #: main/templates/main/index.html:72
 msgid "Let’s Work Together"
-msgstr "Trabajemos Juntos"
+msgstr "Trabajemos juntos"
 
 #: main/templates/main/index.html:94
 msgid "The Binary Journal"
@@ -375,7 +371,7 @@ msgstr "Cargar más"
 
 #: main/templates/main/index.html:147
 msgid "Hacker’s Haven"
-msgstr "Paraiso del Hacker"
+msgstr "Paraíso del Hacker"
 
 #: main/templates/main/index.html:167
 msgid "Nerd Stuff"
@@ -429,7 +425,7 @@ msgid ""
 "Your contact request has been successfully submitted. I'll get in touch as "
 "soon as possible!"
 msgstr ""
-"Solicitud de contacto enviada con éxito. Me pondré en contacto contigo lo "
+"Solicitud de contacto enviada con éxito. ¡Me pondré en contacto contigo lo "
 "antes posible!"
 
 #: main/views.py:82
@@ -445,6 +441,10 @@ msgid ""
 "The page you're looking for doesn't exist, never existed, or just rage quit."
 msgstr "La página que buscas no existe, nunca existió, o abandonó el sitio."
 
+#: templates/404.html:12 templates/500.html:13
+msgid "Back to homepage"
+msgstr "Vuelve al inicio"
+
 #: templates/500.html:9
 msgid "Server Malfunction"
 msgstr "Mal funcionamiento del servidor"
@@ -455,11 +455,15 @@ msgstr "Bueno, esto es incómodo... Algo salió mal por aquí."
 
 #: templates/500.html:11
 msgid "We poked the server and it's thinking about what it did."
-msgstr "El servidor esta castigado y esta pensando en lo que hizo."
+msgstr "El servidor está castigado y está pensando en lo que hizo."
 
 #: templates/500.html:12
 msgid "Try refreshing, or come back after a coffee"
 msgstr "Trata de refrescar, o vuelve después de un café"
+
+#: templates/lib/_honeypot_field.html:6
+msgid "Leave this field empty"
+msgstr "Deja este campo vacío"
 
 #: templates/lib/_main_footer.html:9
 msgid ""
@@ -471,7 +475,7 @@ msgstr ""
 
 #: templates/lib/_main_footer.html:22
 msgid "Recent Posts"
-msgstr "Publicaciones Recientes"
+msgstr "Publicaciones recientes"
 
 #: templates/lib/_main_footer.html:51
 msgid "Menu"
@@ -487,7 +491,7 @@ msgstr "Páginas"
 
 #: templates/lib/_main_footer.html:72 templates/lib/_main_navbar.html:26
 msgid "About"
-msgstr "Acerca"
+msgstr "Sobre mí"
 
 #: templates/lib/_main_footer.html:78
 msgid "Privacy"
@@ -531,7 +535,7 @@ msgstr "Activar modo claro"
 
 #: templates/lib/_main_navbar.html:70
 msgid "Language options"
-msgstr "Opciones de lenguaje"
+msgstr "Opciones de idioma"
 
 #: templates/lib/_main_navbar.html:84
 msgid "Spanish"
@@ -557,7 +561,7 @@ msgid ""
 "                various sources, right to your email inbox."
 msgstr ""
 "Todos los domingos, envío consejos para mejorar la productividad, consejos "
-"practicos de vida, e información de vanguardia de distintas fuentes, directo "
+"prácticos de vida, e información de vanguardia de distintas fuentes, directo "
 "en tu bandeja de entrada."
 
 #: templates/lib/_main_right_sidebar.html:19
@@ -570,15 +574,15 @@ msgstr "Tu correo aquí..."
 
 #: templates/lib/_main_right_sidebar.html:23
 msgid "Join Now"
-msgstr "Únete Ahora"
+msgstr "Únete ahora"
 
 #: templates/lib/_main_right_sidebar.html:26
 msgid "You will receive an email to confirm your subscription."
 msgstr "Recibirás un correo para confirmar tu suscripción."
 
 #: templates/lib/_main_right_sidebar.html:40
-msgid "Featured posts"
-msgstr "Publicaciones destacadas"
+msgid "Latest posts"
+msgstr "Últimas publicaciones"
 
 #: templates/lib/_main_right_sidebar.html:65
 msgid "Topics"

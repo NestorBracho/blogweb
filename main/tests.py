@@ -146,6 +146,11 @@ class AboutViewTests(TestCase):
         self.assertContains(response, '<title>About Me - Nestor Bracho</title>')
         self.assertContains(response, '<meta property="og:image" content="http://testserver/static/')
 
+    def test_spanish_title_is_spelled_right(self):
+        response = self.client.get(reverse('main:about'), headers={'Accept-Language': 'es'})
+
+        self.assertContains(response, '<title>Sobre mí - Nestor Bracho</title>')
+
 
 @override_settings(OWNER_CV_PDF_URLS={'en': '/media/cv/cv-en.pdf', 'es': '/media/cv/cv-es.pdf'})
 class CVViewTests(TestCase):

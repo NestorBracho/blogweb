@@ -13,24 +13,26 @@
                         <div class="tag__info">
                             <div class="tag__info__box">
                                 <h2 class="tag__title">{{ category.name }}</h2>
-                                <p class="tag__description">{% translate 'A collection of' %} <span>{{ post_list|length }} {% translate 'Posts' %}</span></p>
+                                <p class="tag__description">{% translate 'A collection of' %} <span>{{ paginator.count }} {% translate 'Posts' %}</span></p>
                             </div>
                         </div>
+                        {# Empty categories are a 404 (CategoryDetailView), so there is always at least one post #}
                         <div class="row">
-
                             {% for post in post_list %}
                                 {% include 'blog/_lib/_article_card.html' with card_class='col col-6 col-t-12 grid__post animate' %}
-                            {% empty %}
-                                <div class="col col-12 text-center">
-                                    <div class="error">
-                                        <h2 class="error__title">{% translate 'EMPTY' %}</h2>
-                                        <p class="error__text">{% translate 'No intel here… yet. The grid’s quiet in this sector. Check back soon. <br><i>Information always finds a way.</i>' %}</p>
-                                        <a class="button button--primary" href="/">{% translate 'Back to homepage' %}</a>
-                                    </div>
-                                </div>
                             {% endfor %}
-
                         </div>
+
+                        {% if is_paginated %}
+                            <nav class="pagination" aria-label="{% translate 'More posts' %}" style="display: flex; justify-content: center; gap: 12px; margin-top: 32px;">
+                                {% if page_obj.has_previous %}
+                                    <a class="button button--secondary" href="?page={{ page_obj.previous_page_number }}" rel="prev">{% translate 'Newer posts' %}</a>
+                                {% endif %}
+                                {% if page_obj.has_next %}
+                                    <a class="button button--primary" href="?page={{ page_obj.next_page_number }}" rel="next">{% translate 'Older posts' %}</a>
+                                {% endif %}
+                            </nav>
+                        {% endif %}
                     </div>
 
 

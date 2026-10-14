@@ -91,7 +91,7 @@ Every push and pull request runs the checks; the coverage report is published in
 - **Backend:** Python 3.12, Django 5.2, Django REST Framework, Markdown and Pygments
 - **Frontend:** Django templates, jQuery and Splide, on top of the Coderon theme (see [Credits](#credits))
 - **Infrastructure:** Google Cloud, Ubuntu 24.04, nginx, Gunicorn, systemd, Cloudflare, SQLite
-- **Tooling:** GitHub Actions, ruff, coverage, pre-commit
+- **Tooling:** GitHub Actions, ruff, coverage, pre-commit, pip-tools, pip-audit, Dependabot
 
 ## Project structure
 
@@ -147,6 +147,22 @@ coverage run manage.py test && coverage report
 ```
 
 Tests expect `DEBUG=True`, as in CI: with `DEBUG=False` the production settings redirect every request to HTTPS.
+
+## Dependencies
+
+[`requirements.in`](requirements.in) lists what the site uses directly, and
+[`requirements-dev.in`](requirements-dev.in) adds the development tools. [pip-tools](https://pip-tools.readthedocs.io/)
+compiles them into the pinned `requirements.txt` (installed on the server) and `requirements-dev.txt` (installed in
+CI and locally), with a note on why each package is there:
+
+```bash
+pip-compile --strip-extras requirements.in
+pip-compile --strip-extras requirements-dev.in
+pip-compile --strip-extras --upgrade-package django requirements.in  # update one package
+```
+
+CI fails if a `.in` file changed without recompiling and audits every pin with `pip-audit`. Dependabot proposes
+updates every week and recompiles both files itself.
 
 ## AI-assisted drafts
 

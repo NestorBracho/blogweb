@@ -13,6 +13,9 @@ updates:
       # Stay on Django's LTS release; moving to a new major version is a decision, not a routine update
       - dependency-name: django
         update-types: ["version-update:semver-major"]
+      # openai 2+ changes the SDK that blog/drafting.py uses; that upgrade needs code changes (requirements.in)
+      - dependency-name: openai
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: "/"

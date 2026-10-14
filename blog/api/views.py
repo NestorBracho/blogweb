@@ -7,7 +7,7 @@ from rest_framework.generics import ListAPIView
 
 from blog.models import Category, Post, content_language
 
-from .serializers import CategorySerializer, CreatePostSerializer, SearchPostSerializer
+from .serializers import CategorySerializer, PostWriteSerializer, SearchPostSerializer
 
 
 class LanguageHeaderMixin:
@@ -26,10 +26,18 @@ class LanguageHeaderMixin:
 
 
 class PostModelViewSet(LanguageHeaderMixin, viewsets.ModelViewSet):
-    queryset = Post.objects.filter(is_published=True).select_related('category').order_by('-created')
+    queryset = Post.objects.select_related('category').order_by('-created')
     filter_backends = [SearchFilter]
-    write_serializer_class = CreatePostSerializer
+    write_serializer_class = PostWriteSerializer
     read_serializer_class = SearchPostSerializer
+
+    def get_queryset(self):
+        # The list feeds the public pages, so it only ever shows published posts, even to staff signed in to the
+        # admin. Staff can read, edit, publish or delete any post, drafts included, by its id.
+        queryset = super().get_queryset()
+        if self.action == 'list' or not self.request.user.is_staff:
+            return queryset.filter(is_published=True)
+        return queryset
 
     @property
     def search_fields(self):

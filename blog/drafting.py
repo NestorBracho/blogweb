@@ -59,7 +59,6 @@ def save_draft(draft, category):
     title_length = Post._meta.get_field('title_en').max_length
     description_length = Post._meta.get_field('description_en').max_length
     return Post.objects.create(
-        slug=Post.unique_slug(draft.title_en),
         title_en=Truncator(draft.title_en).chars(title_length),
         title_es=Truncator(draft.title_es).chars(title_length),
         description_en=Truncator(draft.description_en).chars(description_length),

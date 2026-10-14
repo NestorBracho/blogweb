@@ -267,7 +267,79 @@ class PostAPITests(TestCase):
         )
 
         self.assertEqual(response.status_code, 201)
-        self.assertFalse(Post.objects.get(slug='hello-world').is_published)
+        self.assertEqual((response.json()['slug'], response.json()['is_published']), ('hello-world', False))
+        self.assertEqual(response.json()['id'], str(Post.objects.get(slug='hello-world').pk))
+
+    def test_staff_can_edit_and_publish_a_draft(self):
+        self.client.force_login(get_user_model().objects.create_user(username='editor', is_staff=True))
+        draft = create_post('Draft', is_published=False)
+        detail_url = reverse('blog:api:post-detail', args=[draft.pk])
+
+        response = self.client.patch(
+            detail_url, {'title_en': 'Ready', 'is_published': True}, content_type='application/json'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        draft.refresh_from_db()
+        self.assertEqual((draft.title_en, draft.is_published), ('Ready', True))
+        # Publishing doesn't move the post to a new URL
+        self.assertEqual(draft.slug, 'draft')
+
+    def test_staff_can_delete_a_draft(self):
+        self.client.force_login(get_user_model().objects.create_user(username='editor', is_staff=True))
+        draft = create_post('Draft', is_published=False)
+
+        response = self.client.delete(reverse('blog:api:post-detail', args=[draft.pk]))
+
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(Post.objects.filter(pk=draft.pk).exists())
+
+    def test_the_list_never_shows_drafts_even_to_staff(self):
+        # The home page reads this list, and the site owner browses it signed in to the admin
+        self.client.force_login(get_user_model().objects.create_user(username='editor', is_staff=True))
+        create_post('Published')
+        create_post('Draft', is_published=False)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual([post['title'] for post in response.json()['results']], ['Published'])
+
+    def test_anonymous_users_cannot_see_or_change_drafts(self):
+        draft = create_post('Draft', is_published=False)
+        detail_url = reverse('blog:api:post-detail', args=[draft.pk])
+
+        self.assertEqual(self.client.get(detail_url).status_code, 404)
+        response = self.client.patch(detail_url, {'is_published': True}, content_type='application/json')
+        self.assertEqual(response.status_code, 403)
+        draft.refresh_from_db()
+        self.assertFalse(draft.is_published)
+
+
+class PostSlugTests(TestCase):
+    def test_slug_comes_from_the_english_title(self):
+        post = Post.objects.create(
+            title_es='Hola mundo',
+            title_en='Hello world',
+            body_es='Cuerpo',
+            body_en='Body',
+            description_es='Descripción',
+            description_en='Description',
+        )
+
+        self.assertEqual(post.slug, 'hello-world')
+
+    def test_slug_falls_back_to_the_spanish_title(self):
+        post = Post.objects.create(
+            title_es='Hola mundo', body_es='Cuerpo', body_en='', description_es='Descripción', description_en=''
+        )
+
+        self.assertEqual(post.slug, 'hola-mundo')
+
+    def test_slugs_stay_unique(self):
+        first = create_post('Same title')
+        second = create_post('Same title')
+
+        self.assertEqual((first.slug, second.slug), ('same-title', 'same-title-1'))
 
 
 class CategoryAPITests(TestCase):

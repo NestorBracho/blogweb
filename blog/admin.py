@@ -26,8 +26,8 @@ class PostAdmin(admin.ModelAdmin):
     list_select_related = ['category']
     search_fields = ['title_en', 'title_es', 'slug']
     date_hierarchy = 'created'
-    # Post.save() builds the slug from the Spanish title, so suggest the same one here
-    prepopulated_fields = {'slug': ['title_es']}
+    # Post.save() builds the slug from the English title, so suggest the same one here
+    prepopulated_fields = {'slug': ['title_en']}
     readonly_fields = ['created', 'updated']
     fieldsets = [
         (None, {'fields': ['slug', 'category', 'cover', 'read_time', 'is_published']}),

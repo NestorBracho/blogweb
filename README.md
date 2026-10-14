@@ -166,10 +166,13 @@ API.
 | `GET`                            | `/api/post/?page=N`      | Published posts, newest first, four per page                        |
 | `GET`                            | `/api/post/?search=words`| Posts with every word somewhere in their title, description, body or category |
 | `GET`                            | `/api/categories`        | The four most recently active categories and their latest posts     |
-| `POST`, `PUT`, `PATCH`, `DELETE` | `/api/post/…`            | Staff only                                                          |
+| `POST`                           | `/api/post/`             | Staff only: create a post, a draft unless `is_published` is sent    |
+| `GET`, `PUT`, `PATCH`, `DELETE`  | `/api/post/<id>/`        | Anyone can read a published post; staff can also read, edit, publish or delete drafts |
 
-Post lists are paginated; `page_size` raises the page size up to 20. Responses use the site's language (the
-language cookie or `Accept-Language`), and an `X-Language` header (`en` or `es`) overrides it.
+Post lists are paginated; `page_size` raises the page size up to 20. They only ever show published posts, also to
+staff, because the home page reads them. Writes return the post's `id` and its `slug`, made from the English title.
+Responses use the site's language (the language cookie or `Accept-Language`), and an `X-Language` header (`en` or
+`es`) overrides it.
 
 ## Deployment
 

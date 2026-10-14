@@ -1,11 +1,4 @@
-"""
-ASGI config for personal_web_2 project.
-
-It exposes the ASGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/5.2/howto/deployment/asgi/
-"""
+"""ASGI entry point. Unused for now: production runs Gunicorn over WSGI."""
 
 import os
 

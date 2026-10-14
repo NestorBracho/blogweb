@@ -23,6 +23,21 @@ class HomeTests(TestCase):
         self.assertContains(response, '<meta property="og:title" content="Nestor Bracho, Senior Backend Engineer">')
         self.assertContains(response, '<meta property="og:description" content="Senior backend engineer with more than')
 
+    def test_points_from_the_role_to_the_personal_blog(self):
+        spanish = self.client.get(reverse('main:index'), headers={'Accept-Language': 'es'})
+        english = self.client.get(reverse('main:index'), headers={'Accept-Language': 'en'})
+
+        self.assertContains(spanish, 'Fuera del trabajo, <a href="#blog">escribo aquí</a>')
+        self.assertContains(english, 'Outside work, I <a href="#blog">write here</a>')
+        self.assertContains(english, 'id="blog"')
+
+    def test_footer_describes_the_site_in_each_language(self):
+        spanish = self.client.get(reverse('main:index'), headers={'Accept-Language': 'es'})
+        english = self.client.get(reverse('main:index'), headers={'Accept-Language': 'en'})
+
+        self.assertContains(spanish, 'Ciencia, historias y software. Esta es la web personal de Nestor Bracho')
+        self.assertContains(english, 'Science, storytelling &amp; software. This is the personal site of Nestor Bracho')
+
     def test_leads_to_the_cv_and_the_contact_form(self):
         response = self.client.get(reverse('main:index'))
 

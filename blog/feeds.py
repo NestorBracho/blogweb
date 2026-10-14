@@ -8,7 +8,7 @@ from .models import Post
 class LatestPostsFeed(Feed):
     title = 'Nestor Bracho'
     link = reverse_lazy('main:index')
-    description = _('Posts by Nestor Bracho, Senior Backend Engineer.')
+    description = _('Science, storytelling & software, by Nestor Bracho.')
 
     def items(self):
         return Post.objects.filter(is_published=True).order_by('-created')[:20]

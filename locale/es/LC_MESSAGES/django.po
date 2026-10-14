@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-14 14:56+0000\n"
+"POT-Creation-Date: 2026-10-14 15:04+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,8 +25,8 @@ msgid "min read"
 msgstr "min de lectura"
 
 #: blog/feeds.py:11
-msgid "Posts by Nestor Bracho, Senior Backend Engineer."
-msgstr "Publicaciones de Nestor Bracho, Senior Backend Engineer."
+msgid "Science, storytelling & software, by Nestor Bracho."
+msgstr "Ciencia, historias y software, por Nestor Bracho."
 
 #: blog/templates/blog/category.html:16
 msgid "A collection of"
@@ -339,6 +339,14 @@ msgstr ""
 "de Nokia y seis años liderando equipos en Turpial."
 
 #: main/templates/main/index.html:55
+msgid ""
+"Outside work, I <a href=\"#blog\">write here</a> about science, storytelling "
+"and software."
+msgstr ""
+"Fuera del trabajo, <a href=\"#blog\">escribo aquí</a> sobre ciencia, "
+"historias y software."
+
+#: main/templates/main/index.html:61
 #, python-format
 msgid ""
 "You can also find me on <a href=\"%(linkedin_url)s\" target=\"_blank\" "
@@ -349,27 +357,27 @@ msgstr ""
 "rel=\"noopener\">LinkedIn</a> y <a href=\"%(github_url)s\" target=\"_blank\" "
 "rel=\"noopener\">GitHub</a>."
 
-#: main/templates/main/index.html:65
+#: main/templates/main/index.html:71
 msgid "See my CV"
 msgstr "Ver mi CV"
 
-#: main/templates/main/index.html:66
+#: main/templates/main/index.html:72
 msgid "Let’s Work Together"
 msgstr "Trabajemos Juntos"
 
-#: main/templates/main/index.html:88
+#: main/templates/main/index.html:94
 msgid "The Binary Journal"
 msgstr "La Terminal"
 
-#: main/templates/main/index.html:115
+#: main/templates/main/index.html:121
 msgid "Load More"
 msgstr "Cargar más"
 
-#: main/templates/main/index.html:141
+#: main/templates/main/index.html:147
 msgid "Hacker’s Haven"
 msgstr "Paraiso del Hacker"
 
-#: main/templates/main/index.html:161
+#: main/templates/main/index.html:167
 msgid "Nerd Stuff"
 msgstr "Cosas Nerd"
 
@@ -384,7 +392,7 @@ msgstr ""
 "trayectoria, sus habilidades y su misión de crear herramientas digitales con "
 "sentido."
 
-#: main/views.py:35 templates/lib/_main_footer.html:73
+#: main/views.py:35 templates/lib/_main_footer.html:74
 #: templates/lib/_main_navbar.html:29
 msgid "CV"
 msgstr "CV"
@@ -403,7 +411,7 @@ msgid ""
 msgstr ""
 "Qué datos personales recoge este sitio, para qué y cómo ejercer tus derechos."
 
-#: main/views.py:62 templates/lib/_main_footer.html:75
+#: main/views.py:62 templates/lib/_main_footer.html:76
 #: templates/lib/_main_navbar.html:32
 msgid "Contact"
 msgstr "Contacto"
@@ -455,45 +463,41 @@ msgstr "Trata de refrescar, o vuelve después de un café"
 
 #: templates/lib/_main_footer.html:9
 msgid ""
-"Here, I share ideas, tools, and methods that help me\n"
-"                    balance productivity with creativity while keeping "
-"control over my digital world. Dive in,\n"
-"                    get inspired, and feel free to share your thoughts!"
+"Science, storytelling &amp; software. This is the personal site of Nestor "
+"Bracho, a backend engineer who likes to understand how things work."
 msgstr ""
-"Aquí comparto ideas, herramientas y métodos que me ayudan a balancear "
-"productividad con creatividad \n"
-"mientras mantengo el control sobre mi mundo digital. Entra, inpirate y "
-"sientete en la libertad de compartir ideas!"
+"Ciencia, historias y software. Esta es la web personal de Nestor Bracho, un "
+"ingeniero backend al que le gusta entender cómo funcionan las cosas."
 
-#: templates/lib/_main_footer.html:21
+#: templates/lib/_main_footer.html:22
 msgid "Recent Posts"
 msgstr "Publicaciones Recientes"
 
-#: templates/lib/_main_footer.html:50
+#: templates/lib/_main_footer.html:51
 msgid "Menu"
 msgstr "Menú"
 
-#: templates/lib/_main_footer.html:54 templates/lib/_main_navbar.html:23
+#: templates/lib/_main_footer.html:55 templates/lib/_main_navbar.html:23
 msgid "Home"
 msgstr "Inicio"
 
-#: templates/lib/_main_footer.html:68
+#: templates/lib/_main_footer.html:69
 msgid "Pages"
 msgstr "Páginas"
 
-#: templates/lib/_main_footer.html:71 templates/lib/_main_navbar.html:26
+#: templates/lib/_main_footer.html:72 templates/lib/_main_navbar.html:26
 msgid "About"
 msgstr "Acerca"
 
-#: templates/lib/_main_footer.html:77
+#: templates/lib/_main_footer.html:78
 msgid "Privacy"
 msgstr "Privacidad"
 
-#: templates/lib/_main_footer.html:94
+#: templates/lib/_main_footer.html:95
 msgid "Crafted by"
 msgstr "Hecho por"
 
-#: templates/lib/_main_footer.html:94
+#: templates/lib/_main_footer.html:95
 msgid "Designed by"
 msgstr "Diseñado por"
 

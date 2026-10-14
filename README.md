@@ -53,14 +53,15 @@ flowchart LR
         backup[["Nightly backup"]] -.-> sqlite
         backup -.-> media
     end
+    backup -.->|"rclone, 30 days"| drive[("Google Drive")]
 ```
 
 - **Cloudflare** terminates TLS for visitors, caches static files and images, and reaches the origin over HTTPS
   with a Cloudflare origin certificate. The VM's firewall only accepts web traffic from Cloudflare's IP ranges.
 - **nginx** serves uploaded images straight from disk and proxies everything else to Gunicorn over a Unix socket.
 - **Django** serves its own static files with WhiteNoise (compressed, with cache-busting file names).
-- **SQLite** in WAL mode holds all the data. A nightly job backs up the database and the images, and copies them
-  off the server with rclone when a remote is configured.
+- **SQLite** in WAL mode holds all the data. A nightly job backs up the database and the images, keeps two weeks
+  of them on the server and copies them to Google Drive with rclone, where it keeps 30 days.
 
 ### CI/CD
 
@@ -82,6 +83,7 @@ Every push and pull request runs the checks; the coverage report is published in
 2. [A single free-tier VM instead of a PaaS](docs/adr/0002-single-free-tier-vm.md)
 3. [Cloudflare in front of the origin](docs/adr/0003-cloudflare-in-front-of-the-origin.md)
 4. [Deploying from CI with a forced-command SSH key](docs/adr/0004-deploy-with-a-forced-command-ssh-key.md)
+5. [Off-site backups to Google Drive](docs/adr/0005-off-site-backups-to-google-drive.md)
 
 ## Tech stack
 

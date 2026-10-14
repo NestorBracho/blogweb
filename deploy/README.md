@@ -169,9 +169,52 @@ sudo -u blog crontab -e
 30 3 * * * /srv/blog/app/deploy/backup.sh >> /srv/blog/backups/backup.log 2>&1
 ```
 
-Para copiarlos fuera del servidor, configura un remote de rclone llamado `backup`
-(`sudo -iu blog rclone config`), por ejemplo Cloudflare R2 u Oracle Object Storage
-(ambos tienen capa gratuita). El script lo detecta automáticamente.
+Cada noche el script guarda la base de datos y `media/` en `/srv/blog/backups` (conserva 14 días). Si existe un
+remote de rclone llamado `backup`, además los sube a Google Drive y conserva allí 30 días
+([ADR 5](../docs/adr/0005-off-site-backups-to-google-drive.md)). Sin ese remote, avisa en `backup.log` y las copias
+se quedan solo en el servidor.
+
+### Copia en Google Drive
+
+El servidor no tiene navegador, así que la autorización se reparte entre el servidor y tu ordenador:
+
+1. En tu ordenador, instala rclone: `brew install rclone` (o mira <https://rclone.org/install/>).
+2. En el servidor, `sudo -iu blog rclone config`, y responde:
+   - `n` (nuevo remote), nombre `backup` y tipo `drive`;
+   - `client_id` y `client_secret`: Enter, vacíos;
+   - `scope`: `drive.file`. Así rclone solo ve los archivos que crea él, no el resto de tu Drive;
+   - `service_account_file`: Enter. "Edit advanced config?": `n`;
+   - "Use web browser to automatically authenticate?": `n`. Muestra un comando `rclone authorize "drive" "…"`.
+3. Ejecuta ese comando en tu ordenador. Se abre el navegador: entra con tu cuenta de Google y acepta. Copia el token
+   que imprime la terminal.
+4. Pégalo en el servidor, en `config_token>`. Responde `n` a "Configure this as a Shared Drive", `y` para guardar y
+   `q` para salir.
+5. Prueba:
+
+   ```bash
+   sudo -iu blog /srv/blog/app/deploy/backup.sh
+   sudo -iu blog rclone ls backup:blog-backups
+   ```
+
+Si algún día falla la subida (por ejemplo, porque revocaste el acceso en tu cuenta de Google), `backup.log` lo dice.
+Para volver a autorizar: `sudo -iu blog rclone config reconnect backup:`.
+
+### Restaurar
+
+Una copia solo cuenta si se puede restaurar. Para la base de datos, con la fecha que quieras recuperar:
+
+```bash
+sudo -iu blog rclone copy backup:blog-backups /tmp/restore --include "db-2026-10-14.sqlite3.gz"
+sudo -iu blog bash -c 'gunzip /tmp/restore/db-2026-10-14.sqlite3.gz && sqlite3 /tmp/restore/db-2026-10-14.sqlite3 "PRAGMA integrity_check;"'
+# Si dice "ok", sustitúyela con el servicio parado (y sin los -wal/-shm de la base de datos anterior):
+sudo systemctl stop blog
+sudo -u blog mv /srv/blog/data/db.sqlite3 /srv/blog/data/db.sqlite3.old
+sudo -u blog rm -f /srv/blog/data/db.sqlite3-wal /srv/blog/data/db.sqlite3-shm
+sudo -u blog cp /tmp/restore/db-2026-10-14.sqlite3 /srv/blog/data/db.sqlite3
+sudo systemctl start blog
+```
+
+Las imágenes: `sudo -u blog tar -xzf media-FECHA.tar.gz -C /srv/blog`, tras descargar el archivo de la misma forma.
 
 ## 9. Actualizar la web
 

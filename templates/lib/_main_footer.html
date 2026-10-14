@@ -22,7 +22,7 @@
                 <h3 class="footer__title">{% translate 'Recent Posts' %}</h3>
                 <div class="footer__recent-posts">
 
-                    {% for rpost in recent_posts %}
+                    {% for rpost in latest_posts %}
                         <div class="footer__recent-content">
 
                         <a href="{% url 'blog:post-detail' rpost.slug  %}"

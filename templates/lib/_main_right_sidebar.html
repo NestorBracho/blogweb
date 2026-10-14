@@ -37,10 +37,10 @@
 
     <div class="widget widget-featured-posts">
         <div class="widget-sidebar-head">
-            <h2 class="widget-sidebar-title">{% translate 'Featured posts' %}</h2>
+            <h2 class="widget-sidebar-title">{% translate 'Latest posts' %}</h2>
         </div>
 
-        {% for fpost in featured_posts %}
+        {% for fpost in latest_posts %}
             <div class="post-featured-content">
 
                 <a href="{% url 'blog:post-detail' fpost.slug %}" class="post-featured-image">

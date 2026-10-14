@@ -19,6 +19,6 @@ def owner(request):
 def sidebar(request):
     return {
         'categories': Category.objects.with_published_posts().order_by('-latest_post'),
-        'featured_posts': Post.objects.filter(is_published=True).order_by('-created')[:3],
-        'recent_posts': Post.objects.filter(is_published=True).order_by('-created')[:3],
+        # Shown in both the sidebar and the footer: one queryset, so one query per page
+        'latest_posts': Post.objects.filter(is_published=True).order_by('-created')[:3],
     }

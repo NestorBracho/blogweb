@@ -30,35 +30,21 @@ class PostDetailView(generic.DetailView):
 
 
 class CategoryDetailView(generic.ListView):
-    queryset = Post.objects.filter(is_published=True).order_by('-created')
     template_name = 'blog/category.html'
+    paginate_by = 12
 
     def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
+        # Categories without published posts are kept for the future but not shown yet
+        self.category = get_object_or_404(Category.objects.with_published_posts(), slug=self.kwargs['slug'])
         return super().get(request, *args, **kwargs)
 
-    def get_context_data(self, *args, **kwargs):
-
-        kwargs['page_title'] = _('Categories')
-        kwargs['meta_description'] = ''
-        kwargs['social_image_url'] = ''
-
-        if self.object:
-            kwargs['category'] = self.object
-        return super().get_context_data(*args, **kwargs)
-
     def get_queryset(self):
-        category = self.object
-        queryset = self.queryset.filter(category=category)
+        return self.category.posts.filter(is_published=True).select_related('category').order_by('-created')
 
-        ordering = self.get_ordering()
-        if ordering:
-            if isinstance(ordering, str):
-                ordering = (ordering,)
-            queryset = queryset.order_by(*ordering)
-
-        return queryset
-
-    def get_object(self):
-        # Categories without published posts are kept for the future but not shown yet
-        return get_object_or_404(Category.objects.with_published_posts(), slug=self.kwargs['slug'])
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        name = self.category.name()
+        context['category'] = self.category
+        context['page_title'] = name
+        context['meta_description'] = _('Posts about %(category)s by Nestor Bracho.') % {'category': name}
+        return context

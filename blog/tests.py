@@ -96,6 +96,28 @@ class PostDetailViewTests(TestCase):
 
 
 class CategoryDetailViewTests(TestCase):
+    def test_title_and_description_name_the_category(self):
+        category = create_category('rust', name_en='Rust', name_es='Rust')
+        create_post('Ownership', category=category)
+
+        response = self.client.get(category.get_absolute_url(), headers={'Accept-Language': 'en'})
+
+        self.assertContains(response, '<title>Rust - Nestor Bracho</title>')
+        self.assertContains(response, '<meta name="description" content="Posts about Rust by Nestor Bracho.">')
+
+    def test_long_categories_are_paginated(self):
+        category = create_category()
+        for number in range(13):
+            create_post(f'Post {number}', days_ago=number, category=category)
+
+        first = self.client.get(category.get_absolute_url())
+        second = self.client.get(category.get_absolute_url(), {'page': 2})
+
+        self.assertEqual(len(first.context['post_list']), 12)
+        self.assertContains(first, '13 ')
+        self.assertContains(first, 'href="?page=2" rel="next"')
+        self.assertEqual([post.title_en for post in second.context['post_list']], ['Post 12'])
+
     def test_post_cards_link_to_the_category_slug(self):
         category = create_category()
         create_post('Post', category=category)
@@ -140,6 +162,18 @@ class SidebarTests(TestCase):
 
         # The data migrations' categories have no posts here, so only one is left
         self.assertEqual(list(response.context['categories']), [published])
+
+    def test_sidebar_and_footer_share_the_latest_posts(self):
+        for number in range(4):
+            create_post(f'Post {number}', days_ago=number)
+        create_post('Draft', is_published=False)
+
+        response = self.client.get(reverse('main:index'))
+
+        latest = [post.title_en for post in response.context['latest_posts']]
+        self.assertEqual(latest, ['Post 0', 'Post 1', 'Post 2'])
+        # Same posts in both lists
+        self.assertContains(response, 'href="/post/post-0"', count=4)
 
 
 class CategoryDeletionTests(TestCase):

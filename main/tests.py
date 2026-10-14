@@ -89,6 +89,21 @@ class FaviconTests(TestCase):
                 self.assertIsNotNone(finders.find(f'favicon/{icon["src"]}'))
 
 
+class SocialImageTests(TestCase):
+    def test_pages_without_their_own_image_use_the_brand_one(self):
+        response = self.client.get(reverse('main:cv'))
+
+        image_url = f'http://testserver{static("images/og-default.png")}'
+        self.assertContains(response, f'<meta property="og:image" content="{image_url}">')
+        self.assertContains(response, f'<meta property="twitter:image:src" content="{image_url}">')
+
+    def test_pages_with_their_own_image_keep_it(self):
+        response = self.client.get(reverse('main:contact'))
+
+        image_url = f'http://testserver{static("images/40.jpg")}'
+        self.assertContains(response, f'<meta property="og:image" content="{image_url}">')
+
+
 class PrivacyViewTests(TestCase):
     def test_shows_the_whole_policy_in_each_language(self):
         spanish = self.client.get(reverse('main:privacy'), headers={'Accept-Language': 'es'})

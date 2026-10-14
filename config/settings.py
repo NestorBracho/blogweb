@@ -150,6 +150,13 @@ OWNER_EMAIL = env('OWNER_EMAIL', default='')
 OWNER_PHONE = env('OWNER_PHONE', default='')
 OWNER_LOCATION = env('OWNER_LOCATION', default='')
 
+# The CV as a PDF in each language, linked from /cv/. They hold the phone number, so they live on the server
+# (e.g. under MEDIA_ROOT/cv/), not in the repo. Leave one empty to hide its download button.
+OWNER_CV_PDF_URLS = {
+    'en': env('OWNER_CV_PDF_EN', default=''),
+    'es': env('OWNER_CV_PDF_ES', default=''),
+}
+
 # Public profiles linked from the footer and sidebar. Leave one empty to hide its icon.
 OWNER_GITHUB_URL = env('OWNER_GITHUB_URL', default='https://github.com/NestorBracho')
 OWNER_LINKEDIN_URL = env('OWNER_LINKEDIN_URL', default='https://www.linkedin.com/in/nestor-bracho')

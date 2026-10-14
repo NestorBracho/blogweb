@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-14 14:29+0000\n"
+"POT-Creation-Date: 2026-10-14 14:31+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,6 +23,10 @@ msgstr ""
 #: blog/templates/blog/post.html:33
 msgid "min read"
 msgstr "min de lectura"
+
+#: blog/feeds.py:11
+msgid "Posts by Nestor Bracho, Senior Backend Engineer."
+msgstr "Publicaciones de Nestor Bracho, Senior Backend Engineer."
 
 #: blog/templates/blog/category.html:16
 msgid "A collection of"
@@ -70,7 +74,7 @@ msgid "Categories"
 msgstr "Categorías"
 
 #: main/templates/main/about.html:14 main/templates/main/about.html:19
-#: main/views.py:17
+#: main/views.py:20
 msgid "About Me"
 msgstr "Sobre Mi"
 
@@ -296,7 +300,7 @@ msgid "I will only use your details to reply to you."
 msgstr "Solo usaré tus datos para responderte."
 
 #: main/templates/main/contact.html:96 main/templates/main/privacy.html:12
-#: main/views.py:31 templates/lib/_main_right_sidebar.html:27
+#: main/views.py:48 templates/lib/_main_right_sidebar.html:27
 msgid "Privacy policy"
 msgstr "Política de privacidad"
 
@@ -304,55 +308,72 @@ msgstr "Política de privacidad"
 msgid "Send Now"
 msgstr "Enviar Ahora"
 
-#: main/templates/main/index.html:14
+#: main/templates/main/cv.html:16 main/templates/main/index.html:41
+msgid "Senior Backend Engineer"
+msgstr "Senior Backend Engineer"
+
+#: main/templates/main/cv.html:26
+msgid "Download PDF"
+msgstr "Descargar PDF"
+
+#: main/templates/main/index.html:18
 msgid "office's Picture"
 msgstr "imagen de oficina"
 
-#: main/templates/main/index.html:19
+#: main/templates/main/index.html:23
 msgid "My creative space, where masterpieces are born"
 msgstr "Mi espacio creativo, donde nacen obras maestras"
 
-#: main/templates/main/index.html:34
-msgid "Hi! I’m"
-msgstr "Hola! Soy"
-
-#: main/templates/main/index.html:37
-msgid "Problem solver, explorer, and lifelong student of how things work"
-msgstr "Explorador curioso, creador de soluciones y aprendiz de por vida"
-
-#: main/templates/main/index.html:42
+#: main/templates/main/index.html:46
 msgid ""
-"Welcome to my little home on the web. This is where code, physics, "
-"engineering, and curiosity all come together. I write about software, space, "
-"systems, and sometimes games. If you love building, exploring, or just "
-"asking “how does this work?”, you’re in the right place."
+"I have spent more than 12 years building web platforms with Python and "
+"Django, focused on backend design and system architecture. Since 2022 I have "
+"been building data platforms for the World Bank Group that are used across "
+"several African countries. Before that: the payment platform at Selia, "
+"Nokia’s Zina CRM and six years leading teams at Turpial."
 msgstr ""
-"Bienvenido a mi pequeño rincón en internet. Aquí se cruzan la programación, "
-"la física, la ingeniería y la curiosidad. Escribo sobre software, espacio, "
-"sistemas y a veces también sobre juegos. Si te gusta construir, explorar o "
-"simplemente preguntarte “¿cómo funciona esto?”, este lugar es para ti."
+"Llevo más de 12 años construyendo plataformas web con Python y Django, "
+"centrado en el diseño de backend y la arquitectura de sistemas. Desde 2022 "
+"desarrollo para el Grupo Banco Mundial plataformas de datos que se usan en "
+"varios países de África. Antes: la plataforma de pagos de Selia, el CRM Zina "
+"de Nokia y seis años liderando equipos en Turpial."
 
-#: main/templates/main/index.html:53
+#: main/templates/main/index.html:55
+#, python-format
+msgid ""
+"You can also find me on <a href=\"%(linkedin_url)s\" target=\"_blank\" "
+"rel=\"noopener\">LinkedIn</a> and <a href=\"%(github_url)s\" "
+"target=\"_blank\" rel=\"noopener\">GitHub</a>."
+msgstr ""
+"También me encontrarás en <a href=\"%(linkedin_url)s\" target=\"_blank\" "
+"rel=\"noopener\">LinkedIn</a> y <a href=\"%(github_url)s\" target=\"_blank\" "
+"rel=\"noopener\">GitHub</a>."
+
+#: main/templates/main/index.html:65
+msgid "See my CV"
+msgstr "Ver mi CV"
+
+#: main/templates/main/index.html:66
 msgid "Let’s Work Together"
 msgstr "Trabajemos Juntos"
 
-#: main/templates/main/index.html:71
-msgid "Nerd Stuff"
-msgstr "Cosas Nerd"
-
-#: main/templates/main/index.html:110
+#: main/templates/main/index.html:88
 msgid "The Binary Journal"
 msgstr "La Terminal"
 
-#: main/templates/main/index.html:137
+#: main/templates/main/index.html:115
 msgid "Load More"
 msgstr "Cargar más"
 
-#: main/templates/main/index.html:163
+#: main/templates/main/index.html:141
 msgid "Hacker’s Haven"
 msgstr "Paraiso del Hacker"
 
-#: main/views.py:19
+#: main/templates/main/index.html:161
+msgid "Nerd Stuff"
+msgstr "Cosas Nerd"
+
+#: main/views.py:22
 msgid ""
 "Get to know Nestor, a fullstack software engineer passionate about backend "
 "systems, Python, AWS, and technology for social impact. Discover his "
@@ -363,18 +384,31 @@ msgstr ""
 "trayectoria, sus habilidades y su misión de crear herramientas digitales con "
 "sentido."
 
-#: main/views.py:32
+#: main/views.py:34 templates/lib/_main_footer.html:73
+#: templates/lib/_main_navbar.html:29
+msgid "CV"
+msgstr "CV"
+
+#: main/views.py:36
+msgid ""
+"CV of Nestor Bracho, Senior Backend Engineer with more than 12 years "
+"building web platforms with Python and Django."
+msgstr ""
+"CV de Nestor Bracho, Senior Backend Engineer con más de 12 años construyendo "
+"plataformas web con Python y Django."
+
+#: main/views.py:49
 msgid ""
 "What personal data this site collects, why, and how to exercise your rights."
 msgstr ""
 "Qué datos personales recoge este sitio, para qué y cómo ejercer tus derechos."
 
-#: main/views.py:44 templates/lib/_main_footer.html:73
-#: templates/lib/_main_navbar.html:29
+#: main/views.py:61 templates/lib/_main_footer.html:75
+#: templates/lib/_main_navbar.html:32
 msgid "Contact"
 msgstr "Contacto"
 
-#: main/views.py:46
+#: main/views.py:63
 msgid ""
 "Plug into the grid, whether you’re building something bold or need a sharp "
 "mind in the system, this is your uplink to start working together."
@@ -382,7 +416,7 @@ msgstr ""
 "¿Buscas un dev que hable en código y entienda el sistema? Transmite por "
 "aquí. <br><i>Construyamos el futuro juntos.</i>"
 
-#: main/views.py:57
+#: main/views.py:74
 msgid ""
 "Your contact request has been successfully submitted. I'll get in touch as "
 "soon as possible!"
@@ -390,7 +424,7 @@ msgstr ""
 "Solicitud de contacto enviada con éxito. Me pondré en contacto contigo lo "
 "antes posible!"
 
-#: main/views.py:62
+#: main/views.py:79
 msgid "Something went wrong. Try again latter."
 msgstr "Algo salió mal. Intenta de nuevo más tarde."
 
@@ -451,43 +485,55 @@ msgstr "Páginas"
 msgid "About"
 msgstr "Acerca"
 
-#: templates/lib/_main_footer.html:75
+#: templates/lib/_main_footer.html:77
 msgid "Privacy"
 msgstr "Privacidad"
 
-#: templates/lib/_main_footer.html:92
+#: templates/lib/_main_footer.html:94
 msgid "Crafted by"
 msgstr "Hecho por"
 
-#: templates/lib/_main_footer.html:92
+#: templates/lib/_main_footer.html:94
 msgid "Designed by"
 msgstr "Diseñado por"
+
+#: templates/lib/_main_meta_seo.html:7
+msgid "Nestor Bracho, Senior Backend Engineer"
+msgstr "Nestor Bracho, Senior Backend Engineer"
+
+#: templates/lib/_main_meta_seo.html:8
+msgid ""
+"Senior backend engineer with more than 12 years building web platforms with "
+"Python and Django, currently for the World Bank Group."
+msgstr ""
+"Ingeniero backend sénior con más de 12 años construyendo plataformas web con "
+"Python y Django; actualmente, para el Grupo Banco Mundial."
 
 #: templates/lib/_main_navbar.html:17
 msgid "Main menu"
 msgstr "Menú principal"
 
-#: templates/lib/_main_navbar.html:45
+#: templates/lib/_main_navbar.html:48
 msgid "Enable dark mode"
 msgstr "Activar modo oscuro"
 
-#: templates/lib/_main_navbar.html:52
+#: templates/lib/_main_navbar.html:55
 msgid "Enable light mode"
 msgstr "Activar modo claro"
 
-#: templates/lib/_main_navbar.html:67
+#: templates/lib/_main_navbar.html:70
 msgid "Language options"
 msgstr "Opciones de lenguaje"
 
-#: templates/lib/_main_navbar.html:81
+#: templates/lib/_main_navbar.html:84
 msgid "Spanish"
 msgstr "Español"
 
-#: templates/lib/_main_navbar.html:85
+#: templates/lib/_main_navbar.html:88
 msgid "English"
 msgstr "Inglés"
 
-#: templates/lib/_main_navbar.html:97
+#: templates/lib/_main_navbar.html:100
 msgid "Search posts..."
 msgstr "Buscar publicación"
 

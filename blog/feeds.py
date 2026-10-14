@@ -1,13 +1,14 @@
 from django.contrib.syndication.views import Feed
 from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 
 from .models import Post
 
 
 class LatestPostsFeed(Feed):
-    title = 'Bracho'
+    title = 'Nestor Bracho'
     link = reverse_lazy('main:index')
-    description = 'Science, storytelling, and software—bridging code, cosmos, and culture'
+    description = _('Posts by Nestor Bracho, Senior Backend Engineer.')
 
     def items(self):
         return Post.objects.filter(is_published=True).order_by('-created')[:20]

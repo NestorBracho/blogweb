@@ -24,6 +24,7 @@ REST API, tests and linting in CI, and a hardened self-hosted deployment that co
 | CI/CD                                  | [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)                                       |
 | Server configuration                   | [`deploy/`](deploy): nginx, a hardened systemd unit, backup and update scripts                       |
 | Why it is built this way               | [`docs/adr/`](docs/adr): architecture decision records                                               |
+| What is mine, the theme's or AI-assisted | [How this was built](#how-this-was-built)                                                          |
 
 ## Features
 
@@ -185,6 +186,24 @@ The "~/bracho_" identity (wordmark, "nb_" monogram, favicons and the default sha
 [`brand/BRAND.md`](brand/BRAND.md), next to the script that generates it. The site renders the wordmark as live
 text ([`templates/lib/_brand_wordmark.html`](templates/lib/_brand_wordmark.html), styled in
 [`static/css/brand.css`](static/css/brand.css)), so it follows the light and dark themes.
+
+## How this was built
+
+So that anyone reviewing this repository knows what to judge me on:
+
+- **Design.** The visual design is the Coderon Jekyll theme (see [Credits](#credits)). I ported its markup to Django
+  templates and left its stylesheet and scripts as they were. The styles I added live in their own files
+  ([`static/css/brand.css`](static/css/brand.css) and `main/static/main/*/styles.css`).
+- **June 2025 to September 2026: the project itself.** The apps and models, the bilingual content, the REST API, the
+  contact and newsletter forms, and the first version of the article generator.
+- **Since September 2026: AI-first.** I use Claude Code as a pair programmer. It worked with me on the CI/CD
+  pipeline and the deployment guide, the fixes from a code review, the tests, the architecture decision records and
+  this README, and most of those commits say so in a `Co-Authored-By: Claude` trailer. Since October 2026 every
+  change goes through a pull request that has to pass CI, and I review and merge each one myself. The brand kit in
+  [`brand/`](brand) was made with Claude Design.
+- **Posts.** The two posts still published from June 2025 were drafted by the first version of the article
+  generator. [`draft_article`](blog/management/commands/draft_article.py) now only saves drafts, for me to rewrite
+  before publishing.
 
 ## Credits
 

@@ -13,7 +13,7 @@
             <div class="page-head">
                 <div class="page-info">
                     <h1 class="page-title cv__name">Nestor Bracho</h1>
-                    <p class="cv__headline">{% translate 'Senior Backend Engineer' %} · Python/Django</p>
+                    <p class="cv__headline">{{ owner.role }} · Python/Django</p>
 
                     <ul class="cv__contact list-reset">
                         {% if owner.location %}<li>{{ owner.location }}</li>{% endif %}

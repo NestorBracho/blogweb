@@ -34,9 +34,8 @@ class CVView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         kwargs['page_title'] = _('CV')
         kwargs['meta_description'] = _(
-            'CV of Nestor Bracho, Senior Backend Engineer with more than 12 years building web platforms with Python '
-            'and Django.'
-        )
+            'CV of Nestor Bracho, %(role)s with more than 12 years building web platforms with Python and Django.'
+        ) % {'role': settings.OWNER_ROLE}
         kwargs['pdf_url'] = settings.OWNER_CV_PDF_URLS[content_language()]
 
         return super().get_context_data(**kwargs)

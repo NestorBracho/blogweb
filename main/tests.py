@@ -23,9 +23,22 @@ class HomeTests(TestCase):
     def test_says_who_i_am_in_search_results_and_link_previews(self):
         response = self.client.get(reverse('main:index'), headers={'Accept-Language': 'en'})
 
-        self.assertContains(response, '<title>Nestor Bracho, Senior Backend Engineer</title>')
-        self.assertContains(response, '<meta property="og:title" content="Nestor Bracho, Senior Backend Engineer">')
-        self.assertContains(response, '<meta property="og:description" content="Senior backend engineer with more than')
+        self.assertContains(response, '<title>Nestor Bracho, Senior Full Stack Engineer</title>')
+        self.assertContains(response, '<meta property="og:title" content="Nestor Bracho, Senior Full Stack Engineer">')
+        self.assertContains(response, '<meta property="og:description" content="Senior Full Stack Engineer with more')
+
+    @override_settings(OWNER_ROLE='Staff Engineer')
+    def test_the_role_is_set_in_one_place(self):
+        home = self.client.get(reverse('main:index'), headers={'Accept-Language': 'es'})
+        cv = self.client.get(reverse('main:cv'), headers={'Accept-Language': 'es'})
+
+        self.assertContains(home, '<title>Nestor Bracho, Staff Engineer</title>')
+        self.assertContains(home, '<meta name="description" content="Staff Engineer con más de 12 años')
+        self.assertContains(home, '<p class="hero__subtitle">Staff Engineer · Python/Django</p>')
+        self.assertContains(cv, '<p class="cv__headline">Staff Engineer · Python/Django</p>')
+        self.assertContains(cv, '<meta name="description" content="CV de Nestor Bracho, Staff Engineer con más')
+        # The CV's job history keeps its own titles; only the headline follows the setting
+        self.assertNotContains(cv, '<p class="cv__headline">Senior Full Stack Engineer')
 
     def test_points_from_the_role_to_the_personal_blog(self):
         spanish = self.client.get(reverse('main:index'), headers={'Accept-Language': 'es'})

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-14 20:52+0000\n"
+"POT-Creation-Date: 2026-10-14 21:35+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -79,7 +79,7 @@ msgid ""
 "Hey, I’m Nestor, a fullstack developer by trade, a problem-solver by "
 "instinct, and someone who’s been obsessed with the future since I was a kid."
 msgstr ""
-"Hola, soy Néstor, desarrollador fullstack de profesión, solucionador de "
+"Hola, soy Nestor, desarrollador fullstack de profesión, solucionador de "
 "problemas por naturaleza, y alguien que lleva soñando con el futuro desde "
 "que era niño."
 
@@ -296,17 +296,13 @@ msgid "I will only use your details to reply to you."
 msgstr "Solo usaré tus datos para responderte."
 
 #: main/templates/main/contact.html:105 main/templates/main/privacy.html:12
-#: main/views.py:49 templates/lib/_main_right_sidebar.html:27
+#: main/views.py:48 templates/lib/_main_right_sidebar.html:27
 msgid "Privacy policy"
 msgstr "Política de privacidad"
 
 #: main/templates/main/contact.html:108
 msgid "Send Now"
 msgstr "Enviar ahora"
-
-#: main/templates/main/cv.html:16 main/templates/main/index.html:41
-msgid "Senior Backend Engineer"
-msgstr "Senior Backend Engineer"
 
 #: main/templates/main/cv.html:26
 msgid "Download PDF"
@@ -394,25 +390,26 @@ msgid "CV"
 msgstr "CV"
 
 #: main/views.py:37
+#, python-format
 msgid ""
-"CV of Nestor Bracho, Senior Backend Engineer with more than 12 years "
-"building web platforms with Python and Django."
+"CV of Nestor Bracho, %(role)s with more than 12 years building web platforms "
+"with Python and Django."
 msgstr ""
-"CV de Nestor Bracho, Senior Backend Engineer con más de 12 años construyendo "
-"plataformas web con Python y Django."
+"CV de Nestor Bracho, %(role)s con más de 12 años construyendo plataformas "
+"web con Python y Django."
 
-#: main/views.py:50
+#: main/views.py:49
 msgid ""
 "What personal data this site collects, why, and how to exercise your rights."
 msgstr ""
 "Qué datos personales recoge este sitio, para qué y cómo ejercer tus derechos."
 
-#: main/views.py:62 templates/lib/_main_footer.html:76
+#: main/views.py:61 templates/lib/_main_footer.html:76
 #: templates/lib/_main_navbar.html:32
 msgid "Contact"
 msgstr "Contacto"
 
-#: main/views.py:64
+#: main/views.py:63
 msgid ""
 "Plug into the grid, whether you’re building something bold or need a sharp "
 "mind in the system, this is your uplink to start working together."
@@ -420,7 +417,7 @@ msgstr ""
 "¿Buscas un dev que hable en código y entienda el sistema? Transmite por "
 "aquí. <br><i>Construyamos el futuro juntos.</i>"
 
-#: main/views.py:75
+#: main/views.py:74
 msgid ""
 "Your contact request has been successfully submitted. I'll get in touch as "
 "soon as possible!"
@@ -428,7 +425,7 @@ msgstr ""
 "Solicitud de contacto enviada con éxito. ¡Me pondré en contacto contigo lo "
 "antes posible!"
 
-#: main/views.py:82
+#: main/views.py:81
 msgid "Something went wrong. Try again later."
 msgstr "Algo salió mal. Intenta de nuevo más tarde."
 
@@ -468,10 +465,10 @@ msgstr "Deja este campo vacío"
 #: templates/lib/_main_footer.html:9
 msgid ""
 "Science, storytelling &amp; software. This is the personal site of Nestor "
-"Bracho, a backend engineer who likes to understand how things work."
+"Bracho, a software engineer who likes to understand how things work."
 msgstr ""
 "Ciencia, historias y software. Esta es la web personal de Nestor Bracho, un "
-"ingeniero backend al que le gusta entender cómo funcionan las cosas."
+"ingeniero de software al que le gusta entender cómo funcionan las cosas."
 
 #: templates/lib/_main_footer.html:22
 msgid "Recent Posts"
@@ -506,16 +503,18 @@ msgid "Designed by"
 msgstr "Diseñado por"
 
 #: templates/lib/_main_meta_seo.html:7
-msgid "Nestor Bracho, Senior Backend Engineer"
-msgstr "Nestor Bracho, Senior Backend Engineer"
+#, python-format
+msgid "Nestor Bracho, %(role)s"
+msgstr "Nestor Bracho, %(role)s"
 
 #: templates/lib/_main_meta_seo.html:8
+#, python-format
 msgid ""
-"Senior backend engineer with more than 12 years building web platforms with "
-"Python and Django, currently for the World Bank Group."
+"%(role)s with more than 12 years building web platforms with Python and "
+"Django, currently for the World Bank Group."
 msgstr ""
-"Ingeniero backend sénior con más de 12 años construyendo plataformas web con "
-"Python y Django; actualmente, para el Grupo Banco Mundial."
+"%(role)s con más de 12 años construyendo plataformas web con Python y "
+"Django; actualmente, para el Grupo Banco Mundial."
 
 #: templates/lib/_main_navbar.html:9
 msgid "Bracho, home"

@@ -7,6 +7,7 @@ def owner(request):
     # Personal contact details live in .env so they never end up in the public repo
     return {
         'owner': {
+            'role': settings.OWNER_ROLE,
             'email': settings.OWNER_EMAIL,
             'phone': settings.OWNER_PHONE,
             'location': settings.OWNER_LOCATION,

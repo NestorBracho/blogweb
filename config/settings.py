@@ -143,6 +143,9 @@ OWNER_EMAIL = env('OWNER_EMAIL', default='')
 OWNER_PHONE = env('OWNER_PHONE', default='')
 OWNER_LOCATION = env('OWNER_LOCATION', default='')
 
+# Job title on the home page, the CV, page titles and link previews. It changes now and then, so it lives here only.
+OWNER_ROLE = 'Senior Full Stack Engineer'
+
 # The CV as a PDF in each language, linked from /cv/. They hold the phone number, so they live on the server
 # (e.g. under MEDIA_ROOT/cv/), not in the repo. Leave one empty to hide its download button.
 OWNER_CV_PDF_URLS = {

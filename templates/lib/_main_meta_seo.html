@@ -4,8 +4,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 {# What search results and link previews (LinkedIn, Slack...) show for pages without their own title or description #}
-{% translate 'Nestor Bracho, Senior Backend Engineer' as site_title %}
-{% translate 'Senior backend engineer with more than 12 years building web platforms with Python and Django, currently for the World Bank Group.' as site_description %}
+{% blocktranslate asvar site_title with role=owner.role %}Nestor Bracho, {{ role }}{% endblocktranslate %}
+{% blocktranslate asvar site_description with role=owner.role trimmed %}
+    {{ role }} with more than 12 years building web platforms with Python and Django, currently for the World Bank Group.
+{% endblocktranslate %}
 {% firstof meta_description site_description as description %}
 
 <title>{% if page_title %}{{ page_title }} - Nestor Bracho{% else %}{{ site_title }}{% endif %}</title>

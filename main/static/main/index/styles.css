@@ -1,5 +1,10 @@
 /* Home page: main/templates/main/index.html */
 
+/* The theme sizes the logos by height (140px, 100px on phones); keep them square instead of using the width attribute */
+.logos .logos__image img {
+    width: auto;
+}
+
 .hero__actions {
     display: flex;
     flex-wrap: wrap;

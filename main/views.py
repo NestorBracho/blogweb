@@ -63,7 +63,7 @@ class ContactFormView(generic.CreateView):
             'Plug into the grid, whether you’re building something bold or need a '
             'sharp mind in the system, this is your uplink to start working together.'
         )
-        kwargs['social_image_url'] = static('images/40.png')
+        kwargs['social_image_url'] = static('images/40.jpg')
 
         return super().get_context_data(**kwargs)
 

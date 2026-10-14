@@ -1,7 +1,10 @@
 [tool.ruff]
 line-length = 120
 target-version = "py312"
-extend-exclude = ["*/migrations/*", "static"]
+# brand/ is the brand kit as exported from Claude Design, including the script that generated it
+extend-exclude = ["*/migrations/*", "static", "brand"]
+# Also skip excluded paths when a tool passes them by name, as pre-commit does
+force-exclude = true
 
 [tool.ruff.lint]
 select = [

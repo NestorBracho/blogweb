@@ -102,6 +102,7 @@ static/        theme assets and images
 locale/        Spanish translations
 deploy/        nginx, systemd, backup and update scripts, server guide (in Spanish)
 docs/adr/      architecture decision records
+brand/         brand kit: logo, favicons, share image and their generator
 ```
 
 ## Running locally
@@ -172,6 +173,13 @@ language cookie or `Accept-Language`), and an `X-Language` header (`en` or `es`)
 
 Production runs on a single Google Cloud e2-micro VM behind Cloudflare. The step-by-step server guide, including
 the CI/CD setup, is in [`deploy/README.md`](deploy/README.md) (in Spanish).
+
+## Brand
+
+The "~/bracho_" identity (wordmark, "nb_" monogram, favicons and the default share image) is described in
+[`brand/BRAND.md`](brand/BRAND.md), next to the script that generates it. The site renders the wordmark as live
+text ([`templates/lib/_brand_wordmark.html`](templates/lib/_brand_wordmark.html), styled in
+[`static/css/brand.css`](static/css/brand.css)), so it follows the light and dark themes.
 
 ## Credits
 

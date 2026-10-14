@@ -14,7 +14,7 @@
 <link rel="canonical" href="{{ request.build_absolute_uri }}">
 <link rel="alternate" type="application/rss+xml" title="Nestor Bracho" href="{% url 'blog:feed' %}">
 
-{% static 'images/02.jpg' as default_social_image %}
+{% static 'images/og-default.png' as default_social_image %}
 {% absolute_uri social_image_url|default:default_social_image as social_image %}
 
 <!-- Twitter Card -->

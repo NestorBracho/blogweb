@@ -232,6 +232,9 @@ STORAGES = {
     },
 }
 
+# WhiteNoise doesn't know this extension and would serve the web app manifest as application/octet-stream
+WHITENOISE_MIMETYPES = {'.webmanifest': 'application/manifest+json'}
+
 # Uploaded covers can be large; keep them on disk instead of in memory
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 

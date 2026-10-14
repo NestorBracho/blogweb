@@ -1,7 +1,11 @@
+import json
+from pathlib import Path
 from unittest import mock
 
 from django.contrib.auth import get_user_model
+from django.contrib.staticfiles import finders
 from django.core import mail
+from django.templatetags.static import static
 from django.test import TestCase, override_settings
 from django.urls import reverse, reverse_lazy
 
@@ -43,6 +47,61 @@ class HomeTests(TestCase):
 
         self.assertContains(response, f'href="{reverse("main:cv")}" class="button button--primary"')
         self.assertContains(response, f'href="{reverse("main:contact")}" class="button button--secondary"')
+
+
+class BrandTests(TestCase):
+    wordmark = '<span class="brand-wordmark"><span class="brand-wordmark__prefix" aria-hidden="true">~/</span>bracho'
+
+    def test_header_and_footer_show_the_wordmark(self):
+        response = self.client.get(reverse('main:index'))
+
+        self.assertContains(response, self.wordmark, count=2)
+
+    def test_logo_link_has_a_name_in_each_language(self):
+        spanish = self.client.get(reverse('main:index'), headers={'Accept-Language': 'es'})
+        english = self.client.get(reverse('main:index'), headers={'Accept-Language': 'en'})
+
+        self.assertContains(spanish, 'aria-label="Bracho, inicio"')
+        self.assertContains(english, 'aria-label="Bracho, home"')
+
+
+class FaviconTests(TestCase):
+    def test_root_favicon_redirects_to_the_static_file(self):
+        response = self.client.get('/favicon.ico')
+
+        self.assertRedirects(response, static('favicon/favicon.ico'), status_code=302, fetch_redirect_response=False)
+
+    def test_every_page_declares_the_icons_and_theme_color(self):
+        # The contact page doesn't extend base.html, so it gets its own check
+        for url in [reverse('main:index'), reverse('main:contact')]:
+            with self.subTest(url=url):
+                response = self.client.get(url)
+
+                self.assertContains(response, f'<link rel="manifest" href="{static("favicon/site.webmanifest")}"/>')
+                self.assertContains(response, '<meta name="theme-color" content="#10141f">')
+
+    def test_manifest_icons_are_relative_to_the_manifest_and_exist(self):
+        manifest = json.loads(Path(finders.find('favicon/site.webmanifest')).read_text())
+
+        for icon in manifest['icons']:
+            with self.subTest(icon=icon['src']):
+                self.assertFalse(icon['src'].startswith('/'))
+                self.assertIsNotNone(finders.find(f'favicon/{icon["src"]}'))
+
+
+class SocialImageTests(TestCase):
+    def test_pages_without_their_own_image_use_the_brand_one(self):
+        response = self.client.get(reverse('main:cv'))
+
+        image_url = f'http://testserver{static("images/og-default.png")}'
+        self.assertContains(response, f'<meta property="og:image" content="{image_url}">')
+        self.assertContains(response, f'<meta property="twitter:image:src" content="{image_url}">')
+
+    def test_pages_with_their_own_image_keep_it(self):
+        response = self.client.get(reverse('main:contact'))
+
+        image_url = f'http://testserver{static("images/40.jpg")}'
+        self.assertContains(response, f'<meta property="og:image" content="{image_url}">')
 
 
 class PrivacyViewTests(TestCase):

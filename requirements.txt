@@ -15,7 +15,7 @@ idna==3.20
 jiter==0.10.0
 Markdown==3.11.1
 openai==1.83.0
-packaging==25.0
+packaging==26.3
 pillow==12.3.0
 pydantic==2.11.5
 pydantic_core==2.33.2

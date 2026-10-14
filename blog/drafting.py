@@ -1,7 +1,6 @@
 """AI-assisted drafting: turn a topic into an unpublished, bilingual post for the author to review and edit."""
 
 import base64
-import math
 
 from django.conf import settings
 from django.core.files.base import ContentFile
@@ -9,8 +8,6 @@ from django.utils.text import Truncator
 from pydantic import BaseModel, Field
 
 from .models import Post
-
-WORDS_PER_MINUTE = 200
 
 SYSTEM_PROMPT = (
     'You write drafts for a personal technical blog published in English and Spanish. '
@@ -66,7 +63,6 @@ def save_draft(draft, category):
         body_en=draft.body_en,
         body_es=draft.body_es,
         category=category,
-        read_time=estimate_read_time(draft.body_en),
         is_published=False,
     )
 
@@ -83,7 +79,3 @@ def generate_cover(client, post):
         response_format='b64_json',
     )
     post.cover.save(f'{post.slug}.png', ContentFile(base64.b64decode(image.data[0].b64_json)))
-
-
-def estimate_read_time(text):
-    return max(1, math.ceil(len(text.split()) / WORDS_PER_MINUTE))

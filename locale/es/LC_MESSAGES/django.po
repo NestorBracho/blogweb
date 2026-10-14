@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-14 20:45+0000\n"
+"POT-Creation-Date: 2026-10-14 20:52+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? "
 "1 : 2;\n"
 
-#: blog/api/serializers.py:75 blog/templates/blog/_lib/_article_card.html:22
+#: blog/api/serializers.py:80 blog/templates/blog/_lib/_article_card.html:22
 #: blog/templates/blog/post.html:33
 msgid "min read"
 msgstr "min de lectura"
@@ -29,22 +29,22 @@ msgid "Science, storytelling & software, by Nestor Bracho."
 msgstr "Ciencia, historias y software, por Nestor Bracho."
 
 #: blog/templates/blog/category.html:16
-msgid "A collection of"
-msgstr "Un grupo de"
+#, python-format
+msgid "A collection of <span>%(counter)s post</span>"
+msgid_plural "A collection of <span>%(counter)s posts</span>"
+msgstr[0] "Una colección de <span>%(counter)s publicación</span>"
+msgstr[1] "Una colección de <span>%(counter)s publicaciones</span>"
+msgstr[2] "Una colección de <span>%(counter)s publicaciones</span>"
 
-#: blog/templates/blog/category.html:16
-msgid "Posts"
-msgstr "publicaciones"
-
-#: blog/templates/blog/category.html:27
+#: blog/templates/blog/category.html:31
 msgid "More posts"
 msgstr "Más publicaciones"
 
-#: blog/templates/blog/category.html:29
+#: blog/templates/blog/category.html:33
 msgid "Newer posts"
 msgstr "Publicaciones más recientes"
 
-#: blog/templates/blog/category.html:32
+#: blog/templates/blog/category.html:36
 msgid "Older posts"
 msgstr "Publicaciones anteriores"
 

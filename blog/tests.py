@@ -111,6 +111,36 @@ class CategoryDetailViewTests(TestCase):
 
         self.assertEqual(response.status_code, 404)
 
+    def test_categories_without_published_posts_are_not_found_yet(self):
+        empty = create_category('empty-topic')
+        drafts_only = create_category('drafts-only')
+        create_post('Draft', category=drafts_only, is_published=False)
+
+        for category in (empty, drafts_only):
+            with self.subTest(category=category.slug):
+                self.assertEqual(self.client.get(category.get_absolute_url()).status_code, 404)
+
+    def test_a_category_appears_with_its_first_published_post(self):
+        category = create_category('future-topic')
+        post = create_post('Coming soon', category=category, is_published=False)
+
+        Post.objects.filter(pk=post.pk).update(is_published=True)
+
+        self.assertEqual(self.client.get(category.get_absolute_url()).status_code, 200)
+
+
+class SidebarTests(TestCase):
+    def test_lists_only_categories_with_published_posts(self):
+        published = create_category('published-topic')
+        create_post('Published', category=published)
+        create_post('Draft', category=create_category('drafts-only'), is_published=False)
+        create_category('empty-topic')
+
+        response = self.client.get(reverse('main:index'))
+
+        # The data migrations' categories have no posts here, so only one is left
+        self.assertEqual(list(response.context['categories']), [published])
+
 
 class CategoryDeletionTests(TestCase):
     def test_deleting_a_category_keeps_its_posts(self):
@@ -247,6 +277,7 @@ class CategoryAPITests(TestCase):
         create_post('New', category=category)
         create_post('Draft', category=category, is_published=False)
         create_category('empty-topic')
+        create_post('Only a draft', category=create_category('drafts-only'), is_published=False)
 
         response = self.client.get(reverse('blog:api:categories'))
 

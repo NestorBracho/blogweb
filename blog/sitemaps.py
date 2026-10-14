@@ -13,5 +13,4 @@ class PostSitemap(Sitemap):
 
 class CategorySitemap(Sitemap):
     def items(self):
-        # Categories without published posts only render an empty page
-        return Category.objects.filter(posts__is_published=True).distinct().order_by('slug')
+        return Category.objects.with_published_posts().order_by('slug')

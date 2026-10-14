@@ -5,6 +5,11 @@
     width: auto;
 }
 
+/* The intro links to #blog; leave room for the sticky header */
+.section-blog {
+    scroll-margin-top: 96px;
+}
+
 .hero__actions {
     display: flex;
     flex-wrap: wrap;

@@ -51,6 +51,12 @@
                                     years leading teams at Turpial.
                                 {% endblocktranslate %}</p>
 
+                                {# The role comes first for recruiters; the blog is the personal side #}
+                                <p>{% blocktranslate trimmed %}
+                                    Outside work, I <a href="#blog">write here</a> about science, storytelling and
+                                    software.
+                                {% endblocktranslate %}</p>
+
                                 {% if owner.linkedin_url and owner.github_url %}
                                     <p>{% blocktranslate trimmed with linkedin_url=owner.linkedin_url github_url=owner.github_url %}
                                         You can also find me on <a href="{{ linkedin_url }}" target="_blank" rel="noopener">LinkedIn</a>
@@ -77,7 +83,7 @@
 
 
     <!-- section-blog -->
-    <section class="section section-blog">
+    <section class="section section-blog" id="blog">
 
         <div class="container">
 

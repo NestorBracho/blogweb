@@ -66,8 +66,9 @@ class Post(TranslatedFieldsMixin, BaseModel):
         return self.slug
 
     def save(self, *args, **kwargs):
+        # The only place slugs are made, whether a post comes from the admin, the API or draft_article
         if not self.slug:
-            self.slug = self.unique_slug(self.title_es or self.title_en)
+            self.slug = self.unique_slug(self.title_en or self.title_es)
 
         super().save(*args, **kwargs)
 

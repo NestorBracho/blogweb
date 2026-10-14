@@ -5,12 +5,19 @@ from blog.models import Category, Post
 from main.templatetags.main_tags import localized_date
 
 
-class CreatePostSerializer(serializers.ModelSerializer):
+class PostWriteSerializer(serializers.ModelSerializer):
+    """
+    Staff only: a post in both languages. New posts are drafts unless `is_published` is sent. The response carries
+    the `id` to edit the post with and the `slug`, which Post.save() makes from the English title.
+    """
+
     category = serializers.SlugRelatedField(slug_field='slug', queryset=Category.objects.all())
 
     class Meta:
         model = Post
         fields = [
+            'id',
+            'slug',
             'title_es',
             'title_en',
             'body_es',
@@ -20,11 +27,9 @@ class CreatePostSerializer(serializers.ModelSerializer):
             'category',
             'read_time',
             'cover',
+            'is_published',
         ]
-
-    def create(self, validated_data):
-        validated_data['slug'] = Post.unique_slug(validated_data['title_en'])
-        return super().create(validated_data)
+        read_only_fields = ['id', 'slug']
 
 
 class SearchPostSerializer(serializers.ModelSerializer):

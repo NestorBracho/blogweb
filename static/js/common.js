@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", function() {
   // Menu + Search + Theme Switcher + Blog List View
   ======================================================= */
   menuToggle.addEventListener("click", () => {
-    menu();
+    setMenu(!menuList.classList.contains("is-visible"));
   });
 
   searchOpenButton.forEach(button => {
@@ -44,63 +44,92 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
 
-  // Menu
-  function menu() {
-    menuToggle.classList.toggle("is-open");
-    menuList.classList.toggle("is-visible");
+  // Menu (aria-expanded tells screen readers whether it is open)
+  function setMenu(open) {
+    menuToggle.classList.toggle("is-open", open);
+    menuToggle.setAttribute("aria-expanded", open);
+    menuList.classList.toggle("is-visible", open);
   }
 
-  // Dropdown Menu
-  document.querySelectorAll('.dropdown-toggle').forEach(function(toggle) {
-    toggle.addEventListener('click', function(e) {
-      e.preventDefault();
+  // Dropdown Menu: the toggle is the button right before its menu
+  const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
 
-      document.querySelectorAll('.dropdown-menu').forEach(function(menu) {
-        if (menu !== toggle.nextElementSibling) {
-          menu.classList.remove('is-visible');
+  function setDropdown(toggle, open) {
+    toggle.setAttribute('aria-expanded', open);
+    toggle.nextElementSibling.classList.toggle('is-visible', open);
+  }
+
+  dropdownToggles.forEach(function(toggle) {
+    toggle.addEventListener('click', function() {
+      dropdownToggles.forEach(function(other) {
+        if (other !== toggle) {
+          setDropdown(other, false);
         }
       });
 
-      this.nextElementSibling.classList.toggle('is-visible');
+      setDropdown(toggle, toggle.getAttribute('aria-expanded') !== 'true');
     });
   });
 
   document.addEventListener('click', function(e) {
     if (!e.target.closest('.nav__item')) {
-      document.querySelectorAll('.dropdown-menu').forEach(function(menu) {
-        menu.classList.remove('is-visible');
+      dropdownToggles.forEach(function(toggle) {
+        setDropdown(toggle, false);
       });
     }
   });
 
 
   // Search
-  function searchOpen() {
+  let searchOpener = null;
+
+  function searchOpen(e) {
+    searchOpener = e.currentTarget;
     search.classList.add("is-visible");
     body.classList.add("search-is-visible");
     globalWrap.classList.add("is-active");
-    menuToggle.classList.remove("is-open");
-    menuList.classList.remove("is-visible");
+    setMenu(false);
     setTimeout(function () {
       searchInput.focus();
     }, 250);
   }
 
   function searchClose() {
+    if (!search.classList.contains("is-visible")) {
+      return;
+    }
     search.classList.remove("is-visible");
     body.classList.remove("search-is-visible");
     globalWrap.classList.remove("is-active");
+    // Keyboard users carry on from the button that opened the search
+    if (searchOpener) {
+      searchOpener.focus();
+    }
   }
 
+  // Escape closes whatever is open and gives the focus back to the button that opened it
   document.addEventListener('keydown', function(e){
     if (e.key == 'Escape') {
       searchClose();
+
+      dropdownToggles.forEach(function(toggle) {
+        if (toggle.getAttribute('aria-expanded') === 'true') {
+          setDropdown(toggle, false);
+          toggle.focus();
+        }
+      });
+
+      if (menuList.classList.contains("is-visible")) {
+        setMenu(false);
+        menuToggle.focus();
+      }
     }
   });
 
 
-  // Theme Switcher
+  // Theme Switcher (a toggle button: aria-pressed is true in dark mode)
   if (toggleTheme && isToggleEnabled) {
+    toggleTheme.setAttribute("aria-pressed", html.classList.contains("dark-mode"));
     toggleTheme.addEventListener("click", () => {
       const isDarkMode = html.classList.contains("dark-mode");
       if (isDarkMode) {
@@ -110,6 +139,7 @@ document.addEventListener("DOMContentLoaded", function() {
         setTheme("dark");
         localStorage.setItem("theme", "dark");
       }
+      toggleTheme.setAttribute("aria-pressed", !isDarkMode);
     });
   }
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-14 21:35+0000\n"
+"POT-Creation-Date: 2026-10-15 11:09+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -458,6 +458,18 @@ msgstr "El servidor está castigado y está pensando en lo que hizo."
 msgid "Try refreshing, or come back after a coffee"
 msgstr "Trata de refrescar, o vuelve después de un café"
 
+#: templates/base.html:86
+msgid "Close search"
+msgstr "Cerrar búsqueda"
+
+#: templates/base.html:89
+msgid "Search posts"
+msgstr "Buscar publicaciones"
+
+#: templates/base.html:91
+msgid "Type to search..."
+msgstr "Escribe para buscar..."
+
 #: templates/lib/_honeypot_field.html:6
 msgid "Leave this field empty"
 msgstr "Deja este campo vacío"
@@ -474,7 +486,7 @@ msgstr ""
 msgid "Recent Posts"
 msgstr "Publicaciones recientes"
 
-#: templates/lib/_main_footer.html:51
+#: templates/lib/_main_footer.html:51 templates/lib/_main_navbar.html:13
 msgid "Menu"
 msgstr "Menú"
 
@@ -524,27 +536,35 @@ msgstr "Bracho, inicio"
 msgid "Main menu"
 msgstr "Menú principal"
 
-#: templates/lib/_main_navbar.html:48
+#: templates/lib/_main_navbar.html:42
+msgid "Dark mode"
+msgstr "Modo oscuro"
+
+#: templates/lib/_main_navbar.html:43
 msgid "Enable dark mode"
 msgstr "Activar modo oscuro"
 
-#: templates/lib/_main_navbar.html:55
+#: templates/lib/_main_navbar.html:50
 msgid "Enable light mode"
 msgstr "Activar modo claro"
 
-#: templates/lib/_main_navbar.html:70
+#: templates/lib/_main_navbar.html:65
 msgid "Language options"
 msgstr "Opciones de idioma"
 
-#: templates/lib/_main_navbar.html:84
+#: templates/lib/_main_navbar.html:67
+msgid "Language"
+msgstr "Idioma"
+
+#: templates/lib/_main_navbar.html:76
 msgid "Spanish"
 msgstr "Español"
 
-#: templates/lib/_main_navbar.html:88
+#: templates/lib/_main_navbar.html:80
 msgid "English"
 msgstr "Inglés"
 
-#: templates/lib/_main_navbar.html:100
+#: templates/lib/_main_navbar.html:92
 msgid "Search posts..."
 msgstr "Buscar publicación"
 

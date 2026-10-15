@@ -78,6 +78,37 @@ class BrandTests(TestCase):
         self.assertContains(english, 'aria-label="Bracho, home"')
 
 
+class HeaderTests(TestCase):
+    """The header's controls are buttons, so they work with a keyboard and screen readers can name them."""
+
+    def get_home(self, language):
+        return self.client.get(reverse('main:index'), headers={'Accept-Language': language})
+
+    def test_controls_are_buttons(self):
+        response = self.get_home('en')
+
+        for control in ['hamburger', 'toggle-theme', 'dropdown-toggle', 'search-button', 'search__close']:
+            self.assertContains(response, f'<button type="button" class="{control}"')
+
+    def test_controls_are_named_in_each_language(self):
+        response = self.get_home('es')
+
+        self.assertContains(response, 'aria-label="Menú"')
+        self.assertContains(response, 'aria-label="Modo oscuro"')
+        self.assertContains(response, '<span class="screen-reader-text">Idioma:</span>')
+        self.assertContains(response, 'aria-label="Cerrar búsqueda"')
+        self.assertContains(response, 'placeholder="Escribe para buscar..."')
+
+    def test_language_menu_is_a_form_that_needs_no_javascript(self):
+        page = self.get_home('en')
+        self.assertContains(page, f'<form action="{reverse("set_language")}" method="post"')
+        self.assertContains(page, '<button type="submit" name="language" value="es"')
+
+        response = self.client.post(reverse('set_language'), {'language': 'es'}, follow=True)
+
+        self.assertContains(response, '<html lang="es"')
+
+
 class FaviconTests(TestCase):
     def test_root_favicon_redirects_to_the_static_file(self):
         response = self.client.get('/favicon.ico')

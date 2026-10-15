@@ -10,11 +10,11 @@
             </div>
 
             {% with request.resolver_match.url_name as url_name %}
-            <div class="hamburger">
-                <div></div>
-            </div>
+            <button type="button" class="hamburger" aria-label="{% translate 'Menu' %}" aria-controls="main-nav" aria-expanded="false">
+                <span></span>
+            </button>
 
-            <nav class="main-nav" aria-label="{% translate 'Main menu' %}">
+            <nav class="main-nav" id="main-nav" aria-label="{% translate 'Main menu' %}">
                 <div class="main-nav__box">
                     <ul class="nav__list list-reset">
 
@@ -36,23 +36,18 @@
             </nav>
             {% endwith %}
 
-            <form action="{% url 'set_language' %}" method="post" class="d-none" id="lang-form">
-                {% csrf_token %}
-                <input type="hidden" value="" name="language" id="language-input"/>
-            </form>
-
             <div class="nav-button nav__list">
 
                 <div class="color-scheme-button">
-                    <div class="toggle-theme">
-                        <div class="toggle-moon" title="{% translate 'Enable dark mode' %}" aria-hidden="true">
+                    <button type="button" class="toggle-theme" aria-label="{% translate 'Dark mode' %}" aria-pressed="true">
+                        <span class="toggle-moon" title="{% translate 'Enable dark mode' %}" aria-hidden="true">
                             <svg width="15" height="15" viewBox="0 0 1472 1536"
                                  xmlns="http://www.w3.org/2000/svg">
                                 <path fill="currentColor"
                                       d="M1464 1090q-94 203-283 323.5T768 1536q-157-1-299-62t-244.5-163.5T61 1066T0 768q0-205 97.5-378t267-276.5T738 2q43-2 62 38q17 42-16 72q-176 164-176 400q0 111 43 211.5t115 173t172.5 116T1151 1056q119 0 228-51q41-18 72 13t13 72"></path>
                             </svg>
-                        </div>
-                        <div class="toggle-sun" title="{% translate 'Enable light mode' %}" aria-hidden="true">
+                        </span>
+                        <span class="toggle-sun" title="{% translate 'Enable light mode' %}" aria-hidden="true">
                             <svg width="15" height="15" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
                                 <g fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="4">
                                     <path stroke-linecap="round"
@@ -62,43 +57,40 @@
                                     <path stroke-linecap="round" d="M24 45v-3.15"></path>
                                 </g>
                             </svg>
-                        </div>
-                    </div>
+                        </span>
+                    </button>
                 </div>
 
                 <div class="nav__item dropdown dropdown-button color-scheme-button nav__item " style="height: 36px; line-height: 2;">
-                    <div class="dropdown-toggle" title="{% translate 'Language options' %}">
-
-                        <div class="toggle-theme-button">
-                            {% if LANGUAGE_CODE == 'es' %}
-                            <p style="text-align: center"><b>ES</b></p>
-                            {% else %}
-                            <p style="text-align: center"><b>EN</b></p>
-                            {% endif %}
-                        </div>
-
-                    </div>
-                    <div class="dropdown-menu dropdown-menu--right">
-                        <a class="nav__link lang-item{% if LANGUAGE_CODE == 'es' %} active-link{% endif %}" data-value="es" style="padding-top: 10px; cursor: pointer;">
+                    <button type="button" class="dropdown-toggle" title="{% translate 'Language options' %}" aria-controls="language-menu" aria-expanded="false">
+                        <span class="toggle-theme-button">
+                            <span class="screen-reader-text">{% translate 'Language' %}:</span>
+                            <b>{% if LANGUAGE_CODE == 'es' %}ES{% else %}EN{% endif %}</b>
+                        </span>
+                    </button>
+                    {# A plain form: each language is a submit button, so switching works with a keyboard and without JavaScript #}
+                    <form action="{% url 'set_language' %}" method="post" class="dropdown-menu dropdown-menu--right" id="language-menu">
+                        {% csrf_token %}
+                        <button type="submit" name="language" value="es" class="nav__link lang-item{% if LANGUAGE_CODE == 'es' %} active-link{% endif %}"{% if LANGUAGE_CODE == 'es' %} aria-current="true"{% endif %} style="padding-top: 10px;">
                             <img src="{% static 'images/flags/es.svg' %}" alt="" width="24" height="16">
                             <span style="vertical-align: middle; padding-bottom: 8px; margin-left: 5px;">{% translate 'Spanish' %}</span>
-                        </a>
-                        <a class="nav__link lang-item{% if LANGUAGE_CODE == 'en' %} active-link{% endif %}" data-value="en" style="padding-top: 10px; cursor: pointer;">
+                        </button>
+                        <button type="submit" name="language" value="en" class="nav__link lang-item{% if LANGUAGE_CODE == 'en' %} active-link{% endif %}"{% if LANGUAGE_CODE == 'en' %} aria-current="true"{% endif %} style="padding-top: 10px;">
                             <img src="{% static 'images/flags/gb.svg' %}" alt="" width="24" height="16">
                             <span style="vertical-align: middle; padding-bottom: 8px; margin-left: 5px;">{% translate 'English' %}</span>
-                        </a>
-                    </div>
+                        </button>
+                    </form>
                 </div>
 
-                <div class="search-button">
-                    <svg class="search-button__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                <button type="button" class="search-button">
+                    <svg class="search-button__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true" focusable="false">
                         <path d="M221.09 64a157.09 157.09 0 10157.09 157.09A157.1 157.1 0 00221.09 64z"
                               fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="32"></path>
                         <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10"
                               stroke-width="32" d="M338.29 338.29L448 448"></path>
                     </svg>
                     <span class="search-button__text">{% translate 'Search posts...' %}</span>
-                </div>
+                </button>
 
             </div>
 

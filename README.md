@@ -37,6 +37,8 @@ REST API, tests and linting in CI, and a hardened self-hosted deployment that co
 - Newsletter sign-up with double opt-in: a signed, expiring link confirms each address, and the form never reveals
   who is already subscribed.
 - A honeypot field on both forms against spam bots, and a privacy policy in both languages.
+- A Content-Security-Policy that only lets the site's own scripts run (none inline), on top of HSTS and Django's
+  other security headers.
 - Light and dark themes.
 - An optional command that drafts posts with OpenAI for me to review (see [AI-assisted drafts](#ai-assisted-drafts)).
 

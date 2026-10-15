@@ -14,36 +14,7 @@
           rel="stylesheet">
 
 
-    <script>
-        const defaultTheme = "dark";
-        const isToggleEnabled = true;
-        const userTheme = localStorage.getItem("theme");
-
-        function setTheme(mode) {
-            if (mode === "dark") {
-                document.documentElement.setAttribute("dark", "");
-                document.documentElement.classList.add("dark-mode");
-            } else if (mode === "light") {
-                document.documentElement.removeAttribute("dark");
-                document.documentElement.classList.remove("dark-mode");
-            }
-        }
-
-        if (isToggleEnabled) {
-            if (userTheme) {
-                setTheme(userTheme);
-            } else {
-                setTheme(defaultTheme);
-            }
-        } else {
-            setTheme(defaultTheme);
-        }
-
-        if (localStorage.getItem("classView") === "list") {
-            document.documentElement.setAttribute("list", "");
-            document.documentElement.classList.add('view-list');
-        }
-    </script>
+    <script src="{% static 'js/theme.js' %}"></script>
 
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     <link rel="stylesheet" href="{% static 'main/contact/styles.css' %}">

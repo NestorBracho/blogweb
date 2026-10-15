@@ -29,7 +29,7 @@ REST API, tests and linting in CI, and a hardened self-hosted deployment that co
 ## Features
 
 - Posts written in Markdown in both languages, with syntax highlighting, tables, admonitions and a copy button on
-  code blocks.
+  code blocks. The rendered HTML is sanitized with nh3, so nothing in a post can run a script.
 - English/Spanish switcher built on Django's i18n; interface strings are translated with gettext.
 - "Load more" pagination and live search served by the JSON API.
 - RSS feed, XML sitemap, `robots.txt` and Open Graph / Twitter Card metadata.
@@ -89,7 +89,7 @@ reloads gracefully, so a deploy doesn't drop requests.
 
 ## Tech stack
 
-- **Backend:** Python 3.12, Django 5.2, Django REST Framework, Markdown and Pygments
+- **Backend:** Python 3.12, Django 5.2, Django REST Framework, Markdown, Pygments and nh3
 - **Frontend:** Django templates, jQuery and Splide, on top of the Coderon theme (see [Credits](#credits))
 - **Infrastructure:** Google Cloud, Ubuntu 24.04, nginx, Gunicorn, systemd, Cloudflare, SQLite
 - **Tooling:** GitHub Actions, ruff, coverage, pre-commit, pip-tools, pip-audit, Dependabot

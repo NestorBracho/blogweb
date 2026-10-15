@@ -9,9 +9,10 @@ django-environ
 whitenoise
 gunicorn
 
-# Posts: Markdown with highlighted code, cover images, localized dates
+# Posts: Markdown with highlighted code and the HTML cleaned, cover images, localized dates
 Markdown
 Pygments
+nh3
 pillow
 babel
 

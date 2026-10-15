@@ -10,13 +10,14 @@ from django.contrib.auth import get_user_model
 from django.core.management import CommandError, call_command
 from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
-from django.test import TestCase, TransactionTestCase, override_settings
+from django.test import SimpleTestCase, TestCase, TransactionTestCase, override_settings
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from openai import OpenAIError
 
 from .drafting import ArticleDraft
 from .models import Category, Post
+from .rendering import render_markdown
 
 
 # Data migrations already seed real categories, so tests use their own slugs
@@ -95,6 +96,15 @@ class PostDetailViewTests(TestCase):
         response = self.get(self.post)
 
         self.assertContains(response, '<meta property="og:image" content="http://testserver/static/')
+
+    def test_body_is_rendered_from_markdown(self):
+        body = 'Some **bold** text\n\n<script>alert("hi")</script>'
+        post = create_post('Markdown', body_es=body, body_en=body)
+
+        response = self.get(post)
+
+        self.assertContains(response, '<p>Some <strong>bold</strong> text</p>', html=True)
+        self.assertNotContains(response, 'alert("hi")')
 
 
 class CategoryDetailViewTests(TestCase):
@@ -364,6 +374,45 @@ class PostAPITests(TestCase):
         self.assertEqual(response.status_code, 403)
         draft.refresh_from_db()
         self.assertFalse(draft.is_published)
+
+
+class RenderMarkdownTests(SimpleTestCase):
+    def test_keeps_highlighted_code_admonitions_classes_and_aligned_tables(self):
+        html = render_markdown(
+            '```python\ndef f():\n    pass\n```\n\n'
+            '!!! note\n    Careful.\n\n'
+            'A remark\n{: .note }\n\n'
+            '| Name | Total |\n|:-----|------:|\n| a    | 1     |\n'
+        )
+
+        self.assertIn('<div class="highlight"><pre><span></span><code><span class="k">def</span>', html)
+        self.assertIn('<div class="admonition note">', html)
+        self.assertIn('<p class="note">A remark</p>', html)
+        self.assertIn('<td style="text-align:right">1</td>', html)
+
+    def test_removes_scripts(self):
+        html = render_markdown('Hello\n\n<script>alert("hi")</script>')
+
+        self.assertHTMLEqual(html, '<p>Hello</p>')
+
+    def test_removes_event_handlers_from_raw_html_and_attribute_lists(self):
+        html = render_markdown('<img src="/media/a.jpg" onerror="alert(1)">\n\nA paragraph\n{: onclick="alert(1)" }')
+
+        self.assertHTMLEqual(html, '<p><img src="/media/a.jpg"></p><p>A paragraph</p>')
+
+    def test_keeps_links_but_not_script_urls(self):
+        html = render_markdown('[safe](https://example.com) and [unsafe](javascript:alert(1))')
+
+        self.assertHTMLEqual(
+            html,
+            '<p><a href="https://example.com" rel="noopener noreferrer">safe</a> and '
+            '<a rel="noopener noreferrer">unsafe</a></p>',
+        )
+
+    def test_removes_embedded_frames_and_inline_styles(self):
+        html = render_markdown('<iframe src="https://example.com"></iframe>\n\n<p style="position: fixed">Text</p>')
+
+        self.assertHTMLEqual(html, '<p>Text</p>')
 
 
 class ReadTimeTests(TestCase):

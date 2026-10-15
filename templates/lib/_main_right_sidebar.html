@@ -46,7 +46,7 @@
                 <a href="{% url 'blog:post-detail' fpost.slug %}" class="post-featured-image">
 
                     <img class="lazy loaded" alt="{{ fpost.title }}"
-                         data-ll-status="loaded" src="{{ fpost.cover_url }}">
+                         data-ll-status="loaded" src="{{ fpost.cover_urls.thumb }}">
                 </a>
 
                 <div class="post-featured-meta">

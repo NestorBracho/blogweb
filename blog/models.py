@@ -1,3 +1,4 @@
+import logging
 import math
 
 from django.db import models
@@ -5,10 +6,14 @@ from django.db.models import Max, Q
 from django.urls import reverse
 from django.utils import translation
 from django.utils.text import slugify
+from PIL import Image
 
 from config.base_models import BaseModel
 
+from . import covers
 from .rendering import render_markdown
+
+logger = logging.getLogger(__name__)
 
 WORDS_PER_MINUTE = 200
 
@@ -68,6 +73,8 @@ class Post(TranslatedFieldsMixin, BaseModel):
     description_es = models.CharField(max_length=160)
     description_en = models.CharField(max_length=160)
     cover = models.ImageField(upload_to='images/', blank=True, null=True)
+    # The cover at each size in blog/covers.py: {'source': the cover they were made from, 'paths': {size: path}}
+    cover_sizes = models.JSONField(default=dict, editable=False)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='posts', null=True, blank=True)
     # Minutes, worked out from the text on every save
     read_time = models.IntegerField(default=1, editable=False)
@@ -85,6 +92,25 @@ class Post(TranslatedFieldsMixin, BaseModel):
         self.read_time = max(estimate_read_time(self.body_en), estimate_read_time(self.body_es))
 
         super().save(*args, **kwargs)
+
+        # After saving, so a new upload is already in storage under its final name. Covers the admin, the API and
+        # draft_article alike, and does nothing while the cover stays the same.
+        if self.cover_sizes.get('source', '') != (self.cover.name or ''):
+            self.update_cover_sizes()
+
+    def update_cover_sizes(self):
+        """Makes the cover at every size, deletes the sizes of the previous cover and records the new ones."""
+        old_paths = set(self.cover_sizes.get('paths', {}).values())
+        self.cover_sizes = {}
+        if self.cover:
+            try:
+                self.cover_sizes = {'source': self.cover.name, 'paths': covers.make_sizes(self.cover, self.slug)}
+            except (OSError, Image.DecompressionBombError):
+                # An image Pillow can't read or a missing file: the post keeps working with the original cover
+                logger.exception('Could not make the sizes of the cover %s', self.cover.name)
+        for path in old_paths - set(self.cover_sizes.get('paths', {}).values()):
+            self.cover.storage.delete(path)
+        Post.objects.filter(pk=self.pk).update(cover_sizes=self.cover_sizes)
 
     def get_absolute_url(self):
         return reverse('blog:post-detail', kwargs={'slug': self.slug})
@@ -104,6 +130,15 @@ class Post(TranslatedFieldsMixin, BaseModel):
     @property
     def cover_url(self):
         return self.cover.url if self.cover else ''
+
+    @property
+    def cover_urls(self):
+        """The cover's URL at each size, by name. The original stands in for any size that couldn't be made."""
+        names = [*covers.SIZES, 'social']
+        if not self.cover:
+            return dict.fromkeys(names, '')
+        paths = self.cover_sizes.get('paths', {})
+        return {name: self.cover.storage.url(paths[name]) if name in paths else self.cover.url for name in names}
 
     def title(self):
         return self.translated('title')

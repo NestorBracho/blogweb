@@ -12,7 +12,7 @@ $(document).ready(function () {
         let post_template = $($('#search-result-post-template')[0].content).clone();
 
         post_template.find('.article__image').attr('href', post.href);
-        post_template.find('.article__image__link').attr('src', post.cover_url).attr('alt', post.title);
+        post_template.find('.article__image__link').attr('src', post.cover_urls.card).attr('alt', post.title);
         post_template.find('.article__tag').attr('href', post.category_href).text(post.category);
         post_template.find('.article__title__link').attr('href', post.href).text(post.title);
         post_template.find('.article__excerpt').text(post.description);

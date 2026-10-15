@@ -109,6 +109,13 @@ sudo -iu blog bash -c 'cd /srv/blog/app && ../venv/bin/python manage.py migrate 
 > Las portadas subidas antes a S3 no están en tu `media/` local. Si alguna falta,
 > descárgala del bucket o vuelve a subirla desde el admin.
 
+Las portadas se guardan, además, al tamaño de cada sitio de la web en `media/covers/` (ver `blog/covers.py`). Un post
+nuevo las genera al guardarse; para las que ya había, o si cambias los tamaños, genéralas con:
+
+```bash
+sudo -iu blog bash -c 'cd /srv/blog/app && ../venv/bin/python manage.py make_cover_sizes'
+```
+
 ## 5. Gunicorn (systemd)
 
 ```bash

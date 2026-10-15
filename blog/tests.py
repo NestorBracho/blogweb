@@ -1,12 +1,14 @@
 import base64
 from datetime import timedelta
-from io import StringIO
+from io import BytesIO, StringIO
 from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 from unittest import mock
 from urllib.parse import quote
 
 from django.contrib.auth import get_user_model
+from django.core.files.storage import default_storage
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import CommandError, call_command
 from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
@@ -14,6 +16,7 @@ from django.test import SimpleTestCase, TestCase, TransactionTestCase, override_
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from openai import OpenAIError
+from PIL import Image
 
 from .drafting import ArticleDraft
 from .models import Category, Post
@@ -42,6 +45,29 @@ def create_post(title, days_ago=0, **kwargs):
     Post.objects.filter(pk=post.pk).update(created=timezone.now() - timedelta(days=days_ago))
     post.refresh_from_db()
     return post
+
+
+def image_file(name='cover.png', size=(2400, 1600), mode='RGB', color='teal'):
+    output = BytesIO()
+    Image.new(mode, size, color).save(output, 'PNG')
+    return SimpleUploadedFile(name, output.getvalue(), content_type='image/png')
+
+
+def stored_image(path):
+    with default_storage.open(path) as file, Image.open(file) as image:
+        return image.format, image.size
+
+
+class TemporaryMediaMixin:
+    """Uploaded and generated files go to a folder of their own, deleted after each test."""
+
+    def setUp(self):
+        super().setUp()
+        media_root = TemporaryDirectory()
+        self.addCleanup(media_root.cleanup)
+        media_settings = override_settings(MEDIA_ROOT=media_root.name)
+        media_settings.enable()
+        self.addCleanup(media_settings.disable)
 
 
 class PostDetailViewTests(TestCase):
@@ -415,6 +441,111 @@ class RenderMarkdownTests(SimpleTestCase):
         self.assertHTMLEqual(html, '<p>Text</p>')
 
 
+class CoverSizesTests(TemporaryMediaMixin, TestCase):
+    def test_a_new_cover_is_made_at_the_size_of_each_place(self):
+        post = create_post('Covered', cover=image_file())
+
+        paths = post.cover_sizes['paths']
+        self.assertEqual(post.cover_sizes['source'], post.cover.name)
+        # Twice the largest box each place shows (4:3), and the size link previews use
+        self.assertEqual(stored_image(paths['post']), ('WEBP', (1712, 1284)))
+        self.assertEqual(stored_image(paths['card']), ('WEBP', (824, 618)))
+        self.assertEqual(stored_image(paths['thumb']), ('WEBP', (180, 136)))
+        self.assertEqual(stored_image(paths['social']), ('JPEG', (1200, 630)))
+
+    def test_small_covers_are_cropped_to_shape_but_never_enlarged(self):
+        post = create_post('Small', cover=image_file(size=(1024, 1024)))
+
+        self.assertEqual(stored_image(post.cover_sizes['paths']['post'])[1], (1024, 768))
+        self.assertEqual(stored_image(post.cover_sizes['paths']['social'])[1], (1024, 538))
+
+    def test_transparent_covers_are_put_on_white(self):
+        post = create_post('Transparent', cover=image_file(mode='RGBA', color=(0, 0, 0, 0)))
+
+        with default_storage.open(post.cover_sizes['paths']['social']) as file, Image.open(file) as image:
+            self.assertEqual(image.getpixel((0, 0)), (255, 255, 255))
+
+    def test_pages_show_the_size_each_place_needs(self):
+        post = create_post('Covered', cover=image_file(), category=create_category())
+
+        post_page = self.client.get(post.get_absolute_url())
+        category_page = self.client.get(post.category.get_absolute_url())
+
+        urls = post.cover_urls
+        self.assertContains(post_page, f'src="{urls["post"]}"')
+        self.assertContains(post_page, f'<meta property="og:image" content="http://testserver{urls["social"]}">')
+        self.assertContains(post_page, f'src="{urls["thumb"]}"')  # the sidebar's latest posts
+        self.assertContains(category_page, f'data-src="{urls["card"]}"')
+
+    def test_the_api_gives_every_size(self):
+        post = create_post('Covered', cover=image_file())
+
+        response = self.client.get(reverse('blog:api:post-list'))
+
+        self.assertEqual(response.json()['results'][0]['cover_urls'], post.cover_urls)
+
+    def test_a_new_cover_replaces_the_sizes_of_the_old_one(self):
+        post = create_post('Covered', cover=image_file())
+        old_paths = post.cover_sizes['paths'].values()
+
+        post.cover = image_file('other.png', color='orange')
+        post.save()
+
+        self.assertFalse(any(default_storage.exists(path) for path in old_paths))
+        self.assertTrue(all(default_storage.exists(path) for path in post.cover_sizes['paths'].values()))
+
+    def test_removing_the_cover_removes_its_sizes(self):
+        post = create_post('Covered', cover=image_file())
+        old_paths = post.cover_sizes['paths'].values()
+
+        post.cover = None
+        post.save()
+
+        self.assertEqual(post.cover_sizes, {})
+        self.assertFalse(any(default_storage.exists(path) for path in old_paths))
+        self.assertEqual(set(post.cover_urls.values()), {''})
+
+    def test_saving_without_changing_the_cover_makes_nothing_again(self):
+        post = create_post('Covered', cover=image_file())
+
+        with mock.patch('blog.covers.make_sizes') as make_sizes:
+            post.title_en = 'Still covered'
+            post.save()
+
+        make_sizes.assert_not_called()
+
+    def test_an_unreadable_cover_falls_back_to_the_original(self):
+        with self.assertLogs('blog.models', 'ERROR'):
+            post = create_post('Broken', cover=SimpleUploadedFile('broken.png', b'not an image'))
+
+        self.assertEqual(post.cover_sizes, {})
+        self.assertEqual(set(post.cover_urls.values()), {post.cover.url})
+
+    def test_the_command_makes_the_sizes_of_older_covers(self):
+        post = create_post('Older', cover=image_file())
+        paths = post.cover_sizes['paths']
+        # As a cover saved before sizes existed: no sizes recorded, no files
+        Post.objects.filter(pk=post.pk).update(cover_sizes={})
+        for path in paths.values():
+            default_storage.delete(path)
+
+        output = StringIO()
+        call_command('make_cover_sizes', stdout=output)
+
+        post.refresh_from_db()
+        self.assertEqual(post.cover_sizes['paths'], paths)
+        self.assertTrue(all(default_storage.exists(path) for path in paths.values()))
+        self.assertIn('older: post, card, thumb, social', output.getvalue())
+
+    def test_the_command_does_not_make_existing_sizes_again(self):
+        create_post('Covered', cover=image_file())
+
+        with mock.patch.object(default_storage, 'save') as save:
+            call_command('make_cover_sizes', stdout=StringIO())
+
+        save.assert_not_called()
+
+
 class ReadTimeTests(TestCase):
     def test_is_worked_out_from_the_text(self):
         post = create_post('Long read', body_en='word ' * 450, body_es='palabra ' * 300)
@@ -530,7 +661,7 @@ class DraftArticleCommandTests(TestCase):
         self.openai = mock.MagicMock()
         self.openai.beta.chat.completions.parse.return_value = parsed_completion(self.draft)
         self.openai.images.generate.return_value = SimpleNamespace(
-            data=[SimpleNamespace(b64_json=base64.b64encode(b'image').decode())]
+            data=[SimpleNamespace(b64_json=base64.b64encode(image_file(size=(1024, 1024)).read()).decode())]
         )
         patcher = mock.patch('blog.management.commands.draft_article.OpenAI', return_value=self.openai)
         patcher.start()
@@ -571,13 +702,13 @@ class DraftArticleCommandTests(TestCase):
         self.assertEqual(len(post.title_en), 60)
         self.assertEqual(len(post.description_es), 160)
 
-    def test_attaches_a_generated_cover(self):
+    def test_attaches_a_generated_cover_at_every_size(self):
         with TemporaryDirectory() as media_root, override_settings(MEDIA_ROOT=media_root):
             self.draft_article()
 
             post = Post.objects.get(slug='ownership-in-rust')
-            with post.cover.open('rb') as cover:
-                self.assertEqual(cover.read(), b'image')
+            self.assertEqual(stored_image(post.cover.name), ('PNG', (1024, 1024)))
+            self.assertEqual(list(post.cover_sizes['paths']), ['post', 'card', 'thumb', 'social'])
 
     def test_keeps_the_draft_when_the_cover_fails(self):
         self.openai.images.generate.side_effect = OpenAIError('Image service unavailable')

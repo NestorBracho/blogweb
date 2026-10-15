@@ -37,6 +37,8 @@ class SearchPostSerializer(serializers.ModelSerializer):
 
     href = serializers.CharField(source='get_absolute_url', read_only=True)
     cover_url = serializers.CharField(read_only=True)
+    # The cover at each size in blog/covers.py; the templates use 'card'
+    cover_urls = serializers.DictField(child=serializers.CharField(), read_only=True)
     title = serializers.CharField(read_only=True)
     category_href = serializers.SerializerMethodField()
     category = serializers.SerializerMethodField()
@@ -51,6 +53,7 @@ class SearchPostSerializer(serializers.ModelSerializer):
         fields = [
             'href',
             'cover_url',
+            'cover_urls',
             'title',
             'category_href',
             'category',

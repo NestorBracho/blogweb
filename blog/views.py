@@ -15,7 +15,7 @@ class PostDetailView(generic.DetailView):
         context['page_title'] = post.title()
         context['meta_description'] = post.description()
         if post.cover:
-            context['social_image_url'] = post.cover.url
+            context['social_image_url'] = post.cover_urls['social']
         context.update(self.get_navigation(post))
         return context
 

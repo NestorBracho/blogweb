@@ -30,6 +30,8 @@ REST API, tests and linting in CI, and a hardened self-hosted deployment that co
 
 - Posts written in Markdown in both languages, with syntax highlighting, tables, admonitions and a copy button on
   code blocks. The rendered HTML is sanitized with nh3, so nothing in a post can run a script.
+- Covers made at the size each part of the site shows them (WebP, and a JPEG for link previews) whenever a post's
+  cover changes: the post page, cards and thumbnails each load only the pixels they need.
 - English/Spanish switcher built on Django's i18n; interface strings are translated with gettext.
 - "Load more" pagination and live search served by the JSON API.
 - RSS feed, XML sitemap, `robots.txt` and Open Graph / Twitter Card metadata.

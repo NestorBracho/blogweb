@@ -11,7 +11,7 @@
 
                     <div class="post-image">
                         <img class="lazy loaded" alt="{{  object.description }}"
-                             data-ll-status="loaded" src="{{ object.cover_url }}">
+                             data-ll-status="loaded" src="{{ object.cover_urls.post }}">
                     </div>
 
 
@@ -73,7 +73,7 @@
                         {% if previous_post %}
                             <div class="post__prev">
                                 <a href="{{ previous_post.get_absolute_url }}" class="prev__image">
-                                    <img class="lazy" data-src="{{ previous_post.cover_url }}" alt="{{ previous_post.title }}">
+                                    <img class="lazy" data-src="{{ previous_post.cover_urls.thumb }}" alt="{{ previous_post.title }}">
                                 </a>
                                 <div class="prev__box">
                                     <span class="post__nav__prev">{% translate 'Older post' %}</span>
@@ -88,7 +88,7 @@
                                     <h2 class="post__nav__title"><a href="{{ next_post.get_absolute_url }}">{{ next_post.title }}</a></h2>
                                 </div>
                                 <a href="{{ next_post.get_absolute_url }}" class="next__image">
-                                    <img class="lazy" data-src="{{ next_post.cover_url }}" alt="{{ next_post.title }}">
+                                    <img class="lazy" data-src="{{ next_post.cover_urls.thumb }}" alt="{{ next_post.title }}">
                                 </a>
                             </div>
                         {% endif %}

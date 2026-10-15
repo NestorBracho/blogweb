@@ -8,7 +8,7 @@ function renderBinaryJournalPost(post) {
     let post_template = $($('#bj-post-template')[0].content).clone();
 
     post_template.find('.article__image').attr('href', post.href);
-    post_template.find('.bj_img').attr('src', post.cover_url).attr('alt', post.title);
+    post_template.find('.bj_img').attr('src', post.cover_urls.card).attr('alt', post.title);
     post_template.find('.article__tag').attr('href', post.category_href).text(post.category).attr('style', 'background:'.concat(post.category_color, ';'));
     post_template.find('.bj_article__title__link').attr('href', post.href).text(post.title);
     post_template.find('.article__excerpt').text(post.description);
@@ -25,7 +25,7 @@ function render_hackers_heaven_category(category) {
     category_template.find('.section-tags__image').attr('href', category.href).css('outline-color', category.color);
     category_template.find('.section-tags__name').css('background', category.color).text(category.name);
     if (category.first_5_posts.length) {
-        category_template.find('.category-cover').attr('src', category.first_5_posts[0].cover_url).attr('alt', category.name);
+        category_template.find('.category-cover').attr('src', category.first_5_posts[0].cover_urls.card).attr('alt', category.name);
     }
 
     category.first_5_posts.forEach(post => {

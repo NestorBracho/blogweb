@@ -34,7 +34,10 @@ class AddNewsletterSubscriberViewTests(TestCase):
         subscriber = NewsletterSubscriber.objects.get(email='reader@example.com')
         self.assertIsNone(subscriber.confirmed_at)
         self.assertEqual(mail.outbox[0].to, ['reader@example.com'])
-        self.assertIn(subscriber.confirmation_token(), mail.outbox[0].body)
+        # Tokens carry the time they were signed, so compare whose token it is rather than the text, which changes
+        # when the test crosses into the next second
+        token = self.confirmation_link(mail.outbox[0]).rstrip('/').rsplit('/', 1)[-1]
+        self.assertEqual(NewsletterSubscriber.from_confirmation_token(token, max_age=60), subscriber)
 
     def test_the_emailed_link_confirms_the_subscription(self):
         self.subscribe('reader@example.com')

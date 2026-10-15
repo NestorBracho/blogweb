@@ -5,9 +5,12 @@ from unittest import mock
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles import finders
 from django.core import mail
+from django.http import HttpResponse
 from django.templatetags.static import static
-from django.test import TestCase, override_settings
+from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse, reverse_lazy
+
+from config.middleware import ContentSecurityPolicyMiddleware
 
 from .models import ContactRequest
 
@@ -107,6 +110,39 @@ class HeaderTests(TestCase):
         response = self.client.post(reverse('set_language'), {'language': 'es'}, follow=True)
 
         self.assertContains(response, '<html lang="es"')
+
+
+class ContentSecurityPolicyTests(TestCase):
+    def test_pages_only_run_the_sites_own_scripts(self):
+        response = self.client.get(reverse('main:index'))
+
+        policy = response.headers['Content-Security-Policy']
+        self.assertIn("script-src 'self';", policy)
+        self.assertIn("object-src 'none';", policy)
+        self.assertIn("frame-ancestors 'none'", policy)
+
+    def test_pages_have_no_inline_scripts_for_the_policy_to_block(self):
+        pages = ['main:index', 'main:about', 'main:cv', 'main:contact', 'main:privacy', 'admin:login']
+
+        for page in pages:
+            with self.subTest(page=page):
+                response = self.client.get(reverse(page))
+
+                self.assertNotRegex(response.content.decode(), r'<script(?![^>]*\bsrc=)[^>]*>')
+
+    def test_leaves_alone_a_policy_set_by_the_view(self):
+        own_policy = HttpResponse(headers={'Content-Security-Policy': "default-src 'none'"})
+        middleware = ContentSecurityPolicyMiddleware(lambda request: own_policy)
+
+        response = middleware(RequestFactory().get('/'))
+
+        self.assertEqual(response.headers['Content-Security-Policy'], "default-src 'none'")
+
+    @override_settings(SECURE_CSP={})
+    def test_an_empty_setting_sends_no_policy(self):
+        response = self.client.get(reverse('main:index'))
+
+        self.assertNotIn('Content-Security-Policy', response.headers)
 
 
 class FaviconTests(TestCase):

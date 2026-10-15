@@ -244,6 +244,7 @@ de los workers) y ejecuta `sudo systemctl daemon-reload`. Un cambio en `ExecStar
 | No carga nada desde fuera | Security List **y** iptables (paso 1.4 y 2) |
 | Error 522 de Cloudflare (GCP) | Rangos de Cloudflare en la regla `allow-web` desactualizados |
 | Imágenes 404 | Permisos de `/srv/blog/media` (grupo `www-data`) |
+| Algo deja de cargar y la consola del navegador dice "Content Security Policy" | `SECURE_CSP` en `config/settings.py`. Solo admite scripts del propio sitio: Rocket Loader, Web Analytics o Bot Fight Mode de Cloudflare inyectan los suyos |
 
 ---
 

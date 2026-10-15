@@ -323,6 +323,19 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
   /* =======================
+  // Flash Messages
+  ======================= */
+  setTimeout(() => {
+    document.querySelectorAll('.messages').forEach(el => {
+      el.classList.add('fade-out');
+      setTimeout(() => {
+        el.style.display = 'none';
+      }, 1000);
+    });
+  }, 5000);
+
+
+  /* =======================
   // Scroll Top Button
   ======================= */
   window.addEventListener("scroll", function () {

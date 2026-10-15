@@ -63,6 +63,7 @@ INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS + EXTERNAL_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'config.middleware.ContentSecurityPolicyMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
@@ -233,6 +234,24 @@ WHITENOISE_MIMETYPES = {'.webmanifest': 'application/manifest+json'}
 
 # Uploaded covers can be large; keep them on disk instead of in memory
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
+
+
+# Content-Security-Policy: where pages may load scripts, styles, fonts and images from. Scripts only come from the
+# site itself (no inline ones), so injected HTML can't run code. Same setting as Django 6's built-in CSP support.
+SECURE_CSP = {
+    'default-src': ["'self'"],
+    'script-src': ["'self'"],
+    # The theme uses style="" attributes, and Google Fonts serves its CSS
+    'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+    # Google Fonts, and Font Awesome's icons from cdnjs
+    'font-src': ["'self'", 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com'],
+    # Posts can show images hosted on other sites
+    'img-src': ["'self'", 'https:'],
+    'object-src': ["'none'"],
+    'base-uri': ["'self'"],
+    'form-action': ["'self'"],
+    'frame-ancestors': ["'none'"],
+}
 
 
 # Production hardening

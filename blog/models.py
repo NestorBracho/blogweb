@@ -8,6 +8,8 @@ from django.utils.text import slugify
 
 from config.base_models import BaseModel
 
+from .rendering import render_markdown
+
 WORDS_PER_MINUTE = 200
 
 
@@ -110,16 +112,4 @@ class Post(TranslatedFieldsMixin, BaseModel):
         return self.translated('description')
 
     def rendered_body(self):
-        import markdown
-        from markdown.extensions import admonition, attr_list, codehilite, fenced_code, tables
-
-        return markdown.markdown(
-            self.translated('body'),
-            extensions=[
-                fenced_code.FencedCodeExtension(),
-                codehilite.CodeHiliteExtension(css_class='highlight'),
-                admonition.AdmonitionExtension(),
-                attr_list.AttrListExtension(),
-                tables.TableExtension(),
-            ],
-        )
+        return render_markdown(self.translated('body'))

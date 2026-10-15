@@ -111,6 +111,10 @@ mdurl==0.1.2
     # via markdown-it-py
 msgpack==1.2.3
     # via cachecontrol
+nh3==0.3.7
+    # via
+    #   -c requirements.txt
+    #   -r requirements.in
 nodeenv==1.11.0
     # via pre-commit
 openai==1.109.1

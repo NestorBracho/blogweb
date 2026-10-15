@@ -83,10 +83,12 @@
                 <div class="col col-12">
                     <div class="search__box">
                         <div class="search__group">
-                            <i class="search__close fa-solid fa-xmark"></i>
-                            <label for="js-search-input" class="screen-reader-text">Search for Blog</label>
+                            <button type="button" class="search__close" aria-label="{% translate 'Close search' %}">
+                                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                            </button>
+                            <label for="js-search-input" class="screen-reader-text">{% translate 'Search posts' %}</label>
                             <input type="text" id="js-search-input" class="search__text" autocomplete="off"
-                                   placeholder="Type to search...">
+                                   placeholder="{% translate 'Type to search...' %}">
                         </div>
                         <div class="search-results-list view-list" id="js-results-container"></div>
                     </div>
@@ -143,15 +145,6 @@
 <script src="{% static 'js/common.js' %}"></script>
 <script src="{% static 'js/search.js' %}" data-lang="{{ LANGUAGE_CODE }}"
         data-api-url="{% url 'blog:api:post-list' %}"></script>
-<script>
-    $( document ).ready( function(){
-
-        $('.lang-item').on('click', function(){
-            $('#language-input').val($(this).data('value'));
-            $('#lang-form').submit();
-        });
-    });
-</script>
 {% block extra_js %}{% endblock %}
 
 </body>

@@ -13374,7 +13374,6 @@ pre button {
     font-size: 14px;
     line-height: 1;
     font-weight: 500;
-    outline: none;
     border: none;
     color: var(--background-color);
     background: var(--heading-font-color);
@@ -13654,6 +13653,11 @@ table td {
     display: flex;
     align-items: center;
     height: 20px;
+    padding: 0;
+    border: 0;
+    font: inherit;
+    color: inherit;
+    background: none;
     cursor: pointer
 }
 
@@ -13707,6 +13711,9 @@ table td {
     width: 22px;
     height: 22px;
     display: none;
+    padding: 0;
+    border: 0;
+    background: none;
     cursor: pointer
 }
 
@@ -13718,7 +13725,8 @@ table td {
     }
 }
 
-.hamburger div, .hamburger div:after, .hamburger div:before {
+.hamburger span, .hamburger span:after, .hamburger span:before {
+    display: block;
     width: 22px;
     height: 3px;
     border-radius: 10px;
@@ -13726,32 +13734,32 @@ table td {
     background: var(--dark-gray)
 }
 
-.hamburger:hover div, .hamburger:hover div:after, .hamburger:hover div:before {
+.hamburger:hover span, .hamburger:hover span:after, .hamburger:hover span:before {
     background: var(--heading-font-color)
 }
 
-.hamburger div:before, .hamburger div:after {
+.hamburger span:before, .hamburger span:after {
     content: "";
     position: absolute
 }
 
-.hamburger div:before {
+.hamburger span:before {
     transform: translateY(-200%)
 }
 
-.hamburger div:after {
+.hamburger span:after {
     transform: translateY(200%)
 }
 
-.hamburger.is-open div {
+.hamburger.is-open span {
     background: transparent
 }
 
-.hamburger.is-open div:before {
+.hamburger.is-open span:before {
     transform: rotate(45deg)
 }
 
-.hamburger.is-open div:after {
+.hamburger.is-open span:after {
     transform: rotate(-45deg)
 }
 
@@ -13815,7 +13823,11 @@ table td {
     }
 
     .nav-button .search-button .search-button__text {
-        display: none
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(1px, 1px, 1px, 1px)
     }
 }
 
@@ -13836,6 +13848,9 @@ table td {
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 0;
+    border: 0;
+    background: none;
     user-select: none
 }
 
@@ -13889,12 +13904,14 @@ table td {
     right: 0;
     bottom: 0;
     z-index: -1;
-    opacity: 0
+    opacity: 0;
+    visibility: hidden
 }
 
 .search.is-visible {
     z-index: 100;
-    opacity: 1
+    opacity: 1;
+    visibility: visible
 }
 
 .search.is-visible .search__overlay {
@@ -13950,6 +13967,8 @@ table td {
     transform: translateY(-50%);
     width: 30px;
     height: 30px;
+    padding: 0;
+    border: 0;
     text-align: center;
     font-size: 16px;
     line-height: 30px;
@@ -15637,7 +15656,6 @@ table td {
     text-decoration: none;
     border-radius: 8px;
     border: none;
-    outline: none;
     color: var(--button-color);
     transition: all 0.2s;
     will-change: transform;
@@ -16463,6 +16481,8 @@ table td {
 }
 
 .toggle-theme-button {
+    display: block;
+    text-align: center;
     width: 36px;
     height:36px;
     margin-top: 15px;
@@ -16501,14 +16521,19 @@ table td {
     display: block;
 }
 
-.dropdown-menu a.nav__link {
+.dropdown-menu .nav__link {
     display: block;
+    width: 100%;
     padding: 0.5rem 1rem;
+    border: 0;
     color: var(--text-color);
+    background: none;
+    text-align: left;
     text-decoration: none;
+    cursor: pointer;
 }
 
-.dropdown-menu a.nav__link:hover {
+.dropdown-menu .nav__link:hover {
     background-color: var(--background-alt-color);
 }
 

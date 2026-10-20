@@ -18,6 +18,8 @@ from django.utils import timezone
 from openai import OpenAIError
 from PIL import Image
 
+from config.testing import reverse_in
+
 from .drafting import ArticleDraft
 from .models import Category, Post
 from .rendering import render_markdown
@@ -138,7 +140,7 @@ class CategoryDetailViewTests(TestCase):
         category = create_category('rust', name_en='Rust', name_es='Rust')
         create_post('Ownership', category=category)
 
-        response = self.client.get(category.get_absolute_url(), headers={'Accept-Language': 'en'})
+        response = self.client.get(reverse_in('en', 'blog:category-detail', slug=category.slug))
 
         self.assertContains(response, '<title>Rust - Nestor Bracho</title>')
         self.assertContains(response, '<meta name="description" content="Posts about Rust by Nestor Bracho.">')
@@ -151,7 +153,7 @@ class CategoryDetailViewTests(TestCase):
         create_post('Second', category=two)
 
         def get(category, language):
-            return self.client.get(category.get_absolute_url(), headers={'Accept-Language': language})
+            return self.client.get(reverse_in(language, 'blog:category-detail', slug=category.slug))
 
         self.assertContains(get(one, 'en'), 'A collection of <span>1 post</span>')
         self.assertContains(get(two, 'en'), 'A collection of <span>2 posts</span>')
@@ -221,12 +223,12 @@ class SidebarTests(TestCase):
             create_post(f'Post {number}', days_ago=number)
         create_post('Draft', is_published=False)
 
-        response = self.client.get(reverse('main:index'))
+        response = self.client.get(reverse_in('en', 'main:index'))
 
         latest = [post.title_en for post in response.context['latest_posts']]
         self.assertEqual(latest, ['Post 0', 'Post 1', 'Post 2'])
         # Same posts in both lists
-        self.assertContains(response, 'href="/post/post-0"', count=4)
+        self.assertContains(response, f'href="{reverse_in("en", "blog:post-detail", slug="post-0")}"', count=4)
 
 
 class CategoryDeletionTests(TestCase):
@@ -252,6 +254,20 @@ class FeedTests(TestCase):
         self.assertContains(response, 'Published post')
         self.assertNotContains(response, 'Draft post')
 
+    def test_each_language_has_its_own_feed(self):
+        post = create_post('Black holes', title_es='Agujeros negros')
+
+        for language, title in [('en', 'Black holes'), ('es', 'Agujeros negros')]:
+            with self.subTest(language=language):
+                feed_url = reverse_in(language, 'blog:feed')
+                response = self.client.get(feed_url)
+                page = self.client.get(reverse_in(language, 'main:index'))
+
+                post_url = f'http://testserver{reverse_in(language, "blog:post-detail", slug=post.slug)}'
+                self.assertContains(response, f'<language>{language}</language>')
+                self.assertContains(response, f'<title>{title}</title><link>{post_url}</link>')
+                self.assertContains(page, f'type="application/rss+xml" title="Nestor Bracho" href="{feed_url}"')
+
 
 class SitemapTests(TestCase):
     def test_sitemap_lists_pages_and_published_content(self):
@@ -261,15 +277,30 @@ class SitemapTests(TestCase):
         response = self.client.get(reverse('sitemap'))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, f'<loc>http://testserver{reverse("main:about")}</loc>')
-        self.assertContains(response, f'<loc>http://testserver{published.get_absolute_url()}</loc>')
-        self.assertContains(response, f'<loc>http://testserver{published.category.get_absolute_url()}</loc>')
-        self.assertNotContains(response, draft.get_absolute_url())
-        self.assertNotContains(response, draft.category.get_absolute_url())
+        for language in ['en', 'es']:
+            with self.subTest(language=language):
+                pages = [
+                    reverse_in(language, 'main:about'),
+                    reverse_in(language, 'blog:post-detail', slug=published.slug),
+                    reverse_in(language, 'blog:category-detail', slug=published.category.slug),
+                ]
+                for page in pages:
+                    self.assertContains(response, f'<loc>http://testserver{page}</loc>')
+        self.assertNotContains(response, f'/post/{draft.slug}')
+        self.assertNotContains(response, f'/tags/{draft.category.slug}')
+
+    def test_sitemap_links_each_page_to_its_other_language(self):
+        response = self.client.get(reverse('sitemap'))
+
+        for language in ['en', 'es']:
+            cv = f'http://testserver{reverse_in(language, "main:cv")}'
+            self.assertContains(response, f'<xhtml:link rel="alternate" hreflang="{language}" href="{cv}"/>')
+        # For everyone else, the address without a language, which redirects to theirs
+        self.assertContains(response, '<xhtml:link rel="alternate" hreflang="x-default" href="http://testserver/cv/"/>')
 
 
 class PostAPITests(TestCase):
-    url = reverse_lazy('blog:api:post-list')
+    url = reverse_lazy('api:post-list')
 
     def test_lists_published_posts_a_page_at_a_time(self):
         for number in range(5):
@@ -312,22 +343,24 @@ class PostAPITests(TestCase):
         self.assertEqual(len(capped.json()['results']), 20)
 
     def test_language_header_applies_to_the_whole_response(self):
-        create_post('Black holes', title_es='Agujeros negros', body_en='word ' * 450)
+        post = create_post('Black holes', title_es='Agujeros negros', body_en='word ' * 450)
 
-        # The site defaults to Spanish, but the header asks for English
-        response = self.client.get(self.url, headers={'X-Language': 'en'})
+        # The page sends the language it is in, whatever the browser prefers
+        response = self.client.get(self.url, headers={'X-Language': 'es', 'Accept-Language': 'en'})
 
-        post = response.json()['results'][0]
-        self.assertEqual((post['title'], post['read_time']), ('Black holes', '3 min read'))
+        result = response.json()['results'][0]
+        self.assertEqual((result['title'], result['read_time']), ('Agujeros negros', '3 min de lectura'))
+        self.assertEqual(result['href'], reverse_in('es', 'blog:post-detail', slug=post.slug))
         self.assertIn('X-Language', response['Vary'])
 
-    def test_language_follows_the_site_without_the_header(self):
+    def test_language_follows_the_browser_without_the_header(self):
         create_post('Black holes', title_es='Agujeros negros', body_en='word ' * 450)
 
-        response = self.client.get(self.url, headers={'Accept-Language': 'es'})
+        spanish = self.client.get(self.url, headers={'Accept-Language': 'es'})
+        default = self.client.get(self.url)
 
-        post = response.json()['results'][0]
-        self.assertEqual((post['title'], post['read_time']), ('Agujeros negros', '3 min de lectura'))
+        self.assertEqual(spanish.json()['results'][0]['read_time'], '3 min de lectura')
+        self.assertEqual(default.json()['results'][0]['read_time'], '3 min read')
 
     def test_anonymous_users_cannot_create_posts(self):
         response = self.client.post(self.url, {'title_en': 'Spam'})
@@ -360,7 +393,7 @@ class PostAPITests(TestCase):
     def test_staff_can_edit_and_publish_a_draft(self):
         self.client.force_login(get_user_model().objects.create_user(username='editor', is_staff=True))
         draft = create_post('Draft', is_published=False)
-        detail_url = reverse('blog:api:post-detail', args=[draft.pk])
+        detail_url = reverse('api:post-detail', args=[draft.pk])
 
         response = self.client.patch(
             detail_url, {'title_en': 'Ready', 'is_published': True}, content_type='application/json'
@@ -376,7 +409,7 @@ class PostAPITests(TestCase):
         self.client.force_login(get_user_model().objects.create_user(username='editor', is_staff=True))
         draft = create_post('Draft', is_published=False)
 
-        response = self.client.delete(reverse('blog:api:post-detail', args=[draft.pk]))
+        response = self.client.delete(reverse('api:post-detail', args=[draft.pk]))
 
         self.assertEqual(response.status_code, 204)
         self.assertFalse(Post.objects.filter(pk=draft.pk).exists())
@@ -393,7 +426,7 @@ class PostAPITests(TestCase):
 
     def test_anonymous_users_cannot_see_or_change_drafts(self):
         draft = create_post('Draft', is_published=False)
-        detail_url = reverse('blog:api:post-detail', args=[draft.pk])
+        detail_url = reverse('api:post-detail', args=[draft.pk])
 
         self.assertEqual(self.client.get(detail_url).status_code, 404)
         response = self.client.patch(detail_url, {'is_published': True}, content_type='application/json')
@@ -480,7 +513,7 @@ class CoverSizesTests(TemporaryMediaMixin, TestCase):
     def test_the_api_gives_every_size(self):
         post = create_post('Covered', cover=image_file())
 
-        response = self.client.get(reverse('blog:api:post-list'))
+        response = self.client.get(reverse('api:post-list'))
 
         self.assertEqual(response.json()['results'][0]['cover_urls'], post.cover_urls)
 
@@ -633,7 +666,7 @@ class CategoryAPITests(TestCase):
         create_category('empty-topic')
         create_post('Only a draft', category=create_category('drafts-only'), is_published=False)
 
-        response = self.client.get(reverse('blog:api:categories'))
+        response = self.client.get(reverse('api:categories'))
 
         categories = response.json()['results']
         self.assertEqual([category['slug'] for category in categories], ['test-topic'])

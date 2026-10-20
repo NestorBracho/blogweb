@@ -187,7 +187,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'es'
+# Pages live under /en/ and /es/ (i18n_patterns in config/urls.py). English is what crawlers, link previews and
+# visitors who ask for neither language get; docs/adr/0006-language-in-the-url.md
+LANGUAGE_CODE = 'en'
 
 LANGUAGES = [
     ('en', 'English'),

@@ -1,4 +1,4 @@
-from django.urls import include, path
+from django.urls import path
 
 from .feeds import LatestPostsFeed
 from .views import CategoryDetailView, PostDetailView
@@ -8,5 +8,4 @@ urlpatterns = [
     path('post/<slug:slug>', PostDetailView.as_view(), name='post-detail'),
     path('tags/<slug:slug>', CategoryDetailView.as_view(), name='category-detail'),
     path('feed.xml', LatestPostsFeed(), name='feed'),
-    path('api/', include('blog.api.urls')),
 ]

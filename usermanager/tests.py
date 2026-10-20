@@ -8,6 +8,8 @@ from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
 
+from config.testing import reverse_in
+
 from .models import NewsletterSubscriber
 
 
@@ -17,12 +19,9 @@ def last_message(response):
 
 
 class AddNewsletterSubscriberViewTests(TestCase):
-    def setUp(self):
-        # The site defaults to Spanish; the assertions read the English messages
-        self.client.defaults['HTTP_ACCEPT_LANGUAGE'] = 'en'
-
-    def subscribe(self, email, next_url='/about/'):
-        return self.client.post(reverse('main:newsletter-subscriber'), {'email': email, 'next': next_url})
+    def subscribe(self, email, next_url=None, language='en'):
+        next_url = next_url or reverse_in(language, 'main:about')
+        return self.client.post(reverse_in(language, 'main:newsletter-subscriber'), {'email': email, 'next': next_url})
 
     def confirmation_link(self, email_message):
         return re.search(r'https?://\S+/newsletter/confirm/\S+/', email_message.body).group()
@@ -30,7 +29,7 @@ class AddNewsletterSubscriberViewTests(TestCase):
     def test_stores_a_pending_subscription_and_emails_the_link(self):
         response = self.subscribe('Reader@Example.com')
 
-        self.assertRedirects(response, '/about/', fetch_redirect_response=False)
+        self.assertRedirects(response, reverse_in('en', 'main:about'), fetch_redirect_response=False)
         subscriber = NewsletterSubscriber.objects.get(email='reader@example.com')
         self.assertIsNone(subscriber.confirmed_at)
         self.assertEqual(mail.outbox[0].to, ['reader@example.com'])
@@ -44,7 +43,24 @@ class AddNewsletterSubscriberViewTests(TestCase):
 
         response = self.client.get(self.confirmation_link(mail.outbox[0]))
 
-        self.assertRedirects(response, reverse('main:index'), fetch_redirect_response=False)
+        self.assertRedirects(response, reverse_in('en', 'main:index'), fetch_redirect_response=False)
+        self.assertIsNotNone(NewsletterSubscriber.objects.get().confirmed_at)
+
+    def test_emails_the_links_in_the_language_of_the_page(self):
+        self.subscribe('lector@example.com', language='es')
+
+        body = mail.outbox[0].body
+        self.assertIn('Para confirmar', body)
+        self.assertIn('http://testserver/es/newsletter/confirm/', body)
+        self.assertIn(f'http://testserver{reverse_in("es", "main:index")}\n', body)
+
+    def test_links_sent_before_pages_had_a_language_still_work(self):
+        self.subscribe('reader@example.com')
+        token = self.confirmation_link(mail.outbox[0]).rstrip('/').rsplit('/', 1)[-1]
+
+        response = self.client.get(f'/newsletter/confirm/{token}/', follow=True)
+
+        self.assertEqual(response.redirect_chain[0], (reverse_in('en', 'main:newsletter-confirm', token), 302))
         self.assertIsNotNone(NewsletterSubscriber.objects.get().confirmed_at)
 
     def test_expired_links_do_not_confirm(self):
@@ -58,7 +74,7 @@ class AddNewsletterSubscriberViewTests(TestCase):
         self.assertIsNone(NewsletterSubscriber.objects.get().confirmed_at)
 
     def test_tampered_links_do_not_confirm(self):
-        response = self.client.get(reverse('main:newsletter-confirm', args=['not-a-signed-token']))
+        response = self.client.get(reverse_in('en', 'main:newsletter-confirm', 'not-a-signed-token'))
 
         self.assertIn('invalid or has expired', last_message(response))
 
@@ -91,7 +107,8 @@ class AddNewsletterSubscriberViewTests(TestCase):
 
     def test_ignores_bots_that_fill_the_hidden_field(self):
         self.client.post(
-            reverse('main:newsletter-subscriber'), {'email': 'bot@example.com', 'contact_me_by_fax_only': 'spam'}
+            reverse_in('en', 'main:newsletter-subscriber'),
+            {'email': 'bot@example.com', 'contact_me_by_fax_only': 'spam'},
         )
 
         self.assertFalse(NewsletterSubscriber.objects.exists())
@@ -100,7 +117,7 @@ class AddNewsletterSubscriberViewTests(TestCase):
     def test_never_redirects_to_another_site(self):
         response = self.subscribe('reader@example.com', next_url='https://evil.example/')
 
-        self.assertRedirects(response, '/', fetch_redirect_response=False)
+        self.assertRedirects(response, reverse_in('en', 'main:index'), fetch_redirect_response=False)
 
 
 class NewsletterSubscriberAdminTests(TestCase):

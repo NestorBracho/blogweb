@@ -1,8 +1,9 @@
-from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
 
+from config.sitemaps import TranslatedSitemap
 
-class StaticViewSitemap(Sitemap):
+
+class StaticViewSitemap(TranslatedSitemap):
     def items(self):
         return ['main:index', 'main:about', 'main:cv', 'main:contact', 'main:privacy']
 

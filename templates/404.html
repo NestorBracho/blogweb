@@ -9,7 +9,7 @@
                 <h2 class="error__title">404</h2>
                 <p class="error__text">{% translate "Well, this is embarrassing..." %}</p>
                 <p class="error__text">{% translate "The page you're looking for doesn't exist, never existed, or just rage quit." %}</p>
-                <a class="button button--primary" href="/">{% translate 'Back to homepage' %}</a>
+                <a class="button button--primary" href="{% url 'main:index' %}">{% translate 'Back to homepage' %}</a>
             </div>
         </div>
     </div>

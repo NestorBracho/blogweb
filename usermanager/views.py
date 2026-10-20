@@ -52,7 +52,7 @@ class AddNewsletterSubscriberView(generic.FormView):
             next_url, allowed_hosts={self.request.get_host()}, require_https=self.request.is_secure()
         ):
             return next_url
-        return '/'
+        return reverse('main:index')
 
 
 class ConfirmSubscriptionView(generic.View):
@@ -75,7 +75,7 @@ def send_confirmation_email(request, subscriber):
             reverse('main:newsletter-confirm', args=[subscriber.confirmation_token()])
         ),
         'days': CONFIRMATION_LINK_MAX_AGE.days,
-        'site_url': request.build_absolute_uri('/'),
+        'site_url': request.build_absolute_uri(reverse('main:index')),
     }
     send_mail(
         subject=_('Confirm your subscription to Bracho'),

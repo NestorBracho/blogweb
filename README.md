@@ -32,9 +32,12 @@ REST API, tests and linting in CI, and a hardened self-hosted deployment that co
   code blocks. The rendered HTML is sanitized with nh3, so nothing in a post can run a script.
 - Covers made at the size each part of the site shows them (WebP, and a JPEG for link previews) whenever a post's
   cover changes: the post page, cards and thumbnails each load only the pixels they need.
-- English/Spanish switcher built on Django's i18n; interface strings are translated with gettext.
+- Every page in English and Spanish at its own address (`/en/…`, `/es/…`), so both can be indexed and shared; the
+  bare domain sends each visitor to their language, and English to crawlers and everyone else
+  ([ADR 6](docs/adr/0006-language-in-the-url.md)). Interface strings are translated with gettext.
 - "Load more" pagination and live search served by the JSON API.
-- RSS feed, XML sitemap, `robots.txt` and Open Graph / Twitter Card metadata.
+- An RSS feed per language, an XML sitemap that links each page to its other language, `robots.txt` and Open
+  Graph / Twitter Card metadata.
 - A contact form that stores every request before emailing it, so a mail outage never loses a message.
 - Newsletter sign-up with double opt-in: a signed, expiring link confirms each address, and the form never reveals
   who is already subscribed.
@@ -80,8 +83,8 @@ flowchart LR
 
 Every push and pull request runs the checks; the coverage report is published in each run's summary. Pushes to
 `main` are then deployed by GitHub Actions with an SSH key that the server only allows to run
-[`deploy/update.sh`](deploy/update.sh), and the job fails unless the site answers `200` afterwards. Gunicorn
-reloads gracefully, so a deploy doesn't drop requests.
+[`deploy/update.sh`](deploy/update.sh), and the job fails unless `/en/` answers `200` and the bare domain redirects
+there afterwards. Gunicorn reloads gracefully, so a deploy doesn't drop requests.
 
 ## Design decisions
 
@@ -90,6 +93,7 @@ reloads gracefully, so a deploy doesn't drop requests.
 3. [Cloudflare in front of the origin](docs/adr/0003-cloudflare-in-front-of-the-origin.md)
 4. [Deploying from CI with a forced-command SSH key](docs/adr/0004-deploy-with-a-forced-command-ssh-key.md)
 5. [Off-site backups to Google Drive](docs/adr/0005-off-site-backups-to-google-drive.md)
+6. [The language in the URL](docs/adr/0006-language-in-the-url.md)
 
 ## Tech stack
 
@@ -193,8 +197,9 @@ API.
 
 Post lists are paginated; `page_size` raises the page size up to 20. They only ever show published posts, also to
 staff, because the home page reads them. Writes return the post's `id` and its `slug`, made from the English title.
-Responses use the site's language (the language cookie or `Accept-Language`), and an `X-Language` header (`en` or
-`es`) overrides it.
+The API has no language in its URL. Pages send an `X-Language` header (`en` or `es`) with their own language;
+without it, responses follow the language cookie or `Accept-Language`, and English otherwise. Links in the
+responses point to the pages in that language.
 
 ## Deployment
 

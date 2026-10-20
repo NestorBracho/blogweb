@@ -71,6 +71,8 @@
                     {# A plain form: each language is a submit button, so switching works with a keyboard and without JavaScript #}
                     <form action="{% url 'set_language' %}" method="post" class="dropdown-menu dropdown-menu--right" id="language-menu">
                         {% csrf_token %}
+                        {# The same page in the chosen language; without it, Django falls back to the Referer #}
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
                         <button type="submit" name="language" value="es" class="nav__link lang-item{% if LANGUAGE_CODE == 'es' %} active-link{% endif %}"{% if LANGUAGE_CODE == 'es' %} aria-current="true"{% endif %} style="padding-top: 10px;">
                             <img src="{% static 'images/flags/es.svg' %}" alt="" width="24" height="16">
                             <span style="vertical-align: middle; padding-bottom: 8px; margin-left: 5px;">{% translate 'Spanish' %}</span>

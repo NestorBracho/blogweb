@@ -2,31 +2,33 @@ import json
 from pathlib import Path
 from unittest import mock
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles import finders
 from django.core import mail
 from django.http import HttpResponse
 from django.templatetags.static import static
 from django.test import RequestFactory, TestCase, override_settings
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 from django.utils import translation
 from django.views.defaults import server_error
 
 from config.middleware import ContentSecurityPolicyMiddleware
+from config.testing import reverse_in
 
 from .models import ContactRequest
 
 
 class HomeTests(TestCase):
     def test_intro_is_translated(self):
-        spanish = self.client.get(reverse('main:index'), headers={'Accept-Language': 'es'})
-        english = self.client.get(reverse('main:index'), headers={'Accept-Language': 'en'})
+        spanish = self.client.get(reverse_in('es', 'main:index'))
+        english = self.client.get(reverse_in('en', 'main:index'))
 
         self.assertContains(spanish, 'Llevo más de 12 años construyendo plataformas web')
         self.assertContains(english, 'I have spent more than 12 years building web platforms')
 
     def test_says_who_i_am_in_search_results_and_link_previews(self):
-        response = self.client.get(reverse('main:index'), headers={'Accept-Language': 'en'})
+        response = self.client.get(reverse_in('en', 'main:index'))
 
         self.assertContains(response, '<title>Nestor Bracho, Senior Full Stack Engineer</title>')
         self.assertContains(response, '<meta property="og:title" content="Nestor Bracho, Senior Full Stack Engineer">')
@@ -34,8 +36,8 @@ class HomeTests(TestCase):
 
     @override_settings(OWNER_ROLE='Staff Engineer')
     def test_the_role_is_set_in_one_place(self):
-        home = self.client.get(reverse('main:index'), headers={'Accept-Language': 'es'})
-        cv = self.client.get(reverse('main:cv'), headers={'Accept-Language': 'es'})
+        home = self.client.get(reverse_in('es', 'main:index'))
+        cv = self.client.get(reverse_in('es', 'main:cv'))
 
         self.assertContains(home, '<title>Nestor Bracho, Staff Engineer</title>')
         self.assertContains(home, '<meta name="description" content="Staff Engineer con más de 12 años')
@@ -46,16 +48,16 @@ class HomeTests(TestCase):
         self.assertNotContains(cv, '<p class="cv__headline">Senior Full Stack Engineer')
 
     def test_points_from_the_role_to_the_personal_blog(self):
-        spanish = self.client.get(reverse('main:index'), headers={'Accept-Language': 'es'})
-        english = self.client.get(reverse('main:index'), headers={'Accept-Language': 'en'})
+        spanish = self.client.get(reverse_in('es', 'main:index'))
+        english = self.client.get(reverse_in('en', 'main:index'))
 
         self.assertContains(spanish, 'Fuera del trabajo, <a href="#blog">escribo aquí</a>')
         self.assertContains(english, 'Outside work, I <a href="#blog">write here</a>')
         self.assertContains(english, 'id="blog"')
 
     def test_footer_describes_the_site_in_each_language(self):
-        spanish = self.client.get(reverse('main:index'), headers={'Accept-Language': 'es'})
-        english = self.client.get(reverse('main:index'), headers={'Accept-Language': 'en'})
+        spanish = self.client.get(reverse_in('es', 'main:index'))
+        english = self.client.get(reverse_in('en', 'main:index'))
 
         self.assertContains(spanish, 'Ciencia, historias y software. Esta es la web personal de Nestor Bracho')
         self.assertContains(english, 'Science, storytelling &amp; software. This is the personal site of Nestor Bracho')
@@ -76,8 +78,8 @@ class BrandTests(TestCase):
         self.assertContains(response, self.wordmark, count=2)
 
     def test_logo_link_has_a_name_in_each_language(self):
-        spanish = self.client.get(reverse('main:index'), headers={'Accept-Language': 'es'})
-        english = self.client.get(reverse('main:index'), headers={'Accept-Language': 'en'})
+        spanish = self.client.get(reverse_in('es', 'main:index'))
+        english = self.client.get(reverse_in('en', 'main:index'))
 
         self.assertContains(spanish, 'aria-label="Bracho, inicio"')
         self.assertContains(english, 'aria-label="Bracho, home"')
@@ -87,7 +89,7 @@ class HeaderTests(TestCase):
     """The header's controls are buttons, so they work with a keyboard and screen readers can name them."""
 
     def get_home(self, language):
-        return self.client.get(reverse('main:index'), headers={'Accept-Language': language})
+        return self.client.get(reverse_in(language, 'main:index'))
 
     def test_controls_are_buttons(self):
         response = self.get_home('en')
@@ -105,13 +107,74 @@ class HeaderTests(TestCase):
         self.assertContains(response, 'placeholder="Escribe para buscar..."')
 
     def test_language_menu_is_a_form_that_needs_no_javascript(self):
-        page = self.get_home('en')
-        self.assertContains(page, f'<form action="{reverse("set_language")}" method="post"')
+        page = self.client.get(reverse_in('en', 'main:cv'))
+
+        self.assertContains(page, f'<form action="{reverse_in("en", "set_language")}" method="post"')
+        self.assertContains(page, f'<input type="hidden" name="next" value="{reverse_in("en", "main:cv")}">')
         self.assertContains(page, '<button type="submit" name="language" value="es"')
 
-        response = self.client.post(reverse('set_language'), {'language': 'es'}, follow=True)
+    def test_language_menu_opens_the_same_page_in_the_other_language(self):
+        for current, chosen in [('en', 'es'), ('es', 'en')]:
+            with self.subTest(chosen=chosen):
+                # Even when the language cookie disagrees with the page: the form is sent from the page's language
+                self.client.cookies[settings.LANGUAGE_COOKIE_NAME] = chosen
+                page = f'{reverse_in(current, "main:cv")}?ref=menu'
 
-        self.assertContains(response, '<html lang="es"')
+                response = self.client.post(reverse_in(current, 'set_language'), {'language': chosen, 'next': page})
+
+                self.assertRedirects(
+                    response, f'{reverse_in(chosen, "main:cv")}?ref=menu', fetch_redirect_response=False
+                )
+                self.assertEqual(self.client.cookies[settings.LANGUAGE_COOKIE_NAME].value, chosen)
+
+
+class LanguageInTheURLTests(TestCase):
+    """Pages live under /en/ and /es/; a path without a language goes to the visitor's (docs/adr/0006)."""
+
+    def assertRedirectsTo(self, response, url):
+        self.assertRedirects(response, url, status_code=302, fetch_redirect_response=False)
+
+    def test_visitors_who_ask_for_neither_language_get_english(self):
+        # Crawlers and link previews send no Accept-Language at all
+        for headers in [{}, {'Accept-Language': 'fr-FR,fr;q=0.9,de;q=0.8'}]:
+            with self.subTest(headers=headers):
+                self.assertRedirectsTo(self.client.get('/', headers=headers), '/en/')
+
+    def test_spanish_browsers_get_spanish(self):
+        response = self.client.get('/cv/', headers={'Accept-Language': 'es-MX,es;q=0.9,en;q=0.8'})
+
+        self.assertRedirectsTo(response, '/es/cv/')
+
+    def test_the_language_chosen_in_the_menu_wins_over_the_browser(self):
+        self.client.cookies[settings.LANGUAGE_COOKIE_NAME] = 'es'
+
+        response = self.client.get('/cv/', headers={'Accept-Language': 'en'})
+
+        self.assertRedirectsTo(response, '/es/cv/')
+
+    def test_redirects_keep_the_query_string_and_are_not_shared_between_visitors(self):
+        response = self.client.get('/?utm_source=linkedin')
+
+        self.assertRedirectsTo(response, '/en/?utm_source=linkedin')
+        self.assertIn('Accept-Language', response['Vary'])
+        self.assertIn('Cookie', response['Vary'])
+
+    def test_each_language_has_its_own_address(self):
+        for language in ['en', 'es']:
+            with self.subTest(language=language):
+                response = self.client.get(f'/{language}/', headers={'Accept-Language': 'fr'})
+
+                self.assertContains(response, f'<html lang="{language}"')
+                # The address alone decides the language, so caches don't have to tell browsers apart
+                self.assertNotIn('Accept-Language', response.get('Vary', ''))
+
+    def test_the_admin_api_sitemap_and_robots_stay_at_the_root(self):
+        for name in ['admin:login', 'api:post-list', 'sitemap', 'robots']:
+            with self.subTest(name=name):
+                url = reverse(name)
+
+                self.assertFalse(url.startswith(('/en/', '/es/')))
+                self.assertEqual(self.client.get(url).status_code, 200)
 
 
 class ContentSecurityPolicyTests(TestCase):
@@ -196,7 +259,7 @@ class ErrorPageTests(TestCase):
         self.assertContains(response, 'Back to homepage', status_code=500)
 
     def test_not_found_page_uses_the_site_template(self):
-        response = self.client.get('/no-such-page/', headers={'Accept-Language': 'en'})
+        response = self.client.get('/en/no-such-page/')
 
         self.assertContains(response, 'Back to homepage', status_code=404)
         self.assertContains(response, '<meta property="og:image" content="http://testserver/static/', status_code=404)
@@ -204,8 +267,8 @@ class ErrorPageTests(TestCase):
 
 class PrivacyViewTests(TestCase):
     def test_shows_the_whole_policy_in_each_language(self):
-        spanish = self.client.get(reverse('main:privacy'), headers={'Accept-Language': 'es'})
-        english = self.client.get(reverse('main:privacy'), headers={'Accept-Language': 'en'})
+        spanish = self.client.get(reverse_in('es', 'main:privacy'))
+        english = self.client.get(reverse_in('en', 'main:privacy'))
 
         self.assertContains(spanish, '<title>Política de privacidad - Nestor Bracho</title>')
         self.assertContains(spanish, 'Quién es responsable')
@@ -239,24 +302,22 @@ class RobotsTxtTests(TestCase):
 
 class AboutViewTests(TestCase):
     def test_uses_its_own_meta_tags(self):
-        response = self.client.get(reverse('main:about'), HTTP_ACCEPT_LANGUAGE='en')
+        response = self.client.get(reverse_in('en', 'main:about'))
 
         self.assertContains(response, '<title>About Me - Nestor Bracho</title>')
         self.assertContains(response, '<meta property="og:image" content="http://testserver/static/')
 
     def test_spanish_title_is_spelled_right(self):
-        response = self.client.get(reverse('main:about'), headers={'Accept-Language': 'es'})
+        response = self.client.get(reverse_in('es', 'main:about'))
 
         self.assertContains(response, '<title>Sobre mí - Nestor Bracho</title>')
 
 
 @override_settings(OWNER_CV_PDF_URLS={'en': '/media/cv/cv-en.pdf', 'es': '/media/cv/cv-es.pdf'})
 class CVViewTests(TestCase):
-    url = reverse_lazy('main:cv')
-
     def test_shows_the_whole_cv_in_each_language(self):
-        spanish = self.client.get(self.url, headers={'Accept-Language': 'es'})
-        english = self.client.get(self.url, headers={'Accept-Language': 'en'})
+        spanish = self.client.get(reverse_in('es', 'main:cv'))
+        english = self.client.get(reverse_in('en', 'main:cv'))
 
         self.assertContains(spanish, 'Experiencia profesional')
         self.assertNotContains(spanish, 'Professional experience')
@@ -264,33 +325,43 @@ class CVViewTests(TestCase):
         self.assertContains(english, '<title>CV - Nestor Bracho</title>')
 
     def test_offers_the_pdf_in_the_page_language(self):
-        spanish = self.client.get(self.url, headers={'Accept-Language': 'es'})
-        english = self.client.get(self.url, headers={'Accept-Language': 'en'})
+        spanish = self.client.get(reverse_in('es', 'main:cv'))
+        english = self.client.get(reverse_in('en', 'main:cv'))
 
         self.assertContains(spanish, 'href="/media/cv/cv-es.pdf"')
         self.assertContains(english, 'href="/media/cv/cv-en.pdf"')
 
     @override_settings(OWNER_CV_PDF_URLS={'en': '', 'es': ''})
     def test_hides_the_download_without_a_pdf(self):
-        response = self.client.get(self.url, headers={'Accept-Language': 'en'})
+        response = self.client.get(reverse_in('en', 'main:cv'))
 
         self.assertNotContains(response, 'Download PDF')
 
     @override_settings(OWNER_EMAIL='nestor@example.com', OWNER_LOCATION='Madrid, Spain')
     def test_gives_the_contact_details_when_configured(self):
-        response = self.client.get(self.url)
+        response = self.client.get(reverse_in('en', 'main:cv'))
 
         self.assertContains(response, 'href="mailto:nestor@example.com"')
         self.assertContains(response, 'Madrid, Spain')
 
     def test_is_linked_from_the_menu_and_the_sitemap(self):
-        self.assertContains(self.client.get(reverse('main:index')), f'href="{self.url}"')
-        self.assertContains(self.client.get(reverse('sitemap')), f'http://testserver{self.url}')
+        home = self.client.get(reverse_in('en', 'main:index'))
+        sitemap = self.client.get(reverse('sitemap'))
+
+        self.assertContains(home, f'href="{reverse_in("en", "main:cv")}"')
+        for language in ['en', 'es']:
+            self.assertContains(sitemap, f'<loc>http://testserver{reverse_in(language, "main:cv")}</loc>')
 
     def test_the_old_resume_post_redirects_here(self):
+        # Old links have no language: first to the visitor's, then for good to the CV in that language
         response = self.client.get('/post/resume')
+        self.assertRedirects(response, '/en/post/resume', status_code=302, fetch_redirect_response=False)
 
-        self.assertRedirects(response, self.url, status_code=301)
+        for language in ['en', 'es']:
+            with self.subTest(language=language):
+                response = self.client.get(f'/{language}/post/resume')
+
+                self.assertRedirects(response, reverse_in(language, 'main:cv'), status_code=301)
 
 
 @override_settings(OWNER_GITHUB_URL='https://github.com/example', OWNER_LINKEDIN_URL='')
@@ -322,9 +393,7 @@ class ContactFormViewTests(TestCase):
         self.assertEqual(mail.outbox[0].reply_to, ['ada@example.com'])
 
     def test_gives_the_form_back_with_what_was_typed_and_what_to_fix(self):
-        response = self.client.post(
-            reverse('main:contact'), {**self.data, 'email': 'ada@'}, headers={'Accept-Language': 'en'}
-        )
+        response = self.client.post(reverse_in('en', 'main:contact'), {**self.data, 'email': 'ada@'})
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'value="Ada"')
@@ -335,7 +404,7 @@ class ContactFormViewTests(TestCase):
         self.assertEqual(mail.outbox, [])
 
     def test_is_marked_with_the_page_language(self):
-        response = self.client.get(reverse('main:contact'), headers={'Accept-Language': 'es'})
+        response = self.client.get(reverse_in('es', 'main:contact'))
 
         self.assertContains(response, '<html lang="es"')
 

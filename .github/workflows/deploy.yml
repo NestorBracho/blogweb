@@ -86,11 +86,15 @@ jobs:
       - name: Deploy
         run: ssh -i ~/.ssh/deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes blog@${{ secrets.DEPLOY_HOST }}
 
+      # Pages live under /en/ and /es/; the bare domain sends visitors who ask for no language (like curl) to /en/
       - name: Health check
         run: |
-          for i in 1 2 3 4 5; do
-            code=$(curl -s -o /dev/null -w '%{http_code}' https://nestorbracho.com/)
-            [ "$code" = "200" ] && echo "Site is up" && exit 0
-            echo "Got $code, retrying..."; sleep 5
+          for i in 1 2 3 4 5 6; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' https://nestorbracho.com/en/)
+            location=$(curl -s -o /dev/null -w '%{redirect_url}' https://nestorbracho.com/)
+            if [ "$code" = "200" ] && [ "$location" = "https://nestorbracho.com/en/" ]; then
+              echo "Site is up"; exit 0
+            fi
+            echo "Got $code for /en/ and a redirect to '$location' for /, retrying..."; sleep 5
           done
           exit 1

@@ -8,3 +8,4 @@ Michael Nygard's [format](https://cognitect.com/blog/2011/11/15/documenting-arch
 3. [Cloudflare in front of the origin](0003-cloudflare-in-front-of-the-origin.md)
 4. [Deploying from CI with a forced-command SSH key](0004-deploy-with-a-forced-command-ssh-key.md)
 5. [Off-site backups to Google Drive](0005-off-site-backups-to-google-drive.md)
+6. [The language in the URL](0006-language-in-the-url.md)

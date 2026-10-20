@@ -272,6 +272,6 @@
 
 {% block extra_js %}
     <script src="{% static 'main/index/scripts.js' %}" data-lang="{{ LANGUAGE_CODE }}"
-            data-binary-journal-api-url="{% url 'blog:api:post-list' %}"
-            data-hackers-haven-api-url="{% url 'blog:api:categories' %}"></script>
+            data-binary-journal-api-url="{% url 'api:post-list' %}"
+            data-hackers-haven-api-url="{% url 'api:categories' %}"></script>
 {% endblock %}

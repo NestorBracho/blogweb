@@ -7,15 +7,17 @@ from django.contrib.auth import get_user_model
 from django.contrib.staticfiles import finders
 from django.core import mail
 from django.http import HttpResponse
+from django.template import Context, Template
 from django.templatetags.static import static
 from django.test import RequestFactory, TestCase, override_settings
-from django.urls import reverse
+from django.urls import resolve, reverse
 from django.utils import translation
 from django.views.defaults import server_error
 
 from config.middleware import ContentSecurityPolicyMiddleware
-from config.testing import reverse_in
+from config.testing import reverse_in, structured_data
 
+from . import seo
 from .models import ContactRequest
 
 
@@ -193,7 +195,9 @@ class ContentSecurityPolicyTests(TestCase):
             with self.subTest(page=page):
                 response = self.client.get(reverse(page))
 
-                self.assertNotRegex(response.content.decode(), r'<script(?![^>]*\bsrc=)[^>]*>')
+                # JSON-LD blocks are data that browsers never run, so the policy doesn't apply to them
+                inline_script = r'<script(?![^>]*\b(?:src=|type="application/ld\+json"))[^>]*>'
+                self.assertNotRegex(response.content.decode(), inline_script)
 
     def test_leaves_alone_a_policy_set_by_the_view(self):
         own_policy = HttpResponse(headers={'Content-Security-Policy': "default-src 'none'"})
@@ -255,14 +259,90 @@ class ErrorPageTests(TestCase):
         with translation.override('en'):
             response = server_error(RequestFactory().get('/'))
 
-        self.assertContains(response, 'Server Malfunction', status_code=500)
+        self.assertContains(response, '<title>Server Malfunction - Nestor Bracho</title>', status_code=500)
         self.assertContains(response, 'Back to homepage', status_code=500)
 
-    def test_not_found_page_uses_the_site_template(self):
-        response = self.client.get('/en/no-such-page/')
+    def test_not_found_page_has_its_own_title_and_nothing_to_index(self):
+        # A path nothing matches, and a page whose view finds nothing to show
+        for url in ['/en/no-such-page/', reverse_in('en', 'blog:post-detail', slug='no-such-post')]:
+            with self.subTest(url=url):
+                response = self.client.get(url)
 
-        self.assertContains(response, 'Back to homepage', status_code=404)
-        self.assertContains(response, '<meta property="og:image" content="http://testserver/static/', status_code=404)
+                self.assertContains(response, '<title>Page not found - Nestor Bracho</title>', status_code=404)
+                self.assertContains(response, 'Back to homepage', status_code=404)
+                self.assertNotContains(response, 'rel="canonical"', status_code=404)
+                self.assertNotContains(response, 'hreflang', status_code=404)
+                self.assertNotContains(response, 'og:url', status_code=404)
+
+        spanish = self.client.get('/es/no-such-page/')
+        self.assertContains(spanish, '<title>Página no encontrada - Nestor Bracho</title>', status_code=404)
+
+
+class SearchAndLinkPreviewTests(TestCase):
+    """What search engines and link previews read in each page's <head>."""
+
+    def test_each_page_points_to_itself_in_each_language(self):
+        response = self.client.get(reverse_in('es', 'main:cv'))
+
+        self.assertContains(response, '<link rel="canonical" href="http://testserver/es/cv/">')
+        self.assertContains(response, '<link rel="alternate" hreflang="en" href="http://testserver/en/cv/">')
+        self.assertContains(response, '<link rel="alternate" hreflang="es" href="http://testserver/es/cv/">')
+        # Everyone else gets the address without a language, which sends them to theirs
+        self.assertContains(response, '<link rel="alternate" hreflang="x-default" href="http://testserver/cv/">')
+        self.assertContains(response, '<meta property="og:url" content="http://testserver/es/cv/">')
+        self.assertContains(response, '<meta property="og:locale" content="es_ES">')
+        self.assertContains(response, '<meta property="og:locale:alternate" content="en_US">')
+
+    def test_the_canonical_address_leaves_out_how_visitors_arrived(self):
+        response = self.client.get(reverse_in('en', 'main:index'), {'utm_source': 'linkedin', 'fbclid': 'abc'})
+
+        self.assertContains(response, '<link rel="canonical" href="http://testserver/en/">')
+        self.assertContains(response, '<link rel="alternate" hreflang="es" href="http://testserver/es/">')
+
+    def test_previews_name_the_site_and_size_the_brand_image(self):
+        response = self.client.get(reverse_in('en', 'main:about'))
+
+        self.assertContains(response, '<meta property="og:site_name" content="Nestor Bracho">')
+        self.assertContains(response, '<meta property="og:type" content="website">')
+        self.assertContains(response, '<meta property="og:image:width" content="1200">')
+        self.assertContains(response, '<meta property="og:image:height" content="630">')
+
+    def test_pages_with_their_own_image_leave_its_size_to_the_preview(self):
+        response = self.client.get(reverse_in('en', 'main:contact'))
+
+        self.assertNotContains(response, 'og:image:width')
+
+    def test_only_pages_in_a_language_have_other_versions(self):
+        # Django renders the 500 page without a request, and the API lives outside the language prefixes
+        api = RequestFactory().get('/api/post/')
+        api.resolver_match = resolve('/api/post/')
+
+        self.assertIsNone(seo.page_urls(None))
+        self.assertIsNone(seo.page_urls(api))
+
+    def test_absolute_urls_fall_back_to_relative_ones_without_a_request(self):
+        template = Template('{% load main_tags %}{% absolute_uri "/static/images/og-default.png" %}')
+
+        self.assertEqual(template.render(Context()), '/static/images/og-default.png')
+
+    @override_settings(OWNER_ROLE='Staff Engineer', OWNER_EMAIL='nestor@example.com')
+    def test_home_page_says_who_the_site_is_about(self):
+        data = structured_data(self.client.get(reverse_in('en', 'main:index')))
+
+        self.assertEqual(data['@context'], 'https://schema.org')
+        self.assertEqual((data['@type'], data['name'], data['jobTitle']), ('Person', 'Nestor Bracho', 'Staff Engineer'))
+        self.assertEqual(data['url'], 'http://testserver/en/')
+        self.assertIn('https://github.com/NestorBracho', data['sameAs'])
+        # Contact details stay off the markup
+        self.assertNotIn('nestor@example.com', json.dumps(data))
+
+    def test_cv_is_a_profile_of_the_same_person(self):
+        home = structured_data(self.client.get(reverse_in('en', 'main:index')))
+        cv = structured_data(self.client.get(reverse_in('es', 'main:cv')))
+
+        self.assertEqual((cv['@type'], cv['inLanguage']), ('ProfilePage', 'es'))
+        self.assertEqual(cv['url'], 'http://testserver/es/cv/')
+        self.assertEqual(cv['mainEntity']['@id'], home['@id'])
 
 
 class PrivacyViewTests(TestCase):

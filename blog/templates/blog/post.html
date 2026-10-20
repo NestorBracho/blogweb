@@ -1,6 +1,12 @@
 {% extends 'base.html' %}
 {% load i18n static main_tags l10n %}
 
+{% block meta_seo %}
+{{ block.super }}
+<meta property="article:published_time" content="{{ object.created|iso8601 }}">
+<meta property="article:modified_time" content="{{ object.updated|iso8601 }}">
+{% endblock %}
+
 {% block content %}
     <div class="container">
 

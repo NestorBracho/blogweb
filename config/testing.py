@@ -1,5 +1,8 @@
 """Helpers shared by the apps' tests."""
 
+import json
+import re
+
 from django.urls import reverse
 from django.utils import translation
 
@@ -12,3 +15,9 @@ def reverse_in(language, viewname, *args, **kwargs):
     """
     with translation.override(language):
         return reverse(viewname, args=args, kwargs=kwargs)
+
+
+def structured_data(response):
+    """The page's JSON-LD block, parsed; None if it has none."""
+    match = re.search(r'<script type="application/ld\+json">(.*?)</script>', response.content.decode(), re.DOTALL)
+    return json.loads(match.group(1)) if match else None

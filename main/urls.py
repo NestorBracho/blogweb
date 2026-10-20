@@ -1,13 +1,12 @@
 from django.urls import path
-from django.views.generic import TemplateView
 
 from usermanager.views import AddNewsletterSubscriberView, ConfirmSubscriptionView
 
-from .views import AboutView, ContactFormView, CVView, PrivacyView
+from .views import AboutView, ContactFormView, CVView, IndexView, PrivacyView
 
 app_name = 'main'
 urlpatterns = [
-    path('', TemplateView.as_view(template_name='main/index.html'), name='index'),
+    path('', IndexView.as_view(), name='index'),
     path('about/', AboutView.as_view(), name='about'),
     path('cv/', CVView.as_view(), name='cv'),
     path('contact/', ContactFormView.as_view(), name='contact'),

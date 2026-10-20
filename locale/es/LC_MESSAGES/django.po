@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-15 11:09+0000\n"
+"POT-Creation-Date: 2026-10-20 22:11+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,8 +19,8 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? "
 "1 : 2;\n"
 
-#: blog/api/serializers.py:80 blog/templates/blog/_lib/_article_card.html:22
-#: blog/templates/blog/post.html:33
+#: blog/api/serializers.py:83 blog/templates/blog/_lib/_article_card.html:22
+#: blog/templates/blog/post.html:39
 msgid "min read"
 msgstr "min de lectura"
 
@@ -48,29 +48,29 @@ msgstr "Publicaciones más recientes"
 msgid "Older posts"
 msgstr "Publicaciones anteriores"
 
-#: blog/templates/blog/post.html:51
+#: blog/templates/blog/post.html:57
 msgid "Share this"
 msgstr "Compartir"
 
-#: blog/templates/blog/post.html:79
+#: blog/templates/blog/post.html:85
 msgid "Older post"
 msgstr "Publicación anterior"
 
-#: blog/templates/blog/post.html:87
+#: blog/templates/blog/post.html:93
 msgid "Newer post"
 msgstr "Publicación siguiente"
 
-#: blog/templates/blog/post.html:102
+#: blog/templates/blog/post.html:108
 msgid "Related"
 msgstr "Relacionados"
 
-#: blog/views.py:49
+#: blog/views.py:53
 #, python-format
 msgid "Posts about %(category)s by Nestor Bracho."
 msgstr "Publicaciones sobre %(category)s de Nestor Bracho."
 
 #: main/templates/main/about.html:14 main/templates/main/about.html:19
-#: main/views.py:21
+#: main/views.py:31
 msgid "About Me"
 msgstr "Sobre mí"
 
@@ -257,15 +257,15 @@ msgstr ""
 "No dejes de aprender. No pierdas la curiosidad. Y construye cosas que de "
 "verdad importen."
 
-#: main/templates/main/contact.html:60 main/templates/main/contact.html:70
+#: main/templates/main/contact.html:31 main/templates/main/contact.html:41
 msgid "Get In Touch"
 msgstr "Ponte en contacto"
 
-#: main/templates/main/contact.html:67
+#: main/templates/main/contact.html:38
 msgid "Back to home"
 msgstr "Vuelve al inicio"
 
-#: main/templates/main/contact.html:73
+#: main/templates/main/contact.html:44
 msgid ""
 "Plug into the grid, whether you’re building\n"
 "                    something bold or need a sharp mind in the system, this "
@@ -275,32 +275,32 @@ msgstr ""
 "¿Buscas un dev que hable en código y entienda el sistema? Transmite por "
 "aquí. <br><i>Construyamos el futuro juntos.</i>"
 
-#: main/templates/main/contact.html:83
+#: main/templates/main/contact.html:54
 msgid "Your Name"
 msgstr "Tu nombre"
 
-#: main/templates/main/contact.html:84
+#: main/templates/main/contact.html:55
 msgid "Your name"
 msgstr "Tu nombre"
 
-#: main/templates/main/contact.html:90 main/templates/main/contact.html:91
+#: main/templates/main/contact.html:61 main/templates/main/contact.html:62
 msgid "Your Email"
 msgstr "Tu correo"
 
-#: main/templates/main/contact.html:97 main/templates/main/contact.html:98
+#: main/templates/main/contact.html:68 main/templates/main/contact.html:69
 msgid "Your Message"
 msgstr "Tu mensaje"
 
-#: main/templates/main/contact.html:104
+#: main/templates/main/contact.html:75
 msgid "I will only use your details to reply to you."
 msgstr "Solo usaré tus datos para responderte."
 
-#: main/templates/main/contact.html:105 main/templates/main/privacy.html:12
-#: main/views.py:48 templates/lib/_main_right_sidebar.html:27
+#: main/templates/main/contact.html:76 main/templates/main/privacy.html:12
+#: main/views.py:59 templates/lib/_main_right_sidebar.html:27
 msgid "Privacy policy"
 msgstr "Política de privacidad"
 
-#: main/templates/main/contact.html:108
+#: main/templates/main/contact.html:79
 msgid "Send Now"
 msgstr "Enviar ahora"
 
@@ -373,7 +373,7 @@ msgstr "Paraíso del Hacker"
 msgid "Nerd Stuff"
 msgstr "Cosas Nerd"
 
-#: main/views.py:23
+#: main/views.py:33
 msgid ""
 "Get to know Nestor, a fullstack software engineer passionate about backend "
 "systems, Python, AWS, and technology for social impact. Discover his "
@@ -384,12 +384,12 @@ msgstr ""
 "trayectoria, sus habilidades y su misión de crear herramientas digitales con "
 "sentido."
 
-#: main/views.py:35 templates/lib/_main_footer.html:74
+#: main/views.py:45 templates/lib/_main_footer.html:74
 #: templates/lib/_main_navbar.html:29
 msgid "CV"
 msgstr "CV"
 
-#: main/views.py:37
+#: main/views.py:47
 #, python-format
 msgid ""
 "CV of Nestor Bracho, %(role)s with more than 12 years building web platforms "
@@ -398,18 +398,18 @@ msgstr ""
 "CV de Nestor Bracho, %(role)s con más de 12 años construyendo plataformas "
 "web con Python y Django."
 
-#: main/views.py:49
+#: main/views.py:60
 msgid ""
 "What personal data this site collects, why, and how to exercise your rights."
 msgstr ""
 "Qué datos personales recoge este sitio, para qué y cómo ejercer tus derechos."
 
-#: main/views.py:61 templates/lib/_main_footer.html:76
+#: main/views.py:72 templates/lib/_main_footer.html:76
 #: templates/lib/_main_navbar.html:32
 msgid "Contact"
 msgstr "Contacto"
 
-#: main/views.py:63
+#: main/views.py:74
 msgid ""
 "Plug into the grid, whether you’re building something bold or need a sharp "
 "mind in the system, this is your uplink to start working together."
@@ -417,7 +417,7 @@ msgstr ""
 "¿Buscas un dev que hable en código y entienda el sistema? Transmite por "
 "aquí. <br><i>Construyamos el futuro juntos.</i>"
 
-#: main/views.py:74
+#: main/views.py:85
 msgid ""
 "Your contact request has been successfully submitted. I'll get in touch as "
 "soon as possible!"
@@ -425,48 +425,52 @@ msgstr ""
 "Solicitud de contacto enviada con éxito. ¡Me pondré en contacto contigo lo "
 "antes posible!"
 
-#: main/views.py:81
+#: main/views.py:92
 msgid "Something went wrong. Try again later."
 msgstr "Algo salió mal. Intenta de nuevo más tarde."
 
-#: templates/404.html:10
+#: templates/404.html:5
+msgid "Page not found"
+msgstr "Página no encontrada"
+
+#: templates/404.html:15
 msgid "Well, this is embarrassing..."
 msgstr "Bueno, esto es vergonzoso..."
 
-#: templates/404.html:11
+#: templates/404.html:16
 msgid ""
 "The page you're looking for doesn't exist, never existed, or just rage quit."
 msgstr "La página que buscas no existe, nunca existió, o abandonó el sitio."
 
-#: templates/404.html:12 templates/500.html:13
+#: templates/404.html:17 templates/500.html:18
 msgid "Back to homepage"
 msgstr "Vuelve al inicio"
 
-#: templates/500.html:9
+#: templates/500.html:5 templates/500.html:14
 msgid "Server Malfunction"
 msgstr "Mal funcionamiento del servidor"
 
-#: templates/500.html:10
+#: templates/500.html:15
 msgid "Well, this is awkward... Something went wrong on my end."
 msgstr "Bueno, esto es incómodo... Algo salió mal por aquí."
 
-#: templates/500.html:11
+#: templates/500.html:16
 msgid "We poked the server and it's thinking about what it did."
 msgstr "El servidor está castigado y está pensando en lo que hizo."
 
-#: templates/500.html:12
+#: templates/500.html:17
 msgid "Try refreshing, or come back after a coffee"
 msgstr "Trata de refrescar, o vuelve después de un café"
 
-#: templates/base.html:86
+#: templates/base.html:45
 msgid "Close search"
 msgstr "Cerrar búsqueda"
 
-#: templates/base.html:89
+#: templates/base.html:48
 msgid "Search posts"
 msgstr "Buscar publicaciones"
 
-#: templates/base.html:91
+#: templates/base.html:50
 msgid "Type to search..."
 msgstr "Escribe para buscar..."
 
@@ -514,12 +518,12 @@ msgstr "Hecho por"
 msgid "Designed by"
 msgstr "Diseñado por"
 
-#: templates/lib/_main_meta_seo.html:7
+#: templates/lib/_main_meta_seo.html:9
 #, python-format
 msgid "Nestor Bracho, %(role)s"
 msgstr "Nestor Bracho, %(role)s"
 
-#: templates/lib/_main_meta_seo.html:8
+#: templates/lib/_main_meta_seo.html:10
 #, python-format
 msgid ""
 "%(role)s with more than 12 years building web platforms with Python and "
@@ -556,15 +560,15 @@ msgstr "Opciones de idioma"
 msgid "Language"
 msgstr "Idioma"
 
-#: templates/lib/_main_navbar.html:76
+#: templates/lib/_main_navbar.html:78
 msgid "Spanish"
 msgstr "Español"
 
-#: templates/lib/_main_navbar.html:80
+#: templates/lib/_main_navbar.html:82
 msgid "English"
 msgstr "Inglés"
 
-#: templates/lib/_main_navbar.html:92
+#: templates/lib/_main_navbar.html:94
 msgid "Search posts..."
 msgstr "Buscar publicación"
 

@@ -18,7 +18,7 @@ from django.utils import timezone
 from openai import OpenAIError
 from PIL import Image
 
-from config.testing import reverse_in
+from config.testing import reverse_in, structured_data
 
 from .drafting import ArticleDraft
 from .models import Category, Post
@@ -125,6 +125,34 @@ class PostDetailViewTests(TestCase):
 
         self.assertContains(response, '<meta property="og:image" content="http://testserver/static/')
 
+    def test_link_previews_know_it_is_an_article(self):
+        response = self.get(self.post)
+
+        self.assertContains(response, '<meta property="og:type" content="article">')
+        published, modified = self.post.created.isoformat(), self.post.updated.isoformat()
+        self.assertContains(response, f'<meta property="article:published_time" content="{published}">')
+        self.assertContains(response, f'<meta property="article:modified_time" content="{modified}">')
+
+    def test_search_engines_get_the_post_as_structured_data(self):
+        post = create_post('Black holes', title_es='Agujeros negros', description_es='Sobre agujeros negros')
+
+        data = structured_data(self.client.get(reverse_in('es', 'blog:post-detail', slug=post.slug)))
+
+        self.assertEqual((data['@type'], data['headline']), ('BlogPosting', 'Agujeros negros'))
+        self.assertEqual((data['description'], data['inLanguage']), ('Sobre agujeros negros', 'es'))
+        self.assertEqual(data['url'], f'http://testserver{reverse_in("es", "blog:post-detail", slug=post.slug)}')
+        self.assertEqual(data['datePublished'], post.created.isoformat())
+        self.assertEqual(data['author']['name'], 'Nestor Bracho')
+
+    def test_structured_data_cannot_close_its_script_element(self):
+        title = '</script><script>alert(1)</script>'
+        post = create_post(title)
+
+        response = self.get(post)
+
+        self.assertNotContains(response, '</script><script>alert(1)')
+        self.assertEqual(structured_data(response)['headline'], title)
+
     def test_body_is_rendered_from_markdown(self):
         body = 'Some **bold** text\n\n<script>alert("hi")</script>'
         post = create_post('Markdown', body_es=body, body_en=body)
@@ -172,6 +200,9 @@ class CategoryDetailViewTests(TestCase):
         self.assertContains(first, '13 ')
         self.assertContains(first, 'href="?page=2" rel="next"')
         self.assertEqual([post.title_en for post in second.context['post_list']], ['Post 12'])
+        # Each page of the list is a page of its own for search engines
+        second_page = f'http://testserver{category.get_absolute_url()}?page=2'
+        self.assertContains(second, f'<link rel="canonical" href="{second_page}">')
 
     def test_post_cards_link_to_the_category_slug(self):
         category = create_category()

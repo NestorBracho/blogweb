@@ -14,7 +14,7 @@ asgiref==3.8.1
     # via django
 babel==2.18.0
     # via -r requirements.in
-certifi==2026.7.22
+certifi==2026.10.19
     # via
     #   httpcore
     #   httpx
@@ -48,7 +48,7 @@ nh3==0.3.7
     # via -r requirements.in
 openai==1.109.1
     # via -r requirements.in
-pillow==12.3.0
+pillow==13.0.0
     # via -r requirements.in
 pydantic==2.14.1
     # via

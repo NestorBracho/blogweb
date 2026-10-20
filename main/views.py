@@ -9,8 +9,18 @@ from django.views import generic
 from blog.models import content_language
 from config.forms import HONEYPOT_FIELD
 
+from . import structured_data
 from .forms import ContactForm
 from .models import ContactRequest
+
+
+class IndexView(generic.TemplateView):
+    template_name = 'main/index.html'
+
+    def get_context_data(self, **kwargs):
+        kwargs['structured_data'] = structured_data.home_page(self.request)
+
+        return super().get_context_data(**kwargs)
 
 
 class AboutView(generic.TemplateView):
@@ -37,6 +47,7 @@ class CVView(generic.TemplateView):
             'CV of Nestor Bracho, %(role)s with more than 12 years building web platforms with Python and Django.'
         ) % {'role': settings.OWNER_ROLE}
         kwargs['pdf_url'] = settings.OWNER_CV_PDF_URLS[content_language()]
+        kwargs['structured_data'] = structured_data.profile_page(self.request)
 
         return super().get_context_data(**kwargs)
 

@@ -2,6 +2,8 @@ from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext as _
 from django.views import generic
 
+from main import structured_data
+
 from .models import Category, Post
 
 
@@ -14,6 +16,8 @@ class PostDetailView(generic.DetailView):
         post = context['object']
         context['page_title'] = post.title()
         context['meta_description'] = post.description()
+        context['og_type'] = 'article'
+        context['structured_data'] = structured_data.blog_posting(self.request, post)
         if post.cover:
             context['social_image_url'] = post.cover_urls['social']
         context.update(self.get_navigation(post))

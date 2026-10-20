@@ -1,4 +1,6 @@
 {% load i18n static main_tags %}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_available_languages as LANGUAGES %}
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,24 +11,54 @@
     {{ role }} with more than 12 years building web platforms with Python and Django, currently for the World Bank Group.
 {% endblocktranslate %}
 {% firstof meta_description site_description as description %}
+{% if page_title %}{% firstof page_title|add:" - Nestor Bracho" as title %}{% else %}{% firstof site_title as title %}{% endif %}
 
-<title>{% if page_title %}{{ page_title }} - Nestor Bracho{% else %}{{ site_title }}{% endif %}</title>
+<title>{{ title }}</title>
+<link rel="alternate" type="application/rss+xml" title="Nestor Bracho" href="{% url 'blog:feed' %}">
+
+{# Error pages are neither indexed nor shared, and Django renders the 500 page without the request to build these #}
+{% if not is_error_page %}
 <meta name="description" content="{{ description }}">
 
-<link rel="canonical" href="{{ request.build_absolute_uri }}">
-<link rel="alternate" type="application/rss+xml" title="Nestor Bracho" href="{% url 'blog:feed' %}">
+{# The same page in each language, so search engines can send visitors to theirs #}
+{% page_urls as urls %}
+{% if urls %}
+<link rel="canonical" href="{{ urls.canonical }}">
+{% for language, url in urls.languages %}
+<link rel="alternate" hreflang="{{ language }}" href="{{ url }}">
+{% endfor %}
+<link rel="alternate" hreflang="x-default" href="{{ urls.x_default }}">
+{% endif %}
 
 {% static 'images/og-default.png' as default_social_image %}
 {% absolute_uri social_image_url|default:default_social_image as social_image %}
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta property="twitter:title" content="{% if page_title %}{{ page_title }} - Nestor Bracho{% else %}{{ site_title }}{% endif %}">
+<meta property="twitter:title" content="{{ title }}">
 <meta property="twitter:description" content="{{ description }}">
 <meta property="twitter:image:src" content="{{ social_image }}">
 
 <!-- OpenGraph (Facebook, LinkedIn, etc.) -->
-<meta property="og:title" content="{% if page_title %}{{ page_title }} - Nestor Bracho{% else %}{{ site_title }}{% endif %}">
+<meta property="og:site_name" content="Nestor Bracho">
+<meta property="og:type" content="{{ og_type|default:'website' }}">
+<meta property="og:title" content="{{ title }}">
 <meta property="og:description" content="{{ description }}">
 <meta property="og:image" content="{{ social_image }}">
-<meta property="og:url" content="{{ request.build_absolute_uri }}">
+{% if not social_image_url %}
+{# The brand image's size, so previews can lay it out before downloading it. Post covers can be smaller. #}
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+{% endif %}
+{% if urls %}
+<meta property="og:url" content="{{ urls.canonical }}">
+{% endif %}
+<meta property="og:locale" content="{{ LANGUAGE_CODE|open_graph_locale }}">
+{% for language, name in LANGUAGES %}{% if language != LANGUAGE_CODE %}
+<meta property="og:locale:alternate" content="{{ language|open_graph_locale }}">
+{% endif %}{% endfor %}
+
+{% if structured_data %}
+{% json_ld structured_data %}
+{% endif %}
+{% endif %}

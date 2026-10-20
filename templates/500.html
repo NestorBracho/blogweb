@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 {% load i18n %}
 
+{% block meta_seo %}
+{% translate 'Server Malfunction' as page_title %}
+{% include 'lib/_main_meta_seo.html' with is_error_page=True %}
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="row">

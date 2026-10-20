@@ -36,8 +36,10 @@ REST API, tests and linting in CI, and a hardened self-hosted deployment that co
   bare domain sends each visitor to their language, and English to crawlers and everyone else
   ([ADR 6](docs/adr/0006-language-in-the-url.md)). Interface strings are translated with gettext.
 - "Load more" pagination and live search served by the JSON API.
-- An RSS feed per language, an XML sitemap that links each page to its other language, `robots.txt` and Open
-  Graph / Twitter Card metadata.
+- An RSS feed per language, an XML sitemap that links each page to its other language, and `robots.txt`.
+- In every page's `<head>`: a canonical URL without tracking parameters, `hreflang` links to the page in each
+  language, Open Graph / Twitter Card metadata, and schema.org data (JSON-LD) for the person behind the site and
+  for each post.
 - A contact form that stores every request before emailing it, so a mail outage never loses a message.
 - Newsletter sign-up with double opt-in: a signed, expiring link confirms each address, and the form never reveals
   who is already subscribed.

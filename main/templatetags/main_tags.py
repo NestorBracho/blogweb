@@ -20,5 +20,9 @@ def iso8601(value):
 
 @register.simple_tag(takes_context=True)
 def absolute_uri(context, url):
-    # Open Graph and Twitter cards ignore relative URLs
-    return context['request'].build_absolute_uri(url)
+    # Open Graph and Twitter cards ignore relative URLs. Django renders 500.html without any context, so there is no
+    # request to take the domain from: the relative URL is better than a second error.
+    request = context.get('request')
+    if request is None:
+        return url
+    return request.build_absolute_uri(url)

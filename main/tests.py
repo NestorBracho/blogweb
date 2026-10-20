@@ -9,6 +9,8 @@ from django.http import HttpResponse
 from django.templatetags.static import static
 from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse, reverse_lazy
+from django.utils import translation
+from django.views.defaults import server_error
 
 from config.middleware import ContentSecurityPolicyMiddleware
 
@@ -182,6 +184,22 @@ class SocialImageTests(TestCase):
 
         image_url = f'http://testserver{static("images/40.jpg")}'
         self.assertContains(response, f'<meta property="og:image" content="{image_url}">')
+
+
+class ErrorPageTests(TestCase):
+    def test_server_error_page_renders_without_a_request(self):
+        # Django renders 500.html with no context at all: no request and no context processors
+        with translation.override('en'):
+            response = server_error(RequestFactory().get('/'))
+
+        self.assertContains(response, 'Server Malfunction', status_code=500)
+        self.assertContains(response, 'Back to homepage', status_code=500)
+
+    def test_not_found_page_uses_the_site_template(self):
+        response = self.client.get('/no-such-page/', headers={'Accept-Language': 'en'})
+
+        self.assertContains(response, 'Back to homepage', status_code=404)
+        self.assertContains(response, '<meta property="og:image" content="http://testserver/static/', status_code=404)
 
 
 class PrivacyViewTests(TestCase):

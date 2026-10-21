@@ -109,18 +109,11 @@
             <div class="row">
                 <div class="col col-8 col-d-12">
                     <div id="bj-results-container" class="row grid">
-
-
+                        {% include 'main/_lib/_bj_posts.html' %}
                     </div>
-
 
                     <!-- begin pagination -->
-                    <div class="pagination animate">
-                        <div class="load-more-section">
-                            <button class="load-more-posts button button--primary"
-                                    data-next-page="1">{% translate 'Load More' %}</button>
-                        </div>
-                    </div>
+                    {% include 'main/_lib/_bj_load_more.html' %}
                     <!-- end pagination -->
 
 
@@ -148,7 +141,11 @@
 
                         </div>
 
-                        <div id="category__section__body__id" class="row"></div>
+                        <div class="row">
+                            {% for category in hackers_haven %}
+                                {% include 'main/_lib/_hh_category.html' %}
+                            {% endfor %}
+                        </div>
 
                     </div>
                 </div>
@@ -265,13 +262,7 @@
     <!-- end section-gallery -->
 {% endblock %}
 
-{% block modals %}
-    {% include 'main/_lib/_bj_post_template.html' %}
-    {% include 'main/_lib/_hh_category_template.html' %}
-{% endblock %}
-
 {% block extra_js %}
-    <script src="{% static 'main/index/scripts.js' %}" data-lang="{{ LANGUAGE_CODE }}"
-            data-binary-journal-api-url="{% url 'api:post-list' %}"
-            data-hackers-haven-api-url="{% url 'api:categories' %}"></script>
+    <script src="{% static 'js/htmx-2.0.11.min.js' %}"></script>
+    <script src="{% static 'main/index/scripts.js' %}"></script>
 {% endblock %}

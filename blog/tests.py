@@ -1,5 +1,4 @@
 import base64
-from datetime import timedelta
 from io import BytesIO, StringIO
 from tempfile import TemporaryDirectory
 from types import SimpleNamespace
@@ -14,39 +13,14 @@ from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
 from django.test import SimpleTestCase, TestCase, TransactionTestCase, override_settings
 from django.urls import reverse, reverse_lazy
-from django.utils import timezone
 from openai import OpenAIError
 from PIL import Image
 
-from config.testing import reverse_in, structured_data
+from config.testing import create_category, create_post, reverse_in, structured_data
 
 from .drafting import ArticleDraft
-from .models import Category, Post
+from .models import Post
 from .rendering import render_markdown
-
-
-# Data migrations already seed real categories, so tests use their own slugs
-def create_category(slug='test-topic', **kwargs):
-    fields = {'name_es': slug, 'name_en': slug, 'slug': slug, 'color': '#ae00ee', **kwargs}
-    return Category.objects.create(**fields)
-
-
-def create_post(title, days_ago=0, **kwargs):
-    fields = {
-        'title_es': title,
-        'title_en': title,
-        'body_es': 'Cuerpo',
-        'body_en': 'Body',
-        'description_es': 'Descripción',
-        'description_en': 'Description',
-        'is_published': True,
-        **kwargs,
-    }
-    post = Post.objects.create(**fields)
-    # `created` is auto_now_add, so it can only be moved after the insert
-    Post.objects.filter(pk=post.pk).update(created=timezone.now() - timedelta(days=days_ago))
-    post.refresh_from_db()
-    return post
 
 
 def image_file(name='cover.png', size=(2400, 1600), mode='RGB', color='teal'):
@@ -254,7 +228,8 @@ class SidebarTests(TestCase):
             create_post(f'Post {number}', days_ago=number)
         create_post('Draft', is_published=False)
 
-        response = self.client.get(reverse_in('en', 'main:index'))
+        # A page that lists no other posts
+        response = self.client.get(reverse_in('en', 'main:about'))
 
         latest = [post.title_en for post in response.context['latest_posts']]
         self.assertEqual(latest, ['Post 0', 'Post 1', 'Post 2'])
@@ -534,12 +509,14 @@ class CoverSizesTests(TemporaryMediaMixin, TestCase):
 
         post_page = self.client.get(post.get_absolute_url())
         category_page = self.client.get(post.category.get_absolute_url())
+        home = self.client.get(reverse('main:index'))
 
         urls = post.cover_urls
         self.assertContains(post_page, f'src="{urls["post"]}"')
         self.assertContains(post_page, f'<meta property="og:image" content="http://testserver{urls["social"]}">')
         self.assertContains(post_page, f'src="{urls["thumb"]}"')  # the sidebar's latest posts
-        self.assertContains(category_page, f'data-src="{urls["card"]}"')
+        self.assertContains(category_page, f'<img src="{urls["card"]}"')
+        self.assertContains(home, f'<img src="{urls["card"]}"')
 
     def test_the_api_gives_every_size(self):
         post = create_post('Covered', cover=image_file())

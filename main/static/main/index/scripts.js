@@ -1,95 +1,43 @@
-const bj_script = document.currentScript;
-const bj_apiUrl = bj_script.getAttribute('data-binary-journal-api-url');
-const hh_apiUrl = bj_script.getAttribute('data-hackers-haven-api-url');
-const st_lang = bj_script.getAttribute('data-lang');
-const LoadMoreButton = $('.load-more-posts');
+// "Load more" in The Binary Journal (main/_lib/_bj_load_more.html). The posts come rendered from the server and htmx
+// adds each next page; this shows that they are on their way, says so when they can't be loaded and takes the
+// focus to the first new post, since the button it was on is replaced.
 
-function renderBinaryJournalPost(post) {
-    let post_template = $($('#bj-post-template')[0].content).clone();
+// The site uses neither htmx's loading indicators nor code in attributes: no <style> element to add, nothing to eval
+htmx.config.includeIndicatorStyles = false;
+htmx.config.allowEval = false;
+// A request that hangs fails like any other, instead of leaving the button loading forever
+htmx.config.timeout = 10000;
 
-    post_template.find('.article__image').attr('href', post.href);
-    post_template.find('.bj_img').attr('src', post.cover_urls.card).attr('alt', post.title);
-    post_template.find('.article__tag').attr('href', post.category_href).text(post.category).attr('style', 'background:'.concat(post.category_color, ';'));
-    post_template.find('.bj_article__title__link').attr('href', post.href).text(post.title);
-    post_template.find('.article__excerpt').text(post.description);
-    post_template.find('.article__date').attr('datetime', post.timestamp).text(post.user_friendly_date);
-    post_template.find('.article__minutes').text(post.read_time);
+const bj_posts = document.getElementById('bj-results-container');
+let bj_firstNewPost = null;
 
-    return post_template;
+function isLoadMore(event) {
+    return event.detail.elt.classList.contains('load-more-posts');
 }
 
-function render_hackers_heaven_category(category) {
-    let category_template = $($('#hh-category-template')[0].content).clone();
-    let section_tags_content = category_template.find('.section-tags__content').empty();
-
-    category_template.find('.section-tags__image').attr('href', category.href).css('outline-color', category.color);
-    category_template.find('.section-tags__name').css('background', category.color).text(category.name);
-    if (category.first_5_posts.length) {
-        category_template.find('.category-cover').attr('src', category.first_5_posts[0].cover_urls.card).attr('alt', category.name);
+document.body.addEventListener('htmx:beforeRequest', function (event) {
+    if (!isLoadMore(event)) {
+        return;
     }
+    const button = event.detail.elt;
+    button.classList.add('button--loading');
+    button.parentElement.querySelector('.load-more-error').hidden = true;
+    bj_firstNewPost = bj_posts.children.length;
+});
 
-    category.first_5_posts.forEach(post => {
-        const link = $('<a>').attr('href', post.href).text(post.title);
-        section_tags_content.append($('<h3 class="section-tags__title">').append(link));
-    });
+document.body.addEventListener('htmx:afterRequest', function (event) {
+    // When it works the button is replaced by the next one; otherwise it stays for another try
+    if (!isLoadMore(event) || event.detail.successful) {
+        return;
+    }
+    const button = event.detail.elt;
+    button.classList.remove('button--loading');
+    button.parentElement.querySelector('.load-more-error').hidden = false;
+});
 
-    return category_template;
-}
-
-function load_posts_page() {
-    let next_page = LoadMoreButton.data('next-page');
-    let next_page_url = bj_apiUrl + '?page=' + next_page;
-    let button_text = LoadMoreButton.text();
-    let bj_result_container = $('#bj-results-container');
-
-    LoadMoreButton.addClass('button--loading');
-    LoadMoreButton.text("Loading");
-
-    $.ajax({
-        url: next_page_url,
-        headers: {
-            'X-Language': st_lang
-        },
-        success: function (response) {
-            response.results.forEach(function (post) {
-                const rendered_post = renderBinaryJournalPost(post);
-                bj_result_container.append(rendered_post);
-            });
-
-            LoadMoreButton.removeClass('button--loading');
-            LoadMoreButton.text(button_text);
-
-            if (response.next === null) {
-                LoadMoreButton.fadeOut();
-            }else{
-                LoadMoreButton.data('next-page', next_page + 1);
-            }
-        },
-    });
-}
-
-function load_relevant_categories(){
-    let hh_result_container = $('#category__section__body__id');
-
-    $.ajax({
-        url: hh_apiUrl,
-        headers: {
-            'X-Language': st_lang
-        },
-        success: function (response){
-            response.results.forEach(function (category) {
-                const rendered_category = render_hackers_heaven_category(category);
-                hh_result_container.append(rendered_category);
-            });
-        },
-    });
-}
-
-$( document ).ready(function() {
-
-    load_posts_page();
-    load_relevant_categories();
-
-    LoadMoreButton.on('click', load_posts_page);
-
-})
+bj_posts.addEventListener('htmx:afterSettle', function () {
+    const post = bj_posts.children[bj_firstNewPost];
+    if (post) {
+        post.querySelector('.article__title a').focus();
+    }
+});

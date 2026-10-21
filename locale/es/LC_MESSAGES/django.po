@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-20 22:11+0000\n"
+"POT-Creation-Date: 2026-10-21 15:56+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -69,8 +69,16 @@ msgstr "Relacionados"
 msgid "Posts about %(category)s by Nestor Bracho."
 msgstr "Publicaciones sobre %(category)s de Nestor Bracho."
 
+#: main/templates/main/_lib/_bj_load_more.html:12
+msgid "Load More"
+msgstr "Cargar más"
+
+#: main/templates/main/_lib/_bj_load_more.html:13
+msgid "The posts couldn't be loaded. Please try again."
+msgstr "No se pudieron cargar las publicaciones. Inténtalo de nuevo."
+
 #: main/templates/main/about.html:14 main/templates/main/about.html:19
-#: main/views.py:31
+#: main/views.py:65
 msgid "About Me"
 msgstr "Sobre mí"
 
@@ -296,7 +304,7 @@ msgid "I will only use your details to reply to you."
 msgstr "Solo usaré tus datos para responderte."
 
 #: main/templates/main/contact.html:76 main/templates/main/privacy.html:12
-#: main/views.py:59 templates/lib/_main_right_sidebar.html:27
+#: main/views.py:93 templates/lib/_main_right_sidebar.html:27
 msgid "Privacy policy"
 msgstr "Política de privacidad"
 
@@ -361,19 +369,15 @@ msgstr "Trabajemos juntos"
 msgid "The Binary Journal"
 msgstr "La Terminal"
 
-#: main/templates/main/index.html:121
-msgid "Load More"
-msgstr "Cargar más"
-
-#: main/templates/main/index.html:147
+#: main/templates/main/index.html:140
 msgid "Hacker’s Haven"
 msgstr "Paraíso del Hacker"
 
-#: main/templates/main/index.html:167
+#: main/templates/main/index.html:164
 msgid "Nerd Stuff"
 msgstr "Cosas Nerd"
 
-#: main/views.py:33
+#: main/views.py:67
 msgid ""
 "Get to know Nestor, a fullstack software engineer passionate about backend "
 "systems, Python, AWS, and technology for social impact. Discover his "
@@ -384,12 +388,12 @@ msgstr ""
 "trayectoria, sus habilidades y su misión de crear herramientas digitales con "
 "sentido."
 
-#: main/views.py:45 templates/lib/_main_footer.html:74
+#: main/views.py:79 templates/lib/_main_footer.html:74
 #: templates/lib/_main_navbar.html:29
 msgid "CV"
 msgstr "CV"
 
-#: main/views.py:47
+#: main/views.py:81
 #, python-format
 msgid ""
 "CV of Nestor Bracho, %(role)s with more than 12 years building web platforms "
@@ -398,18 +402,18 @@ msgstr ""
 "CV de Nestor Bracho, %(role)s con más de 12 años construyendo plataformas "
 "web con Python y Django."
 
-#: main/views.py:60
+#: main/views.py:94
 msgid ""
 "What personal data this site collects, why, and how to exercise your rights."
 msgstr ""
 "Qué datos personales recoge este sitio, para qué y cómo ejercer tus derechos."
 
-#: main/views.py:72 templates/lib/_main_footer.html:76
+#: main/views.py:106 templates/lib/_main_footer.html:76
 #: templates/lib/_main_navbar.html:32
 msgid "Contact"
 msgstr "Contacto"
 
-#: main/views.py:74
+#: main/views.py:108
 msgid ""
 "Plug into the grid, whether you’re building something bold or need a sharp "
 "mind in the system, this is your uplink to start working together."
@@ -417,7 +421,7 @@ msgstr ""
 "¿Buscas un dev que hable en código y entienda el sistema? Transmite por "
 "aquí. <br><i>Construyamos el futuro juntos.</i>"
 
-#: main/views.py:85
+#: main/views.py:119
 msgid ""
 "Your contact request has been successfully submitted. I'll get in touch as "
 "soon as possible!"
@@ -425,7 +429,7 @@ msgstr ""
 "Solicitud de contacto enviada con éxito. ¡Me pondré en contacto contigo lo "
 "antes posible!"
 
-#: main/views.py:92
+#: main/views.py:126
 msgid "Something went wrong. Try again later."
 msgstr "Algo salió mal. Intenta de nuevo más tarde."
 

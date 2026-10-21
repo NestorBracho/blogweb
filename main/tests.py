@@ -15,7 +15,8 @@ from django.utils import translation
 from django.views.defaults import server_error
 
 from config.middleware import ContentSecurityPolicyMiddleware
-from config.testing import reverse_in, structured_data
+from config.testing import EmptyCacheMixin, reverse_in, structured_data
+from config.throttling import FormThrottle
 
 from . import seo
 from .models import ContactRequest
@@ -404,6 +405,55 @@ class CVViewTests(TestCase):
         self.assertContains(english, 'Professional experience')
         self.assertContains(english, '<title>CV - Nestor Bracho</title>')
 
+    def test_explains_the_jobs_that_overlap(self):
+        # Freelance work ran alongside other jobs: each one says so next to its dates, or they read like a mistake
+        jobs = {
+            'en': [
+                (
+                    '<strong>World Bank Group</strong> · Contract · Madrid, remote · Jun 2023 – Present',
+                    'In parallel with my role at Selia until Sep 2023 and with Ekwi-three in 2024.',
+                ),
+                (
+                    '<strong>Ekwi-three GmbH</strong> · Freelance · Remote · May 2024 – Dec 2024',
+                    'In parallel with my World Bank Group contract.',
+                ),
+                (
+                    '<strong>Selia</strong> · Full-time · Remote · Jan 2022 – Sep 2023',
+                    'From Dec 2022, in parallel with my World Bank Group projects.',
+                ),
+                (
+                    '<strong>World Bank Group</strong> · Freelance · Remote · Dec 2022 – Mar 2023',
+                    'In parallel with my full-time role at Selia.',
+                ),
+            ],
+            'es': [
+                (
+                    '<strong>Grupo Banco Mundial</strong> · Contrato · Madrid, remoto · jun 2023 – actualidad',
+                    'En paralelo con mi puesto en Selia hasta sep 2023 y con Ekwi-three en 2024.',
+                ),
+                (
+                    '<strong>Ekwi-three GmbH</strong> · Freelance · Remoto · may 2024 – dic 2024',
+                    'En paralelo con mi contrato en el Grupo Banco Mundial.',
+                ),
+                (
+                    '<strong>Selia</strong> · Jornada completa · Remoto · ene 2022 – sep 2023',
+                    'Desde dic 2022, en paralelo con mis proyectos para el Grupo Banco Mundial.',
+                ),
+                (
+                    '<strong>Grupo Banco Mundial</strong> · Freelance · Remoto · dic 2022 – mar 2023',
+                    'En paralelo con mi puesto a jornada completa en Selia.',
+                ),
+            ],
+        }
+        for language, notes in jobs.items():
+            response = self.client.get(reverse_in(language, 'main:cv'))
+
+            for meta, note in notes:
+                with self.subTest(language=language, note=note):
+                    expected = f'<p class="cv__job-meta">{meta}<br><span class="cv__note">{note}</span></p>'
+
+                    self.assertContains(response, expected, html=True)
+
     def test_offers_the_pdf_in_the_page_language(self):
         spanish = self.client.get(reverse_in('es', 'main:cv'))
         english = self.client.get(reverse_in('en', 'main:cv'))
@@ -461,7 +511,7 @@ class SocialLinksTests(TestCase):
         self.assertContains(response, 'href="https://www.linkedin.com/in/example"', count=3)
 
 
-class ContactFormViewTests(TestCase):
+class ContactFormViewTests(EmptyCacheMixin, TestCase):
     data = {'name': 'Ada', 'email': 'ada@example.com', 'message': 'Hello!'}
 
     def test_stores_the_request_and_emails_it(self):
@@ -504,6 +554,25 @@ class ContactFormViewTests(TestCase):
 
         self.assertRedirects(response, reverse('main:index'), fetch_redirect_response=False)
         self.assertTrue(ContactRequest.objects.filter(email='ada@example.com').exists())
+
+    def test_limits_how_many_requests_each_visitor_sends(self):
+        allowed = FormThrottle('contact').num_requests
+        visitor = {'CF-Connecting-IP': '203.0.113.7'}
+        for _ in range(allowed):
+            self.client.post(reverse('main:contact'), self.data, headers=visitor)
+
+        too_many = self.client.post(
+            reverse_in('es', 'main:contact'), {**self.data, 'message': 'Una más'}, headers=visitor
+        )
+        someone_else = self.client.post(reverse('main:contact'), self.data, headers={'CF-Connecting-IP': '203.0.113.8'})
+
+        # The form comes back in the page's language, with what was typed
+        self.assertContains(too_many, 'Has enviado varios mensajes en poco tiempo', status_code=429)
+        self.assertContains(too_many, 'value="Ada"', status_code=429)
+        self.assertContains(too_many, '>Una más</textarea>', status_code=429)
+        self.assertFalse(ContactRequest.objects.filter(message='Una más').exists())
+        self.assertRedirects(someone_else, reverse('main:index'), fetch_redirect_response=False)
+        self.assertEqual(len(mail.outbox), allowed + 1)
 
 
 class ContactRequestAdminTests(TestCase):

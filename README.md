@@ -42,8 +42,11 @@ REST API, tests and linting in CI, and a hardened self-hosted deployment that co
   for each post.
 - A contact form that stores every request before emailing it, so a mail outage never loses a message.
 - Newsletter sign-up with double opt-in: a signed, expiring link confirms each address, and the form never reveals
-  who is already subscribed.
+  who is already subscribed. A pending address gets the link again once an hour at most, so nobody can use the form
+  to flood someone else's inbox.
 - A honeypot field on both forms against spam bots, and a privacy policy in both languages.
+- Rate limits per visitor on the API and both forms, telling visitors apart by the address Cloudflare reports
+  ([`config/throttling.py`](config/throttling.py)).
 - A Content-Security-Policy that only lets the site's own scripts run (none inline), on top of HSTS and Django's
   other security headers.
 - Light and dark themes.
@@ -203,6 +206,11 @@ staff, because the home page reads them. Writes return the post's `id` and its `
 The API has no language in its URL. Pages send an `X-Language` header (`en` or `es`) with their own language;
 without it, responses follow the language cookie or `Accept-Language`, and English otherwise. Links in the
 responses point to the pages in that language.
+
+Staff sign in through the admin and the API takes that session; there is no Basic or token authentication. Each
+visitor, and each staff account, can make a limited number of requests a minute, and writes have a lower limit an
+hour; past them the API answers `429` with a `Retry-After` header. The rates are in `REST_FRAMEWORK` in
+[`config/settings.py`](config/settings.py).
 
 ## Deployment
 

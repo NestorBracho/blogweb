@@ -113,6 +113,11 @@ DATABASES = {
 }
 
 REST_FRAMEWORK = {
+    # Staff sign in through the admin and the API takes that session. Not Basic auth, which would let anyone try
+    # passwords against the API without knowing the admin's path.
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
     'DEFAULT_PAGINATION_CLASS': 'blog.api.pagination.PageSizePagination',
     'DEFAULT_PERMISSION_CLASSES': [
         'blog.api.permissions.IsAdminOrReadOnly',
@@ -120,6 +125,20 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
     ],
+    # Counted per Gunicorn worker (config/throttling.py)
+    'DEFAULT_THROTTLE_CLASSES': [
+        'config.throttling.AnonRateThrottle',
+        'config.throttling.UserRateThrottle',
+        'config.throttling.WriteRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '60/minute',
+        'user': '120/minute',
+        'write': '60/hour',
+        # Contact and newsletter forms (config/throttling.FormThrottle), which send emails
+        'contact': '5/hour',
+        'newsletter': '5/hour',
+    },
 }
 
 # Email config

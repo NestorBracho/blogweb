@@ -1,6 +1,8 @@
 from django.conf import settings
+from django.utils.functional import SimpleLazyObject
 
 from blog.models import Category, Post
+from main.views import HOME_PAGE_SIZE
 
 
 def owner(request):
@@ -18,8 +20,12 @@ def owner(request):
 
 
 def sidebar(request):
+    published = Post.objects.filter(is_published=True)
     return {
         'categories': Category.objects.with_published_posts().order_by('-latest_post'),
         # Shown in both the sidebar and the footer: one queryset, so one query per page
-        'latest_posts': Post.objects.filter(is_published=True).order_by('-created')[:3],
+        'latest_posts': published.order_by('-created')[:3],
+        # While every post fits on the home's first page, the other lists of posts (the sidebar's and Hacker's Haven)
+        # would only repeat the same ones, so they wait until there are more. Lazy: only pages with those lists count.
+        'many_posts': SimpleLazyObject(lambda: published.count() > HOME_PAGE_SIZE),
     }

@@ -20,6 +20,7 @@ from config.testing import create_category, create_post, reverse_in, structured_
 
 from . import seo
 from .models import ContactRequest
+from .views import HOME_PAGE_SIZE
 
 
 class HomeTests(TestCase):
@@ -185,9 +186,40 @@ class HackersHavenTests(TestCase):
         self.assertNotContains(response, 'href="/en/post/old-news"')
 
     def test_has_no_placeholder_links_left_from_the_theme(self):
+        for number in range(HOME_PAGE_SIZE + 1):
+            create_post(f'Post {number}', category=create_category(f'topic-{number}'))
+
         response = self.client.get(reverse_in('en', 'main:index'))
 
+        self.assertContains(response, 'Hacker’s Haven')
         self.assertNotContains(response, 'avoiding-common-javascript-mistakes')
+
+
+class FewPostsTests(TestCase):
+    """While every post fits on the home's first page, the lists that would only repeat them wait for more."""
+
+    def get_pages(self, posts):
+        for number in range(posts):
+            create_post(f'Post {number}', days_ago=number, category=create_category(f'topic-{number}'))
+        home = self.client.get(reverse_in('en', 'main:index'))
+        post = self.client.get(reverse_in('en', 'blog:post-detail', slug='post-0'))
+        return home, post
+
+    def test_hackers_haven_and_the_sidebars_latest_posts_wait_for_more_posts(self):
+        home, post = self.get_pages(HOME_PAGE_SIZE)
+
+        self.assertNotContains(home, 'Hacker’s Haven')
+        for page in [home, post]:
+            self.assertNotContains(page, 'widget-featured-posts')
+            # The footer keeps its own list
+            self.assertContains(page, '<h3 class="footer__title">Recent Posts</h3>')
+
+    def test_they_show_up_with_one_post_more(self):
+        home, post = self.get_pages(HOME_PAGE_SIZE + 1)
+
+        self.assertContains(home, 'Hacker’s Haven')
+        for page in [home, post]:
+            self.assertContains(page, 'widget-featured-posts')
 
 
 class BrandTests(TestCase):

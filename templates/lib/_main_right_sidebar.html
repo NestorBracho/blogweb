@@ -35,6 +35,7 @@
     </div>
 
 
+    {% if many_posts %}
     <div class="widget widget-featured-posts">
         <div class="widget-sidebar-head">
             <h2 class="widget-sidebar-title">{% translate 'Latest posts' %}</h2>
@@ -58,6 +59,7 @@
         {% endfor %}
 
     </div>
+    {% endif %}
 
 
     <div class="widget widget-tags">

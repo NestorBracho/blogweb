@@ -224,7 +224,8 @@ class SidebarTests(TestCase):
         self.assertEqual(list(response.context['categories']), [published])
 
     def test_sidebar_and_footer_share_the_latest_posts(self):
-        for number in range(4):
+        # More than the home's first page shows, or the sidebar leaves them out
+        for number in range(5):
             create_post(f'Post {number}', days_ago=number)
         create_post('Draft', is_published=False)
 
@@ -506,6 +507,9 @@ class CoverSizesTests(TemporaryMediaMixin, TestCase):
 
     def test_pages_show_the_size_each_place_needs(self):
         post = create_post('Covered', cover=image_file(), category=create_category())
+        # Enough older posts for the sidebar to list the latest ones
+        for number in range(4):
+            create_post(f'Older {number}', days_ago=number + 1)
 
         post_page = self.client.get(post.get_absolute_url())
         category_page = self.client.get(post.category.get_absolute_url())

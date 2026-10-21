@@ -32,6 +32,7 @@ class IndexView(HomePostsMixin, generic.ListView):
 
     def get_context_data(self, **kwargs):
         kwargs['structured_data'] = structured_data.home_page(self.request)
+        # Only queried if the page shows it (many_posts, in config/context_processors.py)
         kwargs['hackers_haven'] = (
             Category.objects.with_published_posts()
             .with_latest_posts(HACKERS_HAVEN_POSTS)

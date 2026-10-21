@@ -125,6 +125,17 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
     ],
+    # Counted per Gunicorn worker (config/throttling.py)
+    'DEFAULT_THROTTLE_CLASSES': [
+        'config.throttling.AnonRateThrottle',
+        'config.throttling.UserRateThrottle',
+        'config.throttling.WriteRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '60/minute',
+        'user': '120/minute',
+        'write': '60/hour',
+    },
 }
 
 # Email config

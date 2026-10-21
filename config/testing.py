@@ -3,6 +3,7 @@
 import json
 import re
 
+from django.core.cache import cache
 from django.urls import reverse
 from django.utils import translation
 
@@ -21,3 +22,15 @@ def structured_data(response):
     """The page's JSON-LD block, parsed; None if it has none."""
     match = re.search(r'<script type="application/ld\+json">(.*?)</script>', response.content.decode(), re.DOTALL)
     return json.loads(match.group(1)) if match else None
+
+
+class EmptyCacheMixin:
+    """Each test starts and ends with an empty cache.
+
+    The rate limits count requests in the cache (config/throttling.py), and every test client has the same address.
+    """
+
+    def setUp(self):
+        super().setUp()
+        cache.clear()
+        self.addCleanup(cache.clear)

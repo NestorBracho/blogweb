@@ -1,4 +1,5 @@
 import base64
+import time
 from datetime import timedelta
 from io import BytesIO, StringIO
 from tempfile import TemporaryDirectory
@@ -17,8 +18,10 @@ from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from openai import OpenAIError
 from PIL import Image
+from rest_framework.throttling import SimpleRateThrottle
 
-from config.testing import reverse_in, structured_data
+from config.testing import EmptyCacheMixin, reverse_in, structured_data
+from config.throttling import AnonRateThrottle, WriteRateThrottle
 
 from .drafting import ArticleDraft
 from .models import Category, Post
@@ -478,6 +481,48 @@ class PostAPITests(TestCase):
         self.assertEqual(response.status_code, 403)
         draft.refresh_from_db()
         self.assertFalse(draft.is_published)
+
+
+class APIRateLimitTests(EmptyCacheMixin, TestCase):
+    url = reverse_lazy('api:post-list')
+
+    def test_visitors_get_a_number_of_reads_a_minute(self):
+        for _ in range(AnonRateThrottle().num_requests):
+            self.assertEqual(self.client.get(self.url).status_code, 200)
+
+        too_many = self.client.get(self.url)
+        a_minute_later = time.time() + 60
+        with mock.patch.object(SimpleRateThrottle, 'timer', return_value=a_minute_later):
+            next_minute = self.client.get(self.url)
+
+        self.assertEqual(too_many.status_code, 429)
+        self.assertIn('Retry-After', too_many)
+        self.assertEqual(next_minute.status_code, 200)
+
+    def test_counts_each_visitor_by_the_address_cloudflare_gives(self):
+        visitor = {'CF-Connecting-IP': '203.0.113.7'}
+        for _ in range(AnonRateThrottle().num_requests):
+            self.client.get(self.url, headers=visitor)
+
+        # Anyone can make up X-Forwarded-For addresses, so they don't make a new visitor
+        spoofed = self.client.get(self.url, headers={**visitor, 'X-Forwarded-For': '198.51.100.1'})
+        someone_else = self.client.get(self.url, headers={'CF-Connecting-IP': '203.0.113.8'})
+
+        self.assertEqual(spoofed.status_code, 429)
+        self.assertEqual(someone_else.status_code, 200)
+
+    def test_staff_get_fewer_writes_than_reads(self):
+        self.client.force_login(get_user_model().objects.create_user(username='editor', is_staff=True))
+        detail_url = reverse('api:post-detail', args=[create_post('Post').pk])
+        for _ in range(WriteRateThrottle().num_requests):
+            self.client.patch(detail_url, {'title_en': 'Edited'}, content_type='application/json')
+
+        write = self.client.patch(detail_url, {'title_en': 'One too many'}, content_type='application/json')
+        read = self.client.get(detail_url)
+
+        self.assertEqual(write.status_code, 429)
+        self.assertEqual(read.status_code, 200)
+        self.assertEqual(read.json()['title'], 'Edited')
 
 
 class RenderMarkdownTests(SimpleTestCase):

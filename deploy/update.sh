@@ -35,17 +35,29 @@ if [ "$commit" != "$(git rev-parse HEAD)" ] && git merge-base --is-ancestor "$co
     exit 0
 fi
 
+# Until the migrations run, the database still matches the code being served. If the deploy stops before them, put
+# that code and its requirements back: a later restart (systemd, the 04:00 reboot) must not start new code on an
+# unmigrated database.
+previous=$(git rev-parse HEAD)
+roll_back() {
+    echo "$1: going back to $(git rev-parse --short "$previous"), without migrating or reloading the app" >&2
+    if ! git reset --hard --quiet "$previous" || ! "$VENV/bin/pip" install -q -r requirements.txt; then
+        echo "Could not go back to $(git rev-parse --short "$previous") either: fix it by hand before the app restarts" >&2
+    fi
+    exit 1
+}
+
 gunicorn_before=$("$VENV/bin/gunicorn" --version)
 git merge --ff-only --quiet "$commit"
-"$VENV/bin/pip" install -q -r requirements.txt
+"$VENV/bin/pip" install -q -r requirements.txt || roll_back "Could not install the requirements"
 
 # Copy the database before migrations change it, so a migration that goes wrong can be undone (deploy/README.md).
 # -readonly: if the database isn't there, fail instead of copying a new empty one.
 if ! "$VENV/bin/python" manage.py migrate --check >/dev/null; then
     copy=$BACKUPS/pre-migrate-$(date +%F-%H%M%S)-$(git rev-parse --short HEAD).sqlite3
     if ! sqlite3 -readonly "$DB" ".backup '$copy'" || [ "$(sqlite3 "$copy" 'PRAGMA quick_check;')" != ok ]; then
-        echo "Could not copy the database: stopping before the migrations, without reloading the app" >&2
-        exit 1
+        rm -f "$copy"
+        roll_back "Could not copy the database"
     fi
     gzip "$copy"
     echo "Database copied to $copy.gz"

@@ -10,6 +10,7 @@ from urllib.parse import quote
 
 import httpx2
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import CommandError, call_command
@@ -253,6 +254,37 @@ class CategoryDeletionTests(TestCase):
 
         post.refresh_from_db()
         self.assertIsNone(post.category)
+
+
+class CategoryParentTests(TestCase):
+    def test_deleting_a_category_keeps_the_ones_inside_it(self):
+        science = create_category('science-topic')
+        physics = create_category('physics-topic', parent=science)
+
+        science.delete()
+
+        physics.refresh_from_db()
+        self.assertIsNone(physics.parent)
+
+    def test_a_category_cannot_be_inside_itself(self):
+        science = create_category('science-topic')
+        physics = create_category('physics-topic', parent=science)
+
+        for parent in [science, physics]:
+            with self.subTest(parent=parent.slug):
+                science.parent = parent
+                with self.assertRaises(ValidationError) as error:
+                    science.full_clean()
+                self.assertEqual(list(error.exception.message_dict), ['parent'])
+
+    def test_a_loop_saved_some_other_way_does_not_hang_validation(self):
+        first = create_category('first-topic')
+        second = create_category('second-topic', parent=first)
+        Category.objects.filter(pk=first.pk).update(parent=second)
+        create_category('third-topic', parent=first)
+
+        with self.assertRaises(ValidationError):
+            Category.objects.get(slug='third-topic').full_clean()
 
 
 class FeedTests(TestCase):
@@ -715,14 +747,27 @@ class ReadTimeTests(TestCase):
         self.assertEqual(post.read_time, 1)
 
 
-class ReadTimeMigrationTests(TransactionTestCase):
-    before = [('blog', '0004_post_category_set_null')]
-    after = [('blog', '0005_post_read_time_from_text')]
+class MigrationTestCase(TransactionTestCase):
+    """Makes data with the models as they were before a migration (`before`) and reads it after (`after`)."""
+
+    def setUp(self):
+        super().setUp()
+        # The next test finds the database fully migrated, whichever migration this one stopped at
+        self.addCleanup(self.migrate_to_latest)
 
     def migrate(self, targets):
         executor = MigrationExecutor(connection)
         executor.migrate(targets)
         return executor.loader.project_state(targets).apps
+
+    def migrate_to_latest(self):
+        executor = MigrationExecutor(connection)
+        executor.migrate(executor.loader.graph.leaf_nodes())
+
+
+class ReadTimeMigrationTests(MigrationTestCase):
+    before = [('blog', '0004_post_category_set_null')]
+    after = [('blog', '0005_post_read_time_from_text')]
 
     def test_works_out_the_read_time_of_existing_posts(self):
         old_post = self.migrate(self.before).get_model('blog', 'Post')
@@ -740,6 +785,32 @@ class ReadTimeMigrationTests(TransactionTestCase):
         new_post = self.migrate(self.after).get_model('blog', 'Post')
 
         self.assertEqual(new_post.objects.get(slug='typed-by-hand').read_time, 3)
+
+
+class CategoryParentMigrationTests(MigrationTestCase):
+    before = [('blog', '0006_post_cover_sizes')]
+    after = [('blog', '0007_category_parent')]
+
+    def test_keeps_each_category_inside_the_same_one(self):
+        old_category = self.migrate(self.before).get_model('blog', 'Category')
+        science = old_category.objects.create(name_en='Science', name_es='Ciencia', slug='science-old', color='#000')
+        old_category.objects.create(
+            name_en='Physics', name_es='Física', slug='physics-old', color='#000', sub_category=science
+        )
+
+        new_category = self.migrate(self.after).get_model('blog', 'Category')
+
+        physics = new_category.objects.get(slug='physics-old')
+        self.assertEqual(physics.parent_id, science.pk)
+        self.assertEqual(list(physics.parent.children.all()), [physics])
+
+    def test_leaves_the_table_as_it_is(self):
+        # So the code still running during a deploy, which knows the old field, keeps working
+        for backwards in [False, True]:
+            with self.subTest(backwards=backwards):
+                sql = StringIO()
+                call_command('sqlmigrate', 'blog', '0007_category_parent', backwards=backwards, stdout=sql)
+                self.assertNotIn('TABLE', sql.getvalue())
 
 
 class PostSlugTests(TestCase):
@@ -1013,3 +1084,10 @@ class AdminTests(TestCase):
         for url in urls:
             with self.subTest(url=url):
                 self.assertEqual(self.client.get(url).status_code, 200)
+
+    def test_categories_show_the_one_they_are_inside(self):
+        create_category('child-topic', parent=self.post.category)
+
+        response = self.client.get(reverse('admin:blog_category_changelist'))
+
+        self.assertContains(response, '<td class="field-parent nowrap">test-topic</td>', html=True)

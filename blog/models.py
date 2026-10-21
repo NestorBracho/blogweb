@@ -1,6 +1,7 @@
 import logging
 import math
 
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import OuterRef, Prefetch, Subquery
 from django.urls import reverse
@@ -55,12 +56,33 @@ class Category(TranslatedFieldsMixin, BaseModel):
     name_en = models.CharField(max_length=120)
     slug = models.SlugField(max_length=120, unique=True)
     color = models.CharField(max_length=120)
-    sub_category = models.ForeignKey('Category', on_delete=models.CASCADE, null=True, blank=True)
+    # Deleting a category moves the ones inside it to the top level. The field used to be `sub_category` and its
+    # column keeps that name: renaming the column would break the code still running while a deploy migrates.
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        related_name='children',
+        null=True,
+        blank=True,
+        db_column='sub_category_id',
+        help_text='The broader category this one is part of, if any.',
+    )
 
     objects = CategoryQuerySet.as_manager()
 
     def __str__(self):
         return self.name()
+
+    def clean(self):
+        # A category can't be inside itself, directly or through the ones above it. Remembering the ones already
+        # seen also stops the walk at a loop saved some other way.
+        seen = {self.pk}
+        ancestor = self.parent
+        while ancestor is not None:
+            if ancestor.pk in seen:
+                raise ValidationError({'parent': "A category can't be inside itself."})
+            seen.add(ancestor.pk)
+            ancestor = ancestor.parent
 
     def name(self):
         return self.translated('name')

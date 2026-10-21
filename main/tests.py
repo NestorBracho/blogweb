@@ -1,7 +1,10 @@
 import json
+import posixpath
+import re
 from pathlib import Path
 from unittest import mock
 
+from django.apps import apps
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles import finders
@@ -212,6 +215,28 @@ class ContentSecurityPolicyTests(TestCase):
         response = self.client.get(reverse('main:index'))
 
         self.assertNotIn('Content-Security-Policy', response.headers)
+
+
+class FontTests(TestCase):
+    def test_every_font_the_stylesheets_declare_is_a_file_of_the_site(self):
+        for stylesheet in ['css/main.css']:
+            for url in re.findall(r'url\(([^)]+)\)', Path(finders.find(stylesheet)).read_text()):
+                with self.subTest(stylesheet=stylesheet, url=url):
+                    self.assertIsNotNone(finders.find(posixpath.normpath(posixpath.join('css', url))))
+
+    def test_the_icon_fonts_have_every_icon_the_site_uses(self):
+        icons_file = Path(finders.find('fonts/fontawesome/icons.txt'))
+        listed = {tuple(line.split()) for line in icons_file.read_text().splitlines() if not line.startswith('#')}
+        # The templates and scripts of the project and of its apps
+        folders = [settings.BASE_DIR, *(Path(app.path) for app in apps.get_app_configs())]
+        used = set()
+        for folder in folders:
+            if folder.is_relative_to(settings.BASE_DIR):
+                for path in [*folder.glob('templates/**/*.html'), *folder.glob('static/**/*.js')]:
+                    used.update(re.findall(r'\bfa-(solid|regular|brands) fa-([a-z0-9-]+)', path.read_text()))
+
+        self.assertIn(('brands', 'github'), used)
+        self.assertEqual(used - listed, set(), f'add them to {icons_file} and run tools/subset_fonts.py')
 
 
 class FaviconTests(TestCase):

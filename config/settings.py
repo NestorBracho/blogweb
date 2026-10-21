@@ -245,8 +245,8 @@ SECURE_CSP = {
     'script-src': ["'self'"],
     # The theme uses style="" attributes, and Google Fonts serves its CSS
     'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
-    # Google Fonts, and Font Awesome's icons from cdnjs
-    'font-src': ["'self'", 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com'],
+    # Google Fonts
+    'font-src': ["'self'", 'https://fonts.gstatic.com'],
     # Posts can show images hosted on other sites
     'img-src': ["'self'", 'https:'],
     'object-src': ["'none'"],

@@ -171,6 +171,8 @@ OWNER_LOCATIONS = {
 OWNER_LOCATIONS['es'] = env('OWNER_LOCATION_ES', default=OWNER_LOCATIONS['en'])
 
 # Job title on the home page, the CV, page titles and link previews. It changes now and then, so it lives here only.
+# The home and CV link preview image has it too: when it changes, run brand/source/gen.py and copy
+# brand/social/og-profile.png to static/images/.
 OWNER_ROLE = 'Senior Full Stack Engineer'
 
 # The year his career started (January), for the "more than N years" on the home page, the CV and link previews

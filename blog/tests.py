@@ -557,6 +557,15 @@ class CoverSizesTests(TemporaryMediaMixin, TestCase):
             response, f'src="{post.cover_urls["post"]}" width="{width}" height="{height}" fetchpriority="high"'
         )
 
+    def test_phones_get_the_cover_at_the_card_size(self):
+        post = create_post('Covered', cover=image_file())
+
+        response = self.client.get(post.get_absolute_url())
+
+        card_width, post_width = 2 * covers.SIZES['card'][0], 2 * covers.SIZES['post'][0]
+        urls = post.cover_urls
+        self.assertContains(response, f'srcset="{urls["card"]} {card_width}w, {urls["post"]} {post_width}w"')
+
     def test_the_api_gives_every_size(self):
         post = create_post('Covered', cover=image_file())
 

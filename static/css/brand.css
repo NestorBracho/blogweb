@@ -71,3 +71,13 @@
 .section-tags__name {
     --dark-gray: var(--blue-gray);
 }
+
+/* The language selector's "EN" / "ES" in the header: the theme's grey gave 2.2:1 in light mode and 4.4:1 in dark
+   mode. The same grey, a little darker or lighter: 4.5:1. */
+.toggle-theme-button {
+    color: #5b6e89;
+}
+
+.dark-mode .toggle-theme-button {
+    color: #97a6ba;
+}

@@ -292,6 +292,13 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 X_FRAME_OPTIONS = 'DENY'
 
+SILENCED_SYSTEM_CHECKS = [
+    # HSTS covers this domain alone, on purpose: not its subdomains (W005), and not the preload list built into
+    # browsers (W021), which takes months to leave
+    'security.W005',
+    'security.W021',
+]
+
 
 LOGGING = {
     'version': 1,

@@ -170,7 +170,8 @@ coverage run manage.py test && coverage report
 ```
 
 Tests pass whatever `DEBUG` says. They run with the production settings, less what only the server provides: HTTPS
-and the files `collectstatic` writes ([`config/test_runner.py`](config/test_runner.py)).
+and the files `collectstatic` writes ([`config/test_runner.py`](config/test_runner.py)). CI also runs Django's
+deployment checklist (`manage.py check --deploy`) on the production settings, which are the defaults.
 
 ## Dependencies
 

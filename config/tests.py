@@ -1,10 +1,12 @@
-"""Tests for the site-wide alerts: error emails (LOGGING in config/settings.py)."""
+"""Tests for the site-wide alerts: error emails (LOGGING in config/settings.py) and the email_admins command."""
 
 import logging
+import smtplib
 from io import StringIO
 from unittest import mock
 
 from django.core import mail
+from django.core.management import CommandError, call_command
 from django.test import TestCase, override_settings
 
 from config.log import OncePerError
@@ -80,3 +82,27 @@ class OncePerErrorTests(TestCase):
 
         with mock.patch('config.log.time.monotonic', side_effect=[1000, 1059, 1060]):
             self.assertEqual([log_filter.filter(record) for _ in range(3)], [True, False, True])
+
+
+@override_settings(ADMINS=ADMINS)
+class EmailAdminsCommandTests(TestCase):
+    def test_emails_the_admins(self):
+        output = StringIO()
+
+        call_command('email_admins', 'Backup failed', 'rclone copy exited with 1', stdout=output)
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ['ops@example.com'])
+        self.assertEqual(mail.outbox[0].subject, '[nestorbracho.com] Backup failed')
+        self.assertEqual(mail.outbox[0].body, 'rclone copy exited with 1')
+        self.assertIn('Emailed ops@example.com', output.getvalue())
+
+    @override_settings(ADMINS=[])
+    def test_fails_without_admins(self):
+        with self.assertRaisesMessage(CommandError, 'ADMINS is empty'):
+            call_command('email_admins', 'Backup failed', 'Details')
+
+    def test_fails_when_the_email_cannot_be_sent(self):
+        with mock.patch('main.management.commands.email_admins.mail_admins', side_effect=smtplib.SMTPException('down')):
+            with self.assertRaisesMessage(CommandError, 'Could not send the email: down'):
+                call_command('email_admins', 'Backup failed', 'Details')

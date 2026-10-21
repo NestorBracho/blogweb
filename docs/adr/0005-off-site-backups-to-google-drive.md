@@ -2,6 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-10-14
+- **Updated:** 2026-10-21 (a failed backup emails an alert)
 
 ## Context
 
@@ -38,8 +39,9 @@ Alternatives considered:
 
 - It costs nothing, and no billing account is involved. Thirty days of backups take about 200 MB of the 15 GB that
   Google shares between Drive, Gmail and Photos.
-- The token belongs to my personal Google account. If it is revoked, uploads fail and say so in
-  `/srv/blog/backups/backup.log`, while the server keeps its local copies. Nothing raises an alert yet.
+- The token belongs to my personal Google account. If it is revoked, uploads fail: the script says so in
+  `/srv/blog/backups/backup.log` and emails the addresses in `ADMINS`, while the server keeps its local copies. Until
+  2026-10-21 nothing raised an alert.
 - Restoring is described in [`deploy/README.md`](../../deploy/README.md). A backup only counts once a restore from
   it has worked.
 - Every night uploads a full archive of the images, unchanged ones included. At this size that doesn't matter; if

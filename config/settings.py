@@ -136,8 +136,8 @@ DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='webmaster@localhost')
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 EMAIL_SUBJECT_PREFIX = '[nestorbracho.com] '
 
-# Who gets an email when a page fails with a server error (LOGGING below). Comma-separated addresses in the
-# environment; empty, nobody does.
+# Who gets an email when a page fails with a server error (LOGGING below) or a nightly backup fails
+# (deploy/backup.sh). Comma-separated addresses in the environment; empty, nobody does.
 ADMINS = [(address, address) for address in map(str.strip, env('ADMINS'))]
 
 # Address that receives contact form submissions

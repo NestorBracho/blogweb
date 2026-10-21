@@ -83,14 +83,15 @@ flowchart LR
 flowchart LR
     push["Push or pull request"] --> check["Check<br/>ruff, Django checks, migrations,<br/>tests + coverage, collectstatic"]
     check -->|"main only"| deploy["Deploy over SSH<br/>(forced command)"]
-    deploy --> update["deploy/update.sh<br/>pull, install, migrate,<br/>collectstatic, reload"]
+    deploy --> update["deploy/update.sh<br/>check out the commit, install,<br/>copy the DB, migrate,<br/>collectstatic, reload"]
     update --> health["Health check"]
 ```
 
 Every push and pull request runs the checks; the coverage report is published in each run's summary. Pushes to
 `main` are then deployed by GitHub Actions with an SSH key that the server only allows to run
 [`deploy/update.sh`](deploy/update.sh), and the job fails unless `/en/` answers `200` and the bare domain redirects
-there afterwards. Gunicorn reloads gracefully, so a deploy doesn't drop requests.
+there afterwards. Each run deploys the commit it checked, never an older one than the site already runs, and copies
+the database before running migrations. Gunicorn reloads gracefully, so a deploy doesn't drop requests.
 
 ## Design decisions
 

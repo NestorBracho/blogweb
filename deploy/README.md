@@ -21,7 +21,7 @@ Estructura en el servidor:
 ├── data/           # db.sqlite3
 ├── media/          # imágenes subidas
 ├── staticfiles/    # salida de collectstatic
-└── backups/
+└── backups/        # copias nocturnas (backup.sh) y de antes de cada migración (update.sh)
 ```
 
 ---
@@ -71,15 +71,27 @@ sudo chown -R blog:www-data /srv/blog
 sudo chmod 750 /srv/blog
 ```
 
+`unattended-upgrades` instala cada noche los parches de seguridad, pero los del kernel o de librerías como `libc` no
+se aplican hasta reiniciar. Que reinicie solo cuando haga falta, a las 04:00 (hora del servidor, UTC), después de la
+copia de las 03:30. Gunicorn y nginx arrancan solos al encender:
+
+```bash
+cat /etc/apt/apt.conf.d/20auto-upgrades   # las dos líneas deben terminar en "1"
+printf '%s\n' 'Unattended-Upgrade::Automatic-Reboot "true";' 'Unattended-Upgrade::Automatic-Reboot-Time "04:00";' \
+  | sudo tee /etc/apt/apt.conf.d/52unattended-upgrades-reboot
+apt-config dump | grep Automatic-Reboot   # comprueba: "true" y "04:00"
+```
+
+Si existe `/var/run/reboot-required`, hay un reinicio pendiente (`/var/run/reboot-required.pkgs` dice por qué
+paquetes). Los reinicios hechos salen en `last reboot`.
+
 ## 3. Código y entorno
 
-Como el repo es privado, crea una *deploy key* de solo lectura:
+El repo es público, así que se clona por HTTPS, sin *deploy key*:
 
 ```bash
 sudo -iu blog
-ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -N ""
-cat ~/.ssh/id_ed25519.pub   # pégala en GitHub → repo → Settings → Deploy keys
-git clone git@github.com:NestorBracho/blogweb.git /srv/blog/app
+git clone https://github.com/NestorBracho/blogweb.git /srv/blog/app
 python3 -m venv /srv/blog/venv
 /srv/blog/venv/bin/pip install -r /srv/blog/app/requirements.txt
 cp /srv/blog/app/.env.example /srv/blog/app/.env
@@ -125,6 +137,10 @@ sudo systemctl enable --now blog
 sudo systemctl status blog
 ```
 
+La unidad aísla el servicio: todo el disco es de solo lectura salvo `data/` (la base de datos), `media/` (las imágenes)
+y el socket, sin acceso a `/home`, a dispositivos ni al kernel, y con las llamadas al sistema de un servicio normal.
+`systemd-analyze security blog` puntúa ese aislamiento (cuanto más bajo, mejor) y explica cada punto.
+
 Permite al usuario `blog` recargar y reiniciar el servicio (lo usa `deploy/update.sh`). El fichero se valida con
 `visudo` antes de instalarlo, porque un error en `/etc/sudoers.d` deja `sudo` inservible:
 
@@ -147,15 +163,19 @@ sudo nano /etc/ssl/cloudflare/origin.key   # clave privada
 sudo chmod 600 /etc/ssl/cloudflare/origin.key
 ```
 
-5. Configura nginx (cambia `tudominio.com` por el tuyo):
+5. Configura nginx (con otro dominio, cambia `nestorbracho.com` en el fichero):
 
 ```bash
 sudo cp /srv/blog/app/deploy/nginx.conf /etc/nginx/sites-available/blog
-sudo sed -i 's/tudominio.com/TU-DOMINIO/g' /etc/nginx/sites-available/blog
 sudo ln -s /etc/nginx/sites-available/blog /etc/nginx/sites-enabled/blog
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t && sudo systemctl reload nginx
 ```
+
+La configuración toma la IP del visitante de la cabecera `CF-Connecting-IP` cuando la petición viene de los rangos de
+Cloudflare, así que los logs de nginx muestran visitantes y no servidores de Cloudflare. Con esa IP limita los envíos
+de los formularios de contacto y newsletter (`POST` a `/en/contact/`, `/es/newsletter/`…) a 5 por minuto tras una
+ráfaga de 5; los demás reciben `429`. Los rechazos quedan en `/var/log/nginx/blog.error.log` (`limiting requests`).
 
 6. Opcional pero recomendado: *Zero Trust → Access* para proteger la URL del admin
    con un código enviado a tu email.
@@ -225,20 +245,42 @@ sudo systemctl start blog
 
 Las imágenes: `sudo -u blog tar -xzf media-FECHA.tar.gz -C /srv/blog`, tras descargar el archivo de la misma forma.
 
+Antes de cada despliegue con migraciones, `update.sh` guarda además una copia de la base de datos en
+`/srv/blog/backups/pre-migrate-FECHA-HORA-COMMIT.sqlite3.gz` (las cinco últimas; no se suben a Drive). Para deshacer
+una migración que salió mal, se restaura igual que arriba, desde ese archivo.
+
 ## 9. Actualizar la web
 
 ```bash
 sudo -iu blog /srv/blog/app/deploy/update.sh
 ```
 
+A mano despliega el último commit de `main`. Desde GitHub Actions, el del run (ver [CI/CD](#cicd-github-actions)).
+Si el despliegue trae migraciones, antes copia la base de datos ([Restaurar](#restaurar)) y, si la copia falla, se
+detiene sin migrar ni recargar.
+
 El script recarga Gunicorn sin cortar la web: `systemctl reload` le manda `HUP`, el socket sigue abierto, los workers
 nuevos cargan el código nuevo y los viejos terminan las peticiones que tenían a medias. Lo que llega mientras tanto
 espera un momento en vez de dar 502. Solo reinicia del todo cuando se actualiza el propio Gunicorn, porque el proceso
 maestro sigue ejecutando la versión con la que arrancó; ese despliegue sí corta unos segundos.
 
-Si cambias `gunicorn.service`, cópialo otra vez a `/etc/systemd/system/blog.service` (en Google Cloud, con el `sed`
-de los workers) y ejecuta `sudo systemctl daemon-reload`. Un cambio en `ExecStart` necesita además
-`sudo systemctl restart blog`.
+Un cambio en `update.sh` se aplica a partir del despliegue **siguiente**: el que lo trae sigue ejecutando la versión
+con la que empezó.
+
+Si cambias `gunicorn.service`, guarda la unidad actual, instala la nueva y reinicia (corta la web unos segundos):
+
+```bash
+sudo cp /etc/systemd/system/blog.service /srv/blog/backups/blog.service.bak
+sudo systemd-analyze security blog | tail -1     # puntuación antes
+sudo cp /srv/blog/app/deploy/gunicorn.service /etc/systemd/system/blog.service
+sudo systemd-analyze verify /etc/systemd/system/blog.service
+sudo systemctl daemon-reload && sudo systemctl restart blog
+systemctl is-active blog && sudo journalctl -u blog -n 20 --no-pager
+sudo systemd-analyze security blog | tail -1     # puntuación después
+```
+
+Si algo falla, vuelve a la anterior: `sudo cp /srv/blog/backups/blog.service.bak /etc/systemd/system/blog.service`,
+`daemon-reload` y `restart` otra vez.
 
 ## Problemas frecuentes
 
@@ -290,6 +332,7 @@ Lo que cambia respecto a Oracle (el resto de la guía, desde el paso 2, es igual
 
   Para comprobarlo, la IP directa no debe responder y el dominio sí:
   `curl -k --connect-timeout 5 https://IP_DEL_SERVIDOR` debe agotar el tiempo.
+  Los mismos rangos están en `set_real_ip_from` de `deploy/nginx.conf`: actualízalos también allí.
 - **Swap obligatorio** (1 GB de RAM):
 
   ```bash
@@ -298,8 +341,6 @@ Lo que cambia respecto a Oracle (el resto de la guía, desde el paso 2, es igual
   echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-swappiness.conf
   ```
 
-- **Gunicorn con 2 workers**: `sed 's/--workers 3/--workers 2/'` al copiar `gunicorn.service`.
-- **Repo público**: se clona por HTTPS, sin deploy key.
 - **Certificado de origen** generado con CSR propia para que la clave privada no salga del servidor:
 
   ```bash
@@ -330,11 +371,14 @@ ssh -i ~/.ssh/oracle-blog nestor@IP_DEL_SERVIDOR
   migraciones pendientes, `migrate` sobre una base de datos vacía, los tests con informe de
   cobertura (también en el resumen del job) y `collectstatic` en modo producción.
 - **Push/merge a `main`** (si lo anterior pasa): se conecta por SSH como `blog`, ejecuta
-  `deploy/update.sh` y comprueba que `https://nestorbracho.com/en/` responde 200 y que
+  `deploy/update.sh` con el commit que ha comprobado y mira que `https://nestorbracho.com/en/` responde 200 y que
   `https://nestorbracho.com` redirige a `/en/` (las páginas llevan el idioma en la URL).
 
 La clave de GitHub está **restringida en el servidor** (`restrict,command=".../update.sh"` en
-`/srv/blog/.ssh/authorized_keys`): solo puede lanzar el deploy, no abrir una shell.
+`/srv/blog/.ssh/authorized_keys`): solo puede lanzar el deploy, no abrir una shell. El commit lo pide como comando
+del `ssh`; el servidor no lo ejecuta, sino que se lo pasa a `update.sh` en `SSH_ORIGINAL_COMMAND`. El script solo
+acepta el hash completo de un commit de `main` y nunca vuelve a uno anterior al que ya está desplegado. Así, si se
+fusionan varios PRs seguidos, un run no despliega los que llegaron después de su commit, que aún no ha comprobado.
 
 Configuración inicial (una sola vez, desde tu Mac):
 

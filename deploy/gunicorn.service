@@ -1,4 +1,4 @@
-# /etc/systemd/system/blog.service
+# /etc/systemd/system/blog.service (deploy/README.md, step 5)
 [Unit]
 Description=Gunicorn for the personal blog
 After=network.target
@@ -8,20 +8,52 @@ User=blog
 Group=www-data
 WorkingDirectory=/srv/blog/app
 RuntimeDirectory=blog
+# 2 workers fit the e2-micro's 1 GB of RAM. Gunicorn's control socket (25.1+) isn't used.
 ExecStart=/srv/blog/venv/bin/gunicorn config.wsgi:application \
     --bind unix:/run/blog/gunicorn.sock \
     --umask 007 \
-    --workers 3 \
+    --workers 2 \
     --timeout 60 \
+    --no-control-socket \
     --access-logfile - \
     --error-logfile -
 # systemctl reload: new workers load the new code while the old ones finish their requests
 ExecReload=/bin/kill -s HUP $MAINPID
 Restart=on-failure
-NoNewPrivileges=true
-PrivateTmp=true
-ProtectSystem=full
+
+# Sandbox: check it with `systemd-analyze security blog`.
+# The whole file system is read-only except the database's directory (in WAL mode SQLite writes its -wal and -shm
+# files next to it), the uploaded images (with the cover sizes made from them), /run/blog for the socket and a
+# private /tmp, so the app can't rewrite its own code or the virtualenv. Python can't save __pycache__ either and
+# compiles in memory instead.
+ProtectSystem=strict
 ReadWritePaths=/srv/blog/data /srv/blog/media
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+NoNewPrivileges=true
+CapabilityBoundingSet=
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+# The socket for nginx, and IPv4/IPv6 to send email over SMTP
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources
+# Gunicorn sets the owner of its socket even when it doesn't change: chown has to stay
+SystemCallFilter=@chown
+# A blocked system call fails with an error instead of killing the worker
+SystemCallErrorNumber=EPERM
 
 [Install]
 WantedBy=multi-user.target

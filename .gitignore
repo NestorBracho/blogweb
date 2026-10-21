@@ -16,6 +16,10 @@ media/
 staticfiles/
 static/admin/
 
+# brand/source/gen.py: the downloaded font and what it generates (brand/source/README.md)
+brand/source/package/
+brand/source/out/
+
 # Tooling
 .coverage
 .coverage.*

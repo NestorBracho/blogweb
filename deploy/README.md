@@ -186,6 +186,12 @@ sudo -iu blog bash -c 'cd /srv/blog/app && ../venv/bin/python manage.py sendtest
 sudo -iu blog bash -c 'cd /srv/blog/app && ../venv/bin/python manage.py email_admins "Prueba" "Los avisos llegan"'
 ```
 
+Si la web deja de responder, avisa GitHub: el workflow [`uptime.yml`](../.github/workflows/uptime.yml) pide `/en/` y
+`/` cada 30 minutos, y si fallan, el run falla y GitHub manda un email a quien cambió por última vez su línea `cron`
+(tú, al fusionar). En GitHub, *Settings → Notifications → Actions* debe tener el email activado para los workflows
+que fallan. En un repo público, GitHub **desactiva los workflows programados tras 60 días sin actividad** en el
+repo; si pasa, vuelve a activarlo en *Actions → Uptime → Enable workflow*.
+
 ## 8. Backups
 
 ```bash

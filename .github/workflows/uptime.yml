@@ -1,0 +1,31 @@
+name: Uptime
+
+# Checks that the site answers every 30 minutes. When it doesn't, the run fails and GitHub emails whoever last changed
+# the cron line below. In a public repository GitHub disables the schedule after 60 days without any activity: turn
+# it back on from the Actions tab (deploy/README.md, step 7).
+on:
+  schedule:
+    # Off the hour, when GitHub delays scheduled runs the most
+    - cron: "7,37 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  site:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      # The deploy's health check, with longer waits so a passing blip doesn't fail the run
+      - name: /en/ answers 200 and / redirects there
+        run: |
+          for i in 1 2 3; do
+            code=$(curl -s -m 20 -o /dev/null -w '%{http_code}' https://nestorbracho.com/en/)
+            location=$(curl -s -m 20 -o /dev/null -w '%{redirect_url}' https://nestorbracho.com/)
+            if [ "$code" = "200" ] && [ "$location" = "https://nestorbracho.com/en/" ]; then
+              echo "Site is up"; exit 0
+            fi
+            echo "Got $code for /en/ and a redirect to '$location' for /, retrying..."; sleep 30
+          done
+          echo "::error::nestorbracho.com is down: $code for /en/ and a redirect to '$location' for /"
+          exit 1

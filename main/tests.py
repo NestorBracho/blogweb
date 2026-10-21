@@ -119,7 +119,7 @@ class HomePostsTests(TestCase):
         self.create_posts(1)
 
         for page in ['2', 'two']:
-            with self.subTest(page=page):
+            with self.subTest(page=page), self.assertLogs('django.request', 'WARNING'):
                 self.assertEqual(self.client.get(reverse_in('en', 'main:index'), {'page': page}).status_code, 404)
                 self.assertEqual(self.client.get(reverse_in('en', 'main:more-posts'), {'page': page}).status_code, 404)
 
@@ -418,7 +418,8 @@ class ErrorPageTests(TestCase):
         # A path nothing matches, and a page whose view finds nothing to show
         for url in ['/en/no-such-page/', reverse_in('en', 'blog:post-detail', slug='no-such-post')]:
             with self.subTest(url=url):
-                response = self.client.get(url)
+                with self.assertLogs('django.request', 'WARNING'):
+                    response = self.client.get(url)
 
                 self.assertContains(response, '<title>Page not found - Nestor Bracho</title>', status_code=404)
                 self.assertContains(response, 'Back to homepage', status_code=404)
@@ -426,7 +427,8 @@ class ErrorPageTests(TestCase):
                 self.assertNotContains(response, 'hreflang', status_code=404)
                 self.assertNotContains(response, 'og:url', status_code=404)
 
-        spanish = self.client.get('/es/no-such-page/')
+        with self.assertLogs('django.request', 'WARNING'):
+            spanish = self.client.get('/es/no-such-page/')
         self.assertContains(spanish, '<title>Página no encontrada - Nestor Bracho</title>', status_code=404)
 
 
@@ -712,9 +714,10 @@ class ContactFormViewTests(EmptyCacheMixin, TestCase):
         for _ in range(allowed):
             self.client.post(reverse('main:contact'), self.data, headers=visitor)
 
-        too_many = self.client.post(
-            reverse_in('es', 'main:contact'), {**self.data, 'message': 'Una más'}, headers=visitor
-        )
+        with self.assertLogs('django.request', 'WARNING'):
+            too_many = self.client.post(
+                reverse_in('es', 'main:contact'), {**self.data, 'message': 'Una más'}, headers=visitor
+            )
         someone_else = self.client.post(reverse('main:contact'), self.data, headers={'CF-Connecting-IP': '203.0.113.8'})
 
         # The form comes back in the page's language, with what was typed
@@ -732,11 +735,13 @@ class ContactRequestAdminTests(TestCase):
         self.request = ContactRequest.objects.create(name='Ada', email='ada@example.com', message='Hello!')
 
     def test_requests_can_be_read_but_not_created(self):
-        expected_status = {
-            reverse('admin:main_contactrequest_changelist'): 200,
-            reverse('admin:main_contactrequest_change', args=[self.request.pk]): 200,
-            reverse('admin:main_contactrequest_add'): 403,
-        }
-        for url, status in expected_status.items():
+        for url in [
+            reverse('admin:main_contactrequest_changelist'),
+            reverse('admin:main_contactrequest_change', args=[self.request.pk]),
+        ]:
             with self.subTest(url=url):
-                self.assertEqual(self.client.get(url).status_code, status)
+                self.assertEqual(self.client.get(url).status_code, 200)
+
+        # Django logs the refusal with its traceback
+        with self.assertLogs('django.request', 'WARNING'):
+            self.assertEqual(self.client.get(reverse('admin:main_contactrequest_add')).status_code, 403)

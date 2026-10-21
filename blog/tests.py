@@ -78,7 +78,8 @@ class PostDetailViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_unpublished_post_is_not_found(self):
-        response = self.get(self.draft)
+        with self.assertLogs('django.request', 'WARNING'):
+            response = self.get(self.draft)
 
         self.assertEqual(response.status_code, 404)
 
@@ -195,7 +196,8 @@ class CategoryDetailViewTests(TestCase):
         self.assertNotContains(response, str(category.pk))
 
     def test_unknown_category_is_not_found(self):
-        response = self.client.get(reverse('blog:category-detail', kwargs={'slug': 'missing'}))
+        with self.assertLogs('django.request', 'WARNING'):
+            response = self.client.get(reverse('blog:category-detail', kwargs={'slug': 'missing'}))
 
         self.assertEqual(response.status_code, 404)
 
@@ -205,7 +207,7 @@ class CategoryDetailViewTests(TestCase):
         create_post('Draft', category=drafts_only, is_published=False)
 
         for category in (empty, drafts_only):
-            with self.subTest(category=category.slug):
+            with self.subTest(category=category.slug), self.assertLogs('django.request', 'WARNING'):
                 self.assertEqual(self.client.get(category.get_absolute_url()).status_code, 404)
 
     def test_a_category_appears_with_its_first_published_post(self):
@@ -413,7 +415,8 @@ class PostAPITests(EmptyCacheMixin, TestCase):
         self.assertIs(result['is_published'], True)
 
     def test_anonymous_users_cannot_create_posts(self):
-        response = self.client.post(self.url, {'title_en': 'Spam'})
+        with self.assertLogs('django.request', 'WARNING'):
+            response = self.client.post(self.url, {'title_en': 'Spam'})
 
         self.assertEqual(response.status_code, 403)
         self.assertFalse(Post.objects.filter(title_en='Spam').exists())
@@ -425,8 +428,9 @@ class PostAPITests(EmptyCacheMixin, TestCase):
         credentials = base64.b64encode(b'editor:correct horse').decode()
         headers = {'Authorization': f'Basic {credentials}'}
 
-        created = self.client.post(self.url, {'title_en': 'Spam'}, headers=headers)
-        read = self.client.get(reverse('api:post-detail', args=[draft.pk]), headers=headers)
+        with self.assertLogs('django.request', 'WARNING'):
+            created = self.client.post(self.url, {'title_en': 'Spam'}, headers=headers)
+            read = self.client.get(reverse('api:post-detail', args=[draft.pk]), headers=headers)
 
         self.assertEqual(created.status_code, 403)
         self.assertFalse(Post.objects.filter(title_en='Spam').exists())
@@ -493,8 +497,9 @@ class PostAPITests(EmptyCacheMixin, TestCase):
         draft = create_post('Draft', is_published=False)
         detail_url = reverse('api:post-detail', args=[draft.pk])
 
-        self.assertEqual(self.client.get(detail_url).status_code, 404)
-        response = self.client.patch(detail_url, {'is_published': True}, content_type='application/json')
+        with self.assertLogs('django.request', 'WARNING'):
+            self.assertEqual(self.client.get(detail_url).status_code, 404)
+            response = self.client.patch(detail_url, {'is_published': True}, content_type='application/json')
         self.assertEqual(response.status_code, 403)
         draft.refresh_from_db()
         self.assertFalse(draft.is_published)
@@ -507,7 +512,8 @@ class APIRateLimitTests(EmptyCacheMixin, TestCase):
         for _ in range(AnonRateThrottle().num_requests):
             self.assertEqual(self.client.get(self.url).status_code, 200)
 
-        too_many = self.client.get(self.url)
+        with self.assertLogs('django.request', 'WARNING'):
+            too_many = self.client.get(self.url)
         a_minute_later = time.time() + 60
         with mock.patch.object(SimpleRateThrottle, 'timer', return_value=a_minute_later):
             next_minute = self.client.get(self.url)
@@ -522,7 +528,8 @@ class APIRateLimitTests(EmptyCacheMixin, TestCase):
             self.client.get(self.url, headers=visitor)
 
         # Anyone can make up X-Forwarded-For addresses, so they don't make a new visitor
-        spoofed = self.client.get(self.url, headers={**visitor, 'X-Forwarded-For': '198.51.100.1'})
+        with self.assertLogs('django.request', 'WARNING'):
+            spoofed = self.client.get(self.url, headers={**visitor, 'X-Forwarded-For': '198.51.100.1'})
         someone_else = self.client.get(self.url, headers={'CF-Connecting-IP': '203.0.113.8'})
 
         self.assertEqual(spoofed.status_code, 429)
@@ -534,7 +541,8 @@ class APIRateLimitTests(EmptyCacheMixin, TestCase):
         for _ in range(WriteRateThrottle().num_requests):
             self.client.patch(detail_url, {'title_en': 'Edited'}, content_type='application/json')
 
-        write = self.client.patch(detail_url, {'title_en': 'One too many'}, content_type='application/json')
+        with self.assertLogs('django.request', 'WARNING'):
+            write = self.client.patch(detail_url, {'title_en': 'One too many'}, content_type='application/json')
         read = self.client.get(detail_url)
 
         self.assertEqual(write.status_code, 429)

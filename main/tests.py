@@ -218,11 +218,32 @@ class ContentSecurityPolicyTests(TestCase):
 
 
 class FontTests(TestCase):
+    def test_fonts_only_come_from_the_site_itself(self):
+        policy = self.client.get(reverse('main:index')).headers['Content-Security-Policy']
+
+        # Without a font-src of its own, default-src 'self' applies to fonts
+        self.assertIn("default-src 'self';", policy)
+        self.assertNotIn('font-src', policy)
+        self.assertIn("style-src 'self' 'unsafe-inline';", policy)
+
     def test_every_font_the_stylesheets_declare_is_a_file_of_the_site(self):
-        for stylesheet in ['css/main.css']:
+        for stylesheet in ['css/fonts.css', 'css/main.css']:
             for url in re.findall(r'url\(([^)]+)\)', Path(finders.find(stylesheet)).read_text()):
                 with self.subTest(stylesheet=stylesheet, url=url):
                     self.assertIsNotNone(finders.find(posixpath.normpath(posixpath.join('css', url))))
+
+    def test_preloaded_fonts_are_ones_the_stylesheet_uses(self):
+        fonts_css = Path(finders.find('css/fonts.css')).read_text()
+
+        # The contact page doesn't extend base.html, so it gets its own check
+        for page in ['main:index', 'main:contact']:
+            response = self.client.get(reverse(page))
+            preloads = re.findall(r'<link rel="preload" href="([^"]+)" as="font"', response.content.decode())
+
+            self.assertEqual(len(preloads), 2)
+            for url in preloads:
+                with self.subTest(page=page, url=url):
+                    self.assertIn(f'url(../{url.removeprefix(settings.STATIC_URL)})', fonts_css)
 
     def test_the_icon_fonts_have_every_icon_the_site_uses(self):
         icons_file = Path(finders.find('fonts/fontawesome/icons.txt'))

@@ -243,10 +243,8 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 SECURE_CSP = {
     'default-src': ["'self'"],
     'script-src': ["'self'"],
-    # The theme uses style="" attributes, and Google Fonts serves its CSS
-    'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
-    # Google Fonts
-    'font-src': ["'self'", 'https://fonts.gstatic.com'],
+    # The theme uses style="" attributes
+    'style-src': ["'self'", "'unsafe-inline'"],
     # Posts can show images hosted on other sites
     'img-src': ["'self'", 'https:'],
     'object-src': ["'none'"],

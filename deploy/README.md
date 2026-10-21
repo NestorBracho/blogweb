@@ -160,13 +160,28 @@ sudo nginx -t && sudo systemctl reload nginx
 6. Opcional pero recomendado: *Zero Trust → Access* para proteger la URL del admin
    con un código enviado a tu email.
 
-## 7. Email
+## 7. Email y avisos
 
 Crea una cuenta en Brevo o Resend, verifica tu dominio (añaden registros SPF/DKIM en
 Cloudflare DNS) y pon las credenciales SMTP en `.env`. Prueba:
 
 ```bash
 sudo -iu blog bash -c 'cd /srv/blog/app && ../venv/bin/python manage.py sendtestemail tu@email.com'
+```
+
+### Avisos
+
+Con `ADMINS` en `.env` (una dirección, o varias separadas por comas), el servidor avisa por email, por ese mismo SMTP:
+
+- De cada error de servidor (una página que da 500), con la traza. El mismo error llega como mucho una vez por hora
+  y worker, para no gastar la cuota diaria del SMTP (300 en el plan gratuito de Brevo), que comparte con el
+  formulario de contacto y la newsletter. `journalctl -u blog` los tiene todos.
+
+Sin `ADMINS` no avisa de nada. Después de añadirla, recarga la web para que la lea y prueba el aviso:
+
+```bash
+sudo systemctl reload blog
+sudo -iu blog bash -c 'cd /srv/blog/app && ../venv/bin/python manage.py sendtestemail --admins'
 ```
 
 ## 8. Backups

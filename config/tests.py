@@ -1,0 +1,82 @@
+"""Tests for the site-wide alerts: error emails (LOGGING in config/settings.py)."""
+
+import logging
+from io import StringIO
+from unittest import mock
+
+from django.core import mail
+from django.test import TestCase, override_settings
+
+from config.log import OncePerError
+from config.testing import reverse_in
+
+ADMINS = [('ops@example.com', 'ops@example.com')]
+
+
+def fail(*args, **kwargs):
+    raise RuntimeError('Something broke')
+
+
+def fail_elsewhere(*args, **kwargs):
+    raise RuntimeError('Something else broke')
+
+
+# The test runner sets DEBUG to False, as in production
+@override_settings(ADMINS=ADMINS)
+class ErrorEmailTests(TestCase):
+    def setUp(self):
+        self.client.raise_request_exception = False
+        for handler in logging.getLogger('django').handlers:
+            # The filter remembers the errors it let through: each test starts with none
+            for log_filter in handler.filters:
+                if isinstance(log_filter, OncePerError):
+                    log_filter.last_passed.clear()
+            # Keep the tracebacks these tests expect out of the test output
+            if type(handler) is logging.StreamHandler:
+                self.enterContext(mock.patch.object(handler, 'stream', StringIO()))
+
+    def get_failing_page(self, failure=fail):
+        with mock.patch('main.views.AboutView.get_context_data', failure):
+            return self.client.get(reverse_in('en', 'main:about'))
+
+    def test_a_server_error_emails_the_admins(self):
+        response = self.get_failing_page()
+
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(len(mail.outbox), 1)
+        email = mail.outbox[0]
+        self.assertEqual(email.to, ['ops@example.com'])
+        self.assertTrue(email.subject.startswith('[nestorbracho.com] ERROR'))
+        self.assertIn('/en/about/', email.subject)
+        self.assertIn('RuntimeError at /en/about/\nSomething broke', email.body)
+
+    def test_the_same_error_is_emailed_once(self):
+        for _ in range(3):
+            self.assertEqual(self.get_failing_page().status_code, 500)
+        self.get_failing_page(fail_elsewhere)
+
+        self.assertEqual(len(mail.outbox), 2)
+        self.assertIn('Something broke', mail.outbox[0].body)
+        self.assertIn('Something else broke', mail.outbox[1].body)
+
+    @override_settings(ADMINS=[])
+    def test_nobody_is_emailed_without_admins(self):
+        self.assertEqual(self.get_failing_page().status_code, 500)
+        self.assertEqual(mail.outbox, [])
+
+    def test_missing_pages_and_unknown_hosts_email_nobody(self):
+        missing_page = self.client.get('/en/no-such-page/')
+        unknown_host = self.client.get(reverse_in('en', 'main:about'), headers={'host': 'bot.example'})
+
+        self.assertEqual(missing_page.status_code, 404)
+        self.assertEqual(unknown_host.status_code, 400)
+        self.assertEqual(mail.outbox, [])
+
+
+class OncePerErrorTests(TestCase):
+    def test_lets_an_error_through_again_once_the_time_is_up(self):
+        log_filter = OncePerError(seconds=60)
+        record = logging.makeLogRecord({'name': 'django.request', 'msg': 'Internal Server Error: %s'})
+
+        with mock.patch('config.log.time.monotonic', side_effect=[1000, 1059, 1060]):
+            self.assertEqual([log_filter.filter(record) for _ in range(3)], [True, False, True])

@@ -11,6 +11,7 @@ import environ
 env = environ.Env(
     DEBUG=(bool, False),
     ALLOWED_HOSTS=(list, ['localhost', '127.0.0.1']),
+    ADMINS=(list, []),
     CSRF_TRUSTED_ORIGINS=(list, []),
     ADMIN_URL=(str, 'admin/'),
     EMAIL_PORT=(int, 587),
@@ -133,6 +134,11 @@ EMAIL_USE_TLS = env('EMAIL_USE_TLS')
 EMAIL_TIMEOUT = 10
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='webmaster@localhost')
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
+EMAIL_SUBJECT_PREFIX = '[nestorbracho.com] '
+
+# Who gets an email when a page fails with a server error (LOGGING below). Comma-separated addresses in the
+# environment; empty, nobody does.
+ADMINS = [(address, address) for address in map(str.strip, env('ADMINS'))]
 
 # Address that receives contact form submissions
 CONTACT_EMAIL = env('CONTACT_EMAIL', default=DEFAULT_FROM_EMAIL)
@@ -274,8 +280,19 @@ if not DEBUG:
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {'()': 'django.utils.log.RequireDebugFalse'},
+        'once_per_error': {'()': 'config.log.OncePerError', 'seconds': 60 * 60},
+    },
     'handlers': {
         'console': {'class': 'logging.StreamHandler'},
+        # Emails ADMINS the errors Django logs, such as a page that fails with a 500, with the traceback. Only in
+        # production, and each error once an hour at most.
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false', 'once_per_error'],
+            'class': 'django.utils.log.AdminEmailHandler',
+        },
     },
     'root': {
         'handlers': ['console'],
@@ -283,8 +300,13 @@ LOGGING = {
     },
     'loggers': {
         'django': {
-            'handlers': ['console'],
+            'handlers': ['console', 'mail_admins'],
             'level': env('DJANGO_LOG_LEVEL', default='INFO'),
+            'propagate': False,
+        },
+        # A request for a host the site doesn't serve comes from a bot, not from a bug: log it without an email
+        'django.security.DisallowedHost': {
+            'handlers': ['console'],
             'propagate': False,
         },
     },

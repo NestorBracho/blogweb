@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
-# Pull the latest code and reload the app. Run on the server as the "blog" user.
+# Deploy a commit of main and reload the app. Run on the server as the "blog" user.
+#
+# GitHub Actions asks for the commit its run checked. Its key's forced command runs this script whatever the client
+# asks for, and sshd hands what it asked for over in SSH_ORIGINAL_COMMAND
+# (docs/adr/0004-deploy-with-a-forced-command-ssh-key.md). Without a commit, as when run by hand, it deploys the
+# latest one on main.
 #
 # A deploy runs the copy of this script it started with: a change to it takes effect from the next deploy.
 set -euo pipefail
@@ -11,8 +16,27 @@ BACKUPS=/srv/blog/backups
 KEEP_COPIES=5
 
 cd /srv/blog/app
+git fetch --quiet origin main
+
+commit=${SSH_ORIGINAL_COMMAND:-}
+if [ -z "$commit" ]; then
+    commit=$(git rev-parse origin/main)
+elif [[ ! $commit =~ ^[0-9a-f]{40}$ ]]; then
+    echo "Expected the full hash of a commit, got: $commit" >&2
+    exit 1
+elif ! git merge-base --is-ancestor "$commit" origin/main; then
+    echo "$commit is not on main" >&2
+    exit 1
+fi
+
+# Re-running an older workflow, or deploying by hand meanwhile, must not take the site back
+if [ "$commit" != "$(git rev-parse HEAD)" ] && git merge-base --is-ancestor "$commit" HEAD; then
+    echo "Already on $(git rev-parse --short HEAD), which includes $(git rev-parse --short "$commit"): nothing to do"
+    exit 0
+fi
+
 gunicorn_before=$("$VENV/bin/gunicorn" --version)
-git pull --ff-only
+git merge --ff-only --quiet "$commit"
 "$VENV/bin/pip" install -q -r requirements.txt
 
 # Copy the database before migrations change it, so a migration that goes wrong can be undone (deploy/README.md).

@@ -82,9 +82,10 @@ jobs:
           chmod 600 ~/.ssh/deploy
           echo "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
 
-      # The key is restricted on the server (forced command): it can only run deploy/update.sh
+      # The key is restricted on the server (forced command): it can only run deploy/update.sh, which gets the
+      # commit this run checked in SSH_ORIGINAL_COMMAND and deploys that one, not whatever main has by then
       - name: Deploy
-        run: ssh -i ~/.ssh/deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes blog@${{ secrets.DEPLOY_HOST }}
+        run: ssh -i ~/.ssh/deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes blog@${{ secrets.DEPLOY_HOST }} "$GITHUB_SHA"
 
       # Pages live under /en/ and /es/; the bare domain sends visitors who ask for no language (like curl) to /en/
       - name: Health check

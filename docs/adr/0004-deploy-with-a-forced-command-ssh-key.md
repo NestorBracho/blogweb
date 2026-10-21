@@ -2,8 +2,8 @@
 
 - **Status:** Accepted
 - **Date:** 2026-09-28
-- **Updated:** 2026-10-15 (Gunicorn reloads gracefully instead of restarting), 2026-10-21 (the database is copied
-  before migrations)
+- **Updated:** 2026-10-15 (Gunicorn reloads gracefully instead of restarting), 2026-10-21 (each run deploys the
+  commit it checked, and the database is copied before migrations)
 
 ## Context
 
@@ -20,16 +20,20 @@ GitHub Actions deploys every push to `main` once the checks pass
   `restrict,command="/srv/blog/app/deploy/update.sh"`. Whatever the client asks for, the server runs the update
   script and nothing else: no shell, no port forwarding, no agent forwarding.
 - The server's host key is pinned in a secret and checked strictly.
-- [`deploy/update.sh`](../../deploy/update.sh) fast-forwards to `main`, installs dependencies, copies the database
-  if there are migrations to run, runs them, collects static files and reloads Gunicorn gracefully, or restarts it
-  when Gunicorn itself was upgraded. Through sudo, the `blog` user may only run those two `systemctl` commands on its
-  own service.
+- The run asks for the commit it checked as its SSH command. The server doesn't run it: sshd hands it to the forced
+  command in `SSH_ORIGINAL_COMMAND`. [`deploy/update.sh`](../../deploy/update.sh) only accepts the full hash of a
+  commit on `main`, and does nothing if a newer one is already deployed.
+- The script fast-forwards to that commit, installs dependencies, copies the database if there are migrations to
+  run, runs them, collects static files and reloads Gunicorn gracefully, or restarts it when Gunicorn itself was
+  upgraded. Through sudo, the `blog` user may only run those two `systemctl` commands on its own service.
 - A health check fails the job unless the site answers `200` after the deploy.
 - Deploys never overlap (a concurrency group with no cancellation).
 
 ## Consequences
 
-- A leaked key can only redeploy what is already on `main`.
+- A leaked key can only deploy what is already on `main`, and can't take the site back to an older commit.
+- When several pull requests are merged in a row, each run deploys the commit its checks passed on, not later ones
+  that are still being checked. Until 2026-10-21 the script deployed whatever `main` had when it ran.
 - There is no automatic rollback: rolling back means reverting the change on `main`, which deploys again.
 - Migrations run while the previous version is still serving requests, so they must stay compatible with it. A copy
   of the database taken just before them (the last five are kept) undoes one that goes wrong.

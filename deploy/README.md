@@ -239,6 +239,7 @@ una migración que salió mal, se restaura igual que arriba, desde ese archivo.
 sudo -iu blog /srv/blog/app/deploy/update.sh
 ```
 
+A mano despliega el último commit de `main`. Desde GitHub Actions, el del run (ver [CI/CD](#cicd-github-actions)).
 Si el despliegue trae migraciones, antes copia la base de datos ([Restaurar](#restaurar)) y, si la copia falla, se
 detiene sin migrar ni recargar.
 
@@ -354,11 +355,14 @@ ssh -i ~/.ssh/oracle-blog nestor@IP_DEL_SERVIDOR
   migraciones pendientes, `migrate` sobre una base de datos vacía, los tests con informe de
   cobertura (también en el resumen del job) y `collectstatic` en modo producción.
 - **Push/merge a `main`** (si lo anterior pasa): se conecta por SSH como `blog`, ejecuta
-  `deploy/update.sh` y comprueba que `https://nestorbracho.com/en/` responde 200 y que
+  `deploy/update.sh` con el commit que ha comprobado y mira que `https://nestorbracho.com/en/` responde 200 y que
   `https://nestorbracho.com` redirige a `/en/` (las páginas llevan el idioma en la URL).
 
 La clave de GitHub está **restringida en el servidor** (`restrict,command=".../update.sh"` en
-`/srv/blog/.ssh/authorized_keys`): solo puede lanzar el deploy, no abrir una shell.
+`/srv/blog/.ssh/authorized_keys`): solo puede lanzar el deploy, no abrir una shell. El commit lo pide como comando
+del `ssh`; el servidor no lo ejecuta, sino que se lo pasa a `update.sh` en `SSH_ORIGINAL_COMMAND`. El script solo
+acepta el hash completo de un commit de `main` y nunca vuelve a uno anterior al que ya está desplegado. Así, si se
+fusionan varios PRs seguidos, un run no despliega los que llegaron después de su commit, que aún no ha comprobado.
 
 Configuración inicial (una sola vez, desde tu Mac):
 

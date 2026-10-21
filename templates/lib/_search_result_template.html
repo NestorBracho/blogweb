@@ -1,3 +1,5 @@
+{% load i18n %}
+{# Filled in by static/js/search.js with each post the API finds #}
 <template id="search-result-post-template">
     <div class="article article--flexible">
         <div class="article__inner">
@@ -12,9 +14,15 @@
                 <p class="article__excerpt"></p>
                 <div class="article__meta">
                     <time class="article__date" datetime=""></time>
-                    <div class="article__minutes"></div>
+                    <div class="article__minutes"><span class="article__read-time"></span> {% translate 'min read' %}</div>
                 </div>
             </div>
         </div>
     </div>
+</template>
+<template id="search-no-results-template">
+    <p class="no-results">{% translate 'No posts match your search.' %}</p>
+</template>
+<template id="search-error-template">
+    <p class="no-results" role="alert">{% translate "The search isn't working right now. Please try again later." %}</p>
 </template>

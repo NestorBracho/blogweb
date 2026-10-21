@@ -1,8 +1,6 @@
-from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from blog.models import Category, Post
-from main.templatetags.main_tags import localized_date
 
 
 class PostWriteSerializer(serializers.ModelSerializer):
@@ -32,66 +30,60 @@ class PostWriteSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'slug', 'read_time']
 
 
-class SearchPostSerializer(serializers.ModelSerializer):
-    """A published post in the active language, shaped for the front-end templates."""
-
-    href = serializers.CharField(source='get_absolute_url', read_only=True)
-    cover_url = serializers.CharField(read_only=True)
-    # The cover at each size in blog/covers.py; the templates use 'card'
-    cover_urls = serializers.DictField(child=serializers.CharField(), read_only=True)
-    title = serializers.CharField(read_only=True)
-    category_href = serializers.SerializerMethodField()
-    category = serializers.SerializerMethodField()
-    category_color = serializers.SerializerMethodField()
-    description = serializers.CharField(read_only=True)
-    timestamp = serializers.SerializerMethodField()
-    user_friendly_date = serializers.SerializerMethodField()
-    read_time = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Post
-        fields = [
-            'href',
-            'cover_url',
-            'cover_urls',
-            'title',
-            'category_href',
-            'category',
-            'category_color',
-            'description',
-            'timestamp',
-            'user_friendly_date',
-            'read_time',
-        ]
-
-    def get_category_href(self, obj):
-        return obj.category.get_absolute_url() if obj.category else ''
-
-    def get_category(self, obj):
-        return obj.category.name() if obj.category else ''
-
-    def get_category_color(self, obj):
-        return obj.category.color if obj.category else ''
-
-    def get_timestamp(self, obj):
-        return obj.created.isoformat()
-
-    def get_user_friendly_date(self, obj):
-        return localized_date(obj.created)
-
-    def get_read_time(self, obj):
-        return '{} {}'.format(obj.read_time, _('min read'))
-
-
 class CategorySerializer(serializers.ModelSerializer):
-    first_5_posts = serializers.SerializerMethodField()
+    """A category, named in the active language."""
+
     name = serializers.CharField(read_only=True)
-    href = serializers.CharField(source='get_absolute_url', read_only=True)
+    url = serializers.CharField(source='get_absolute_url', read_only=True)
 
     class Meta:
         model = Category
-        fields = ['first_5_posts', 'name', 'slug', 'color', 'href']
+        fields = ['slug', 'name', 'color', 'url']
 
-    def get_first_5_posts(self, obj):
-        posts = obj.posts.filter(is_published=True).select_related('category').order_by('-updated')[:5]
-        return SearchPostSerializer(posts, many=True, context=self.context).data
+
+class PostListSerializer(serializers.ModelSerializer):
+    """A post in the active language, as lists show it. Raw data: clients format dates and times themselves."""
+
+    url = serializers.CharField(source='get_absolute_url', read_only=True)
+    title = serializers.CharField(read_only=True)
+    description = serializers.CharField(read_only=True)
+    category = CategorySerializer(read_only=True)
+    # The cover at each size in blog/covers.py, by name
+    cover_urls = serializers.DictField(child=serializers.CharField(), read_only=True)
+
+    class Meta:
+        model = Post
+        # read_time is in minutes; created and updated are ISO 8601
+        fields = [
+            'id',
+            'slug',
+            'url',
+            'title',
+            'description',
+            'category',
+            'cover_urls',
+            'read_time',
+            'created',
+            'updated',
+        ]
+
+
+class PostDetailSerializer(PostListSerializer):
+    """A whole post: adds its body, in Markdown, and whether it is published (staff can read drafts)."""
+
+    body = serializers.SerializerMethodField()
+
+    class Meta(PostListSerializer.Meta):
+        fields = [*PostListSerializer.Meta.fields, 'body', 'is_published']
+
+    def get_body(self, obj):
+        return obj.translated('body')
+
+
+class CategoryWithPostsSerializer(CategorySerializer):
+    """A category and its latest published posts (CategoryQuerySet.with_latest_posts)."""
+
+    latest_posts = PostListSerializer(many=True, read_only=True)
+
+    class Meta(CategorySerializer.Meta):
+        fields = [*CategorySerializer.Meta.fields, 'latest_posts']

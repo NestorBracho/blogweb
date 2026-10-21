@@ -1,0 +1,18 @@
+<div class="col col-3 col-d-6 col-m-12">
+
+    <a href="{{ category.get_absolute_url }}" class="section-tags__image" style="outline-color: {{ category.color }};">
+        <span class="section-tags__name" style="background: {{ category.color }};">{{ category.name }}</span>
+        {# Categories are only listed with published posts, so there is always a first one #}
+        <img class="category-cover" src="{{ category.latest_posts.0.cover_urls.card }}" alt="{{ category.name }}"
+             loading="lazy" decoding="async">
+    </a>
+
+    <div class="section-tags__content">
+        {% for post in category.latest_posts %}
+            <h3 class="section-tags__title">
+                <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+            </h3>
+        {% endfor %}
+    </div>
+
+</div>

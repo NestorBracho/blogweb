@@ -3,7 +3,7 @@
     <div class="article__inner">
         <div class="article__head">
             <a class="article__image" href="{{ post.get_absolute_url }}">
-                <img class="lazy" data-src="{{ post.cover_urls.card }}" alt="{{ post.title }}">
+                <img src="{{ post.cover_urls.card }}" alt="{{ post.title }}" loading="lazy" decoding="async">
             </a>
         </div>
         <div class="article__content">

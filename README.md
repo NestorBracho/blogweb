@@ -18,7 +18,7 @@ REST API, tests and linting in CI, and a hardened self-hosted deployment that co
 | To see...                              | Look at                                                                                              |
 |----------------------------------------|------------------------------------------------------------------------------------------------------|
 | Models, views, i18n                    | [`blog/`](blog), [`main/`](main), [`config/`](config)                                                 |
-| A REST API with Django REST Framework  | [`blog/api/`](blog/api): separate read/write serializers, staff-only writes                          |
+| A REST API with Django REST Framework  | [`blog/api/`](blog/api): list, detail and write serializers, staff-only writes                       |
 | An LLM integration                     | [`blog/drafting.py`](blog/drafting.py): OpenAI Responses API, structured outputs parsed by Pydantic  |
 | Tests                                  | `*/tests.py`: views, API permissions, feeds, forms, open-redirect protection                         |
 | CI/CD                                  | [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)                                       |
@@ -35,7 +35,8 @@ REST API, tests and linting in CI, and a hardened self-hosted deployment that co
 - Every page in English and Spanish at its own address (`/en/…`, `/es/…`), so both can be indexed and shared; the
   bare domain sends each visitor to their language, and English to crawlers and everyone else
   ([ADR 6](docs/adr/0006-language-in-the-url.md)). Interface strings are translated with gettext.
-- "Load more" pagination and live search served by the JSON API.
+- Lists of posts rendered on the server. "Load more" is a link to the next page that htmx turns into an in-place
+  update ([ADR 7](docs/adr/0007-server-rendered-lists-with-htmx.md)), and the live search reads the JSON API.
 - An RSS feed per language, an XML sitemap that links each page to its other language, and `robots.txt`.
 - In every page's `<head>`: a canonical URL without tracking parameters, `hreflang` links to the page in each
   language, Open Graph / Twitter Card metadata, and schema.org data (JSON-LD) for the person behind the site and
@@ -99,11 +100,12 @@ there afterwards. Gunicorn reloads gracefully, so a deploy doesn't drop requests
 4. [Deploying from CI with a forced-command SSH key](docs/adr/0004-deploy-with-a-forced-command-ssh-key.md)
 5. [Off-site backups to Google Drive](docs/adr/0005-off-site-backups-to-google-drive.md)
 6. [The language in the URL](docs/adr/0006-language-in-the-url.md)
+7. [Server-rendered lists of posts, with htmx for "Load more"](docs/adr/0007-server-rendered-lists-with-htmx.md)
 
 ## Tech stack
 
 - **Backend:** Python 3.12, Django 5.2, Django REST Framework, Markdown, Pygments and nh3
-- **Frontend:** Django templates, jQuery and Splide, on top of the Coderon theme (see [Credits](#credits))
+- **Frontend:** Django templates, htmx, jQuery and Splide, on top of the Coderon theme (see [Credits](#credits))
 - **Infrastructure:** Google Cloud, Ubuntu 24.04, nginx, Gunicorn, systemd, Cloudflare, SQLite
 - **Tooling:** GitHub Actions, ruff, coverage, pre-commit, pip-tools, pip-audit, Dependabot
 
@@ -197,12 +199,14 @@ client whose requests are answered in memory, so they never call the API.
 |----------------------------------|--------------------------|---------------------------------------------------------------------|
 | `GET`                            | `/api/post/?page=N`      | Published posts, newest first, four per page                        |
 | `GET`                            | `/api/post/?search=words`| Posts with every word somewhere in their title, description, body or category |
-| `GET`                            | `/api/categories`        | The four most recently active categories and their latest posts     |
+| `GET`                            | `/api/categories/`       | The four most recently active categories and their five latest posts |
 | `POST`                           | `/api/post/`             | Staff only: create a post, a draft unless `is_published` is sent    |
 | `GET`, `PUT`, `PATCH`, `DELETE`  | `/api/post/<id>/`        | Anyone can read a published post; staff can also read, edit, publish or delete drafts |
 
 Post lists are paginated; `page_size` raises the page size up to 20. They only ever show published posts, also to
-staff, because the home page reads them. Writes return the post's `id` and its `slug`, made from the English title.
+staff, because the site's search reads them. Responses are raw data for clients to format: dates in ISO 8601,
+`read_time` in minutes and the cover's URL at each size (`cover_urls`); a post read by its `id` adds its Markdown
+`body`. Writes return the post's `id` and its `slug`, made from the English title.
 The API has no language in its URL. Pages send an `X-Language` header (`en` or `es`) with their own language;
 without it, responses follow the language cookie or `Accept-Language`, and English otherwise. Links in the
 responses point to the pages in that language.

@@ -2,7 +2,7 @@ import logging
 import math
 
 from django.db import models
-from django.db.models import Max, Q
+from django.db.models import Max, Prefetch, Q
 from django.urls import reverse
 from django.utils import translation
 from django.utils.text import slugify
@@ -43,6 +43,11 @@ class CategoryQuerySet(models.QuerySet):
         """
         latest_post = Max('posts__created', filter=Q(posts__is_published=True))
         return self.annotate(latest_post=latest_post).filter(latest_post__isnull=False)
+
+    def with_latest_posts(self, count):
+        """Gives each category a `latest_posts` list: its newest published posts, at most `count`, in one query."""
+        posts = Post.objects.filter(is_published=True).order_by('-created')[:count]
+        return self.prefetch_related(Prefetch('posts', queryset=posts, to_attr='latest_posts'))
 
 
 class Category(TranslatedFieldsMixin, BaseModel):
@@ -126,10 +131,6 @@ class Post(TranslatedFieldsMixin, BaseModel):
             counter += 1
 
         return slug
-
-    @property
-    def cover_url(self):
-        return self.cover.url if self.cover else ''
 
     @property
     def cover_urls(self):

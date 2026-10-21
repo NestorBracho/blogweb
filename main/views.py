@@ -6,7 +6,7 @@ from django.templatetags.static import static
 from django.utils.translation import gettext as _
 from django.views import generic
 
-from blog.models import content_language
+from blog.models import Category, Post, content_language
 from config.forms import HONEYPOT_FIELD
 from config.throttling import FormThrottle
 
@@ -14,14 +14,48 @@ from . import structured_data
 from .forms import ContactForm
 from .models import ContactRequest
 
+# Posts per page in the home's list, The Binary Journal
+HOME_PAGE_SIZE = 4
+# Hacker's Haven: the categories with the newest posts, and the latest posts in each
+HACKERS_HAVEN_CATEGORIES = 4
+HACKERS_HAVEN_POSTS = 5
 
-class IndexView(generic.TemplateView):
+
+class HomePostsMixin:
+    """The home's list of posts, newest first, a page at a time (?page=)."""
+
+    queryset = Post.objects.filter(is_published=True).select_related('category').order_by('-created')
+    paginate_by = HOME_PAGE_SIZE
+
+
+class IndexView(HomePostsMixin, generic.ListView):
     template_name = 'main/index.html'
 
     def get_context_data(self, **kwargs):
         kwargs['structured_data'] = structured_data.home_page(self.request)
+        # Only queried if the page shows it (many_posts, in config/context_processors.py)
+        kwargs['hackers_haven'] = (
+            Category.objects.with_published_posts()
+            .with_latest_posts(HACKERS_HAVEN_POSTS)
+            .order_by('-latest_post')[:HACKERS_HAVEN_CATEGORIES]
+        )
 
         return super().get_context_data(**kwargs)
+
+
+class MorePostsView(HomePostsMixin, generic.ListView):
+    """
+    A page of the home's posts and nothing else, for "Load more" to add to the list. Without JavaScript that button
+    is a link to the home's own ?page= instead, so nobody lands here.
+    """
+
+    template_name = 'main/more_posts.html'
+
+    def render_to_response(self, context, **response_kwargs):
+        response = super().render_to_response(context, **response_kwargs)
+        # A fragment, not a page: search engines index the home's pages instead
+        response.headers['X-Robots-Tag'] = 'noindex'
+        return response
 
 
 class AboutView(generic.TemplateView):

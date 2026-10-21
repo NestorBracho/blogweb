@@ -37,4 +37,4 @@ El acento del logo es fijo en `#ae00ee` también en modo oscuro, aunque el theme
 
 ## Regenerar
 
-`source/gen.py` genera todo el paquete desde la fuente (Roboto Mono de @fontsource). Cambia los colores arriba del script y vuelve a correrlo.
+`source/gen.py` genera todo el paquete desde la fuente (Roboto Mono de @fontsource). Cambia los colores arriba del script y vuelve a correrlo; qué necesita y cómo se ejecuta está en [`source/README.md`](source/README.md).

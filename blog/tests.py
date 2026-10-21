@@ -83,6 +83,23 @@ class PostDetailViewTests(TestCase):
         response = self.get(self.post)
 
         self.assertNotContains(response, 'class="post-image"')
+        # Nor do the cards of its related posts, which have no cover either
+        self.assertContains(response, 'class="article__title"')
+        self.assertNotContains(response, 'src=""')
+        # Nor the previous and next post links
+        self.assertContains(response, 'class="post__navigation"')
+        self.assertNotContains(response, 'data-src=""')
+
+    def test_share_links_are_named_in_each_language(self):
+        for language, names in [
+            ('en', ['Share on LinkedIn', 'Share on X', 'Share on Facebook']),
+            ('es', ['Compartir en LinkedIn', 'Compartir en X', 'Compartir en Facebook']),
+        ]:
+            for name in names:
+                with self.subTest(language=language, name=name):
+                    response = self.client.get(reverse_in(language, 'blog:post-detail', slug=self.post.slug))
+
+                    self.assertContains(response, f'title="{name}" aria-label="{name}"')
 
     def test_unpublished_post_is_not_found(self):
         with self.assertLogs('django.request', 'WARNING'):
@@ -192,6 +209,25 @@ class CategoryDetailViewTests(TestCase):
         second_page = f'http://testserver{category.get_absolute_url()}?page=2'
         self.assertContains(second, f'<link rel="canonical" href="{second_page}">')
 
+    def test_names_the_category_in_the_only_h1(self):
+        category = create_category('rust', name_en='Rust', name_es='Rust')
+        create_post('Ownership', category=category)
+
+        response = self.client.get(category.get_absolute_url())
+
+        self.assertContains(response, '<h1', count=1)
+        self.assertContains(response, '<h1 class="tag__title">Rust</h1>')
+
+    def test_cards_of_posts_without_a_cover_have_no_image(self):
+        category = create_category()
+        post = create_post('No cover', category=category)
+
+        response = self.client.get(category.get_absolute_url())
+
+        self.assertContains(response, f'<a href="{post.get_absolute_url()}">No cover</a>')
+        self.assertNotContains(response, f'<a class="article__image" href="{post.get_absolute_url()}">')
+        self.assertNotContains(response, 'src=""')
+
     def test_post_cards_link_to_the_category_slug(self):
         category = create_category()
         create_post('Post', category=category)
@@ -249,8 +285,8 @@ class SidebarTests(TestCase):
 
         latest = [post.title_en for post in response.context['latest_posts']]
         self.assertEqual(latest, ['Post 0', 'Post 1', 'Post 2'])
-        # Same posts in both lists
-        self.assertContains(response, f'href="{reverse_in("en", "blog:post-detail", slug="post-0")}"', count=4)
+        # Same posts in both lists: the title's link in each (they have no cover, so no image links)
+        self.assertContains(response, f'href="{reverse_in("en", "blog:post-detail", slug="post-0")}"', count=2)
 
 
 class CategoryDeletionTests(TestCase):
@@ -667,6 +703,19 @@ class CoverSizesTests(TemporaryMediaMixin, TestCase):
         self.assertContains(post_page, f'src="{urls["thumb"]}"')  # the sidebar's latest posts
         self.assertContains(category_page, f'<img src="{urls["card"]}"')
         self.assertContains(home, f'<img src="{urls["card"]}"')
+
+    def test_link_previews_get_the_size_of_the_social_image(self):
+        for size, expected in [((2400, 1600), ('1200', '630')), ((1024, 1024), ('1024', '538'))]:
+            with self.subTest(size=size):
+                post = create_post(f'Covered {size[0]}', cover=image_file(size=size))
+
+                response = self.client.get(post.get_absolute_url())
+
+                self.assertContains(response, f'<meta property="og:image:width" content="{expected[0]}">')
+                self.assertContains(response, f'<meta property="og:image:height" content="{expected[1]}">')
+                self.assertContains(
+                    response, f'<meta name="twitter:image" content="http://testserver{post.cover_urls["social"]}">'
+                )
 
     def test_the_post_page_gives_the_size_of_its_cover_and_loads_it_first(self):
         post = create_post('Covered', cover=image_file())

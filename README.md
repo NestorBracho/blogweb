@@ -11,7 +11,10 @@ My personal website and bilingual (English/Spanish) blog, live at **[nestorbrach
 It is also a small but complete example of how I build and run web applications: a Django backend with a
 REST API, tests and linting in CI, and a hardened self-hosted deployment that costs nothing to run.
 
-![Home page of nestorbracho.com](docs/images/home.jpg)
+<picture>
+  <source media="(prefers-color-scheme: light)" srcset="docs/images/home-light.jpg">
+  <img src="docs/images/home.jpg" alt="Home page of nestorbracho.com: Nestor Bracho, Senior Full Stack Engineer · Python/Django, a short bio and buttons to the CV and the contact page">
+</picture>
 
 ## Where to look
 

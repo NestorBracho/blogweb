@@ -315,6 +315,17 @@ class HeaderTests(TestCase):
                 self.assertEqual(self.client.cookies[settings.LANGUAGE_COOKIE_NAME].value, chosen)
 
 
+class PageAccessibilityTests(TestCase):
+    """The rest of base.html works with a keyboard too, and screen readers hear it in the page's language."""
+
+    def test_back_to_top_is_a_button_named_in_each_language(self):
+        for language, name in [('en', 'Back to top'), ('es', 'Volver arriba')]:
+            with self.subTest(language=language):
+                response = self.client.get(reverse_in(language, 'main:index'))
+
+                self.assertContains(response, f'<button type="button" class="top" aria-label="{name}"')
+
+
 class LanguageInTheURLTests(TestCase):
     """Pages live under /en/ and /es/; a path without a language goes to the visitor's (docs/adr/0006)."""
 

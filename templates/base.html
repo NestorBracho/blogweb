@@ -91,7 +91,10 @@
 
 {% block modals %}{% endblock %}
 
-<div class="top" title="Top"><i class="fa-solid fa-arrow-up"></i></div>
+{% translate 'Back to top' as back_to_top %}
+<button type="button" class="top" aria-label="{{ back_to_top }}" title="{{ back_to_top }}">
+    <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
+</button>
 
 <div class="images-overlay"></div>
 

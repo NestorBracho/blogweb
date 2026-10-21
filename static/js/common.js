@@ -350,6 +350,8 @@ document.addEventListener("DOMContentLoaded", function() {
         behavior: "smooth"
       })
     }
+    // The button hides at the top, so keyboard users carry on from the first link of the page
+    document.querySelector(".logo__link").focus({preventScroll: true});
   });
 
 });

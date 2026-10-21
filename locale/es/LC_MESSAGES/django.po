@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-21 16:43+0000\n"
+"POT-Creation-Date: 2026-10-21 17:24+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -304,7 +304,7 @@ msgstr "Tu mensaje"
 msgid "I will only use your details to reply to you."
 msgstr "Solo usaré tus datos para responderte."
 
-#: main/templates/main/contact.html:79 main/templates/main/privacy.html:12
+#: main/templates/main/contact.html:74 main/templates/main/privacy.html:12
 #: main/views.py:89 templates/lib/_main_right_sidebar.html:27
 msgid "Privacy policy"
 msgstr "Política de privacidad"
@@ -486,6 +486,10 @@ msgstr "Buscar publicaciones"
 #: templates/base.html:46
 msgid "Type to search..."
 msgstr "Escribe para buscar..."
+
+#: templates/base.html:94
+msgid "Back to top"
+msgstr "Volver arriba"
 
 #: templates/lib/_honeypot_field.html:6
 msgid "Leave this field empty"

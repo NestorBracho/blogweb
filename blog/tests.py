@@ -1,4 +1,5 @@
 import base64
+from datetime import datetime
 from io import BytesIO, StringIO
 from tempfile import TemporaryDirectory
 from types import SimpleNamespace
@@ -350,24 +351,61 @@ class PostAPITests(TestCase):
         self.assertEqual(len(capped.json()['results']), 20)
 
     def test_language_header_applies_to_the_whole_response(self):
-        post = create_post('Black holes', title_es='Agujeros negros', body_en='word ' * 450)
+        category = create_category(name_en='Space', name_es='Espacio')
+        post = create_post('Black holes', title_es='Agujeros negros', category=category)
 
         # The page sends the language it is in, whatever the browser prefers
         response = self.client.get(self.url, headers={'X-Language': 'es', 'Accept-Language': 'en'})
 
         result = response.json()['results'][0]
-        self.assertEqual((result['title'], result['read_time']), ('Agujeros negros', '3 min de lectura'))
-        self.assertEqual(result['href'], reverse_in('es', 'blog:post-detail', slug=post.slug))
+        self.assertEqual((result['title'], result['category']['name']), ('Agujeros negros', 'Espacio'))
+        self.assertEqual(result['url'], reverse_in('es', 'blog:post-detail', slug=post.slug))
+        self.assertEqual(result['category']['url'], reverse_in('es', 'blog:category-detail', slug=category.slug))
         self.assertIn('X-Language', response['Vary'])
 
     def test_language_follows_the_browser_without_the_header(self):
-        create_post('Black holes', title_es='Agujeros negros', body_en='word ' * 450)
+        create_post('Black holes', title_es='Agujeros negros')
 
         spanish = self.client.get(self.url, headers={'Accept-Language': 'es'})
         default = self.client.get(self.url)
 
-        self.assertEqual(spanish.json()['results'][0]['read_time'], '3 min de lectura')
-        self.assertEqual(default.json()['results'][0]['read_time'], '3 min read')
+        self.assertEqual(spanish.json()['results'][0]['title'], 'Agujeros negros')
+        self.assertEqual(default.json()['results'][0]['title'], 'Black holes')
+
+    def test_posts_are_raw_data_for_clients_to_format(self):
+        post = create_post('Black holes', body_en='word ' * 450, category=create_category(color='#4643ec'))
+
+        result = self.client.get(self.url).json()['results'][0]
+
+        self.assertEqual(
+            set(result),
+            {'id', 'slug', 'url', 'title', 'description', 'category', 'cover_urls', 'read_time', 'created', 'updated'},
+        )
+        self.assertEqual(result['id'], str(post.pk))
+        # Minutes as a number and dates as ISO 8601, with no wording in any language
+        self.assertEqual(result['read_time'], 3)
+        self.assertEqual(datetime.fromisoformat(result['created']), post.created)
+        self.assertEqual(datetime.fromisoformat(result['updated']), post.updated)
+        self.assertEqual(
+            result['category'],
+            {'slug': 'test-topic', 'name': 'test-topic', 'color': '#4643ec', 'url': '/en/tags/test-topic'},
+        )
+
+    def test_posts_without_a_category_say_so(self):
+        create_post('Uncategorized', category=None)
+
+        self.assertIsNone(self.client.get(self.url).json()['results'][0]['category'])
+
+    def test_a_single_post_comes_whole(self):
+        post = create_post('Black holes', body_en='Light *cannot* escape.', body_es='La luz no escapa.')
+
+        response = self.client.get(reverse('api:post-detail', args=[post.pk]), headers={'X-Language': 'en'})
+
+        result = response.json()
+        self.assertEqual(result['title'], 'Black holes')
+        # The Markdown it is written in, in the language asked for
+        self.assertEqual(result['body'], 'Light *cannot* escape.')
+        self.assertIs(result['is_published'], True)
 
     def test_anonymous_users_cannot_create_posts(self):
         response = self.client.post(self.url, {'title_en': 'Spam'})
@@ -401,6 +439,7 @@ class PostAPITests(TestCase):
         self.client.force_login(get_user_model().objects.create_user(username='editor', is_staff=True))
         draft = create_post('Draft', is_published=False)
         detail_url = reverse('api:post-detail', args=[draft.pk])
+        self.assertIs(self.client.get(detail_url).json()['is_published'], False)
 
         response = self.client.patch(
             detail_url, {'title_en': 'Ready', 'is_published': True}, content_type='application/json'
@@ -672,17 +711,37 @@ class PostSlugTests(TestCase):
 class CategoryAPITests(TestCase):
     def test_lists_categories_with_their_latest_published_posts(self):
         category = create_category()
-        create_post('Old', category=category)
-        create_post('New', category=category)
+        old = create_post('Old', days_ago=2, category=category)
+        create_post('New', days_ago=1, category=category)
         create_post('Draft', category=category, is_published=False)
         create_category('empty-topic')
         create_post('Only a draft', category=create_category('drafts-only'), is_published=False)
+        # Newest first by date of publication, as everywhere else, however recently a post was edited
+        old.save()
 
         response = self.client.get(reverse('api:categories'))
 
         categories = response.json()['results']
         self.assertEqual([category['slug'] for category in categories], ['test-topic'])
-        self.assertEqual([post['title'] for post in categories[0]['first_5_posts']], ['New', 'Old'])
+        self.assertEqual(set(categories[0]), {'slug', 'name', 'color', 'url', 'latest_posts'})
+        self.assertEqual([post['title'] for post in categories[0]['latest_posts']], ['New', 'Old'])
+
+    def test_shows_the_four_most_active_categories_and_five_posts_of_each(self):
+        for number in range(5):
+            category = create_category(f'topic-{number}')
+            for days_ago in range(6):
+                create_post(f'Topic {number} post {days_ago}', days_ago=10 * number + days_ago, category=category)
+
+        categories = self.client.get(reverse('api:categories')).json()['results']
+
+        self.assertEqual([category['slug'] for category in categories], [f'topic-{number}' for number in range(4)])
+        self.assertEqual([len(category['latest_posts']) for category in categories], [5, 5, 5, 5])
+
+    def test_the_address_ends_in_a_slash_like_the_others(self):
+        self.assertEqual(reverse('api:categories'), '/api/categories/')
+        self.assertEqual(reverse('api:post-list'), '/api/post/')
+        # The old address still works
+        self.assertRedirects(self.client.get('/api/categories'), '/api/categories/', status_code=301)
 
 
 def parsed_completion(draft=None, refusal=None):

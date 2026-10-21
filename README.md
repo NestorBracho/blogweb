@@ -18,7 +18,7 @@ REST API, tests and linting in CI, and a hardened self-hosted deployment that co
 | To see...                              | Look at                                                                                              |
 |----------------------------------------|------------------------------------------------------------------------------------------------------|
 | Models, views, i18n                    | [`blog/`](blog), [`main/`](main), [`config/`](config)                                                 |
-| A REST API with Django REST Framework  | [`blog/api/`](blog/api): separate read/write serializers, staff-only writes                          |
+| A REST API with Django REST Framework  | [`blog/api/`](blog/api): list, detail and write serializers, staff-only writes                       |
 | An LLM integration                     | [`blog/drafting.py`](blog/drafting.py): OpenAI structured outputs validated with Pydantic            |
 | Tests                                  | `*/tests.py`: views, API permissions, feeds, forms, open-redirect protection                         |
 | CI/CD                                  | [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)                                       |
@@ -193,12 +193,14 @@ API.
 |----------------------------------|--------------------------|---------------------------------------------------------------------|
 | `GET`                            | `/api/post/?page=N`      | Published posts, newest first, four per page                        |
 | `GET`                            | `/api/post/?search=words`| Posts with every word somewhere in their title, description, body or category |
-| `GET`                            | `/api/categories`        | The four most recently active categories and their latest posts     |
+| `GET`                            | `/api/categories/`       | The four most recently active categories and their five latest posts |
 | `POST`                           | `/api/post/`             | Staff only: create a post, a draft unless `is_published` is sent    |
 | `GET`, `PUT`, `PATCH`, `DELETE`  | `/api/post/<id>/`        | Anyone can read a published post; staff can also read, edit, publish or delete drafts |
 
 Post lists are paginated; `page_size` raises the page size up to 20. They only ever show published posts, also to
-staff, because the home page reads them. Writes return the post's `id` and its `slug`, made from the English title.
+staff, because the site's search reads them. Responses are raw data for clients to format: dates in ISO 8601,
+`read_time` in minutes and the cover's URL at each size (`cover_urls`); a post read by its `id` adds its Markdown
+`body`. Writes return the post's `id` and its `slug`, made from the English title.
 The API has no language in its URL. Pages send an `X-Language` header (`en` or `es`) with their own language;
 without it, responses follow the language cookie or `Accept-Language`, and English otherwise. Links in the
 responses point to the pages in that language.

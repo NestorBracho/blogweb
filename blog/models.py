@@ -133,10 +133,6 @@ class Post(TranslatedFieldsMixin, BaseModel):
         return slug
 
     @property
-    def cover_url(self):
-        return self.cover.url if self.cover else ''
-
-    @property
     def cover_urls(self):
         """The cover's URL at each size, by name. The original stands in for any size that couldn't be made."""
         names = [*covers.SIZES, 'social']

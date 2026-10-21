@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-21 15:56+0000\n"
+"POT-Creation-Date: 2026-10-21 16:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,14 +19,15 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? "
 "1 : 2;\n"
 
-#: blog/api/serializers.py:83 blog/templates/blog/_lib/_article_card.html:22
-#: blog/templates/blog/post.html:39
-msgid "min read"
-msgstr "min de lectura"
-
 #: blog/feeds.py:11
 msgid "Science, storytelling & software, by Nestor Bracho."
 msgstr "Ciencia, historias y software, por Nestor Bracho."
+
+#: blog/templates/blog/_lib/_article_card.html:22
+#: blog/templates/blog/post.html:39
+#: templates/lib/_search_result_template.html:17
+msgid "min read"
+msgstr "min de lectura"
 
 #: blog/templates/blog/category.html:16
 #, python-format
@@ -369,11 +370,11 @@ msgstr "Trabajemos juntos"
 msgid "The Binary Journal"
 msgstr "La Terminal"
 
-#: main/templates/main/index.html:140
+#: main/templates/main/index.html:141
 msgid "Hacker’s Haven"
 msgstr "Paraíso del Hacker"
 
-#: main/templates/main/index.html:164
+#: main/templates/main/index.html:166
 msgid "Nerd Stuff"
 msgstr "Cosas Nerd"
 
@@ -607,13 +608,21 @@ msgstr "Únete ahora"
 msgid "You will receive an email to confirm your subscription."
 msgstr "Recibirás un correo para confirmar tu suscripción."
 
-#: templates/lib/_main_right_sidebar.html:40
+#: templates/lib/_main_right_sidebar.html:41
 msgid "Latest posts"
 msgstr "Últimas publicaciones"
 
-#: templates/lib/_main_right_sidebar.html:65
+#: templates/lib/_main_right_sidebar.html:67
 msgid "Topics"
 msgstr "Temas"
+
+#: templates/lib/_search_result_template.html:24
+msgid "No posts match your search."
+msgstr "Ninguna publicación coincide con tu búsqueda."
+
+#: templates/lib/_search_result_template.html:27
+msgid "The search isn't working right now. Please try again later."
+msgstr "La búsqueda no funciona en este momento. Inténtalo de nuevo más tarde."
 
 #: usermanager/templates/usermanager/email/confirm_subscription.txt:1
 #, python-format

@@ -13,12 +13,16 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.views import generic
 
+from config.throttling import FormThrottle
+
 from .forms import SubscribeForm
 from .models import NewsletterSubscriber
 
 logger = logging.getLogger(__name__)
 
 CONFIRMATION_LINK_MAX_AGE = timedelta(days=7)
+# Pending addresses get the link again when they subscribe again, but not more often than this
+CONFIRMATION_RESEND_COOLDOWN = timedelta(hours=1)
 
 
 class AddNewsletterSubscriberView(generic.FormView):
@@ -26,16 +30,25 @@ class AddNewsletterSubscriberView(generic.FormView):
     http_method_names = ['post']
 
     def form_valid(self, form):
+        # Before looking the address up, so the answer says nothing about it
+        if not FormThrottle('newsletter').allow_request(self.request, self):
+            messages.error(
+                self.request, _("You've tried to subscribe several times in a short time. Please try again later.")
+            )
+            return HttpResponseRedirect(self.get_success_url())
+
         subscriber, _created = NewsletterSubscriber.objects.get_or_create(email=form.cleaned_data['email'].lower())
-        if subscriber.confirmed_at is None:
+        if subscriber.claim_confirmation_email(CONFIRMATION_RESEND_COOLDOWN):
             try:
                 send_confirmation_email(self.request, subscriber)
             except OSError:
                 logger.exception('Could not send the newsletter confirmation email')
+                # Nothing went out, so trying again mustn't wait for the cooldown
+                NewsletterSubscriber.objects.filter(pk=subscriber.pk).update(confirmation_sent_at=None)
                 messages.error(self.request, _("We couldn't send you the confirmation email. Please try again later."))
                 return HttpResponseRedirect(self.get_success_url())
 
-        # Same answer for new, pending and confirmed addresses, so nobody can find out who is subscribed
+        # Same answer for new, pending and confirmed addresses, emailed or not, so nobody can find out who is subscribed
         messages.success(self.request, _('Almost there! Check your inbox and confirm your subscription.'))
         return HttpResponseRedirect(self.get_success_url())
 

@@ -4,6 +4,7 @@ import json
 import re
 from datetime import timedelta
 
+from django.core.cache import cache
 from django.urls import reverse
 from django.utils import timezone, translation
 
@@ -48,3 +49,15 @@ def create_post(title, days_ago=0, **kwargs):
     Post.objects.filter(pk=post.pk).update(created=timezone.now() - timedelta(days=days_ago))
     post.refresh_from_db()
     return post
+
+
+class EmptyCacheMixin:
+    """Each test starts and ends with an empty cache.
+
+    The rate limits count requests in the cache (config/throttling.py), and every test client has the same address.
+    """
+
+    def setUp(self):
+        super().setUp()
+        cache.clear()
+        self.addCleanup(cache.clear)

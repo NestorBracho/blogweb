@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-21 16:00+0000\n"
+"POT-Creation-Date: 2026-10-21 16:05+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -79,7 +79,7 @@ msgid "The posts couldn't be loaded. Please try again."
 msgstr "No se pudieron cargar las publicaciones. Inténtalo de nuevo."
 
 #: main/templates/main/about.html:14 main/templates/main/about.html:19
-#: main/views.py:65
+#: main/views.py:66
 msgid "About Me"
 msgstr "Sobre mí"
 
@@ -284,32 +284,32 @@ msgstr ""
 "¿Buscas un dev que hable en código y entienda el sistema? Transmite por "
 "aquí. <br><i>Construyamos el futuro juntos.</i>"
 
-#: main/templates/main/contact.html:54
+#: main/templates/main/contact.html:57
 msgid "Your Name"
 msgstr "Tu nombre"
 
-#: main/templates/main/contact.html:55
+#: main/templates/main/contact.html:58
 msgid "Your name"
 msgstr "Tu nombre"
 
-#: main/templates/main/contact.html:61 main/templates/main/contact.html:62
+#: main/templates/main/contact.html:64 main/templates/main/contact.html:65
 msgid "Your Email"
 msgstr "Tu correo"
 
-#: main/templates/main/contact.html:68 main/templates/main/contact.html:69
+#: main/templates/main/contact.html:71 main/templates/main/contact.html:72
 msgid "Your Message"
 msgstr "Tu mensaje"
 
-#: main/templates/main/contact.html:75
+#: main/templates/main/contact.html:78
 msgid "I will only use your details to reply to you."
 msgstr "Solo usaré tus datos para responderte."
 
-#: main/templates/main/contact.html:76 main/templates/main/privacy.html:12
-#: main/views.py:93 templates/lib/_main_right_sidebar.html:27
+#: main/templates/main/contact.html:79 main/templates/main/privacy.html:12
+#: main/views.py:94 templates/lib/_main_right_sidebar.html:27
 msgid "Privacy policy"
 msgstr "Política de privacidad"
 
-#: main/templates/main/contact.html:79
+#: main/templates/main/contact.html:82
 msgid "Send Now"
 msgstr "Enviar ahora"
 
@@ -378,7 +378,7 @@ msgstr "Paraíso del Hacker"
 msgid "Nerd Stuff"
 msgstr "Cosas Nerd"
 
-#: main/views.py:67
+#: main/views.py:68
 msgid ""
 "Get to know Nestor, a fullstack software engineer passionate about backend "
 "systems, Python, AWS, and technology for social impact. Discover his "
@@ -389,12 +389,12 @@ msgstr ""
 "trayectoria, sus habilidades y su misión de crear herramientas digitales con "
 "sentido."
 
-#: main/views.py:79 templates/lib/_main_footer.html:74
+#: main/views.py:80 templates/lib/_main_footer.html:74
 #: templates/lib/_main_navbar.html:29
 msgid "CV"
 msgstr "CV"
 
-#: main/views.py:81
+#: main/views.py:82
 #, python-format
 msgid ""
 "CV of Nestor Bracho, %(role)s with more than 12 years building web platforms "
@@ -403,18 +403,18 @@ msgstr ""
 "CV de Nestor Bracho, %(role)s con más de 12 años construyendo plataformas "
 "web con Python y Django."
 
-#: main/views.py:94
+#: main/views.py:95
 msgid ""
 "What personal data this site collects, why, and how to exercise your rights."
 msgstr ""
 "Qué datos personales recoge este sitio, para qué y cómo ejercer tus derechos."
 
-#: main/views.py:106 templates/lib/_main_footer.html:76
+#: main/views.py:107 templates/lib/_main_footer.html:76
 #: templates/lib/_main_navbar.html:32
 msgid "Contact"
 msgstr "Contacto"
 
-#: main/views.py:108
+#: main/views.py:109
 msgid ""
 "Plug into the grid, whether you’re building something bold or need a sharp "
 "mind in the system, this is your uplink to start working together."
@@ -422,7 +422,15 @@ msgstr ""
 "¿Buscas un dev que hable en código y entienda el sistema? Transmite por "
 "aquí. <br><i>Construyamos el futuro juntos.</i>"
 
-#: main/views.py:119
+#: main/views.py:121
+msgid ""
+"You've sent several messages in a short time. Please try again later: your "
+"message is still here."
+msgstr ""
+"Has enviado varios mensajes en poco tiempo. Inténtalo de nuevo más tarde: tu "
+"mensaje sigue aquí."
+
+#: main/views.py:128
 msgid ""
 "Your contact request has been successfully submitted. I'll get in touch as "
 "soon as possible!"
@@ -430,7 +438,7 @@ msgstr ""
 "Solicitud de contacto enviada con éxito. ¡Me pondré en contacto contigo lo "
 "antes posible!"
 
-#: main/views.py:126
+#: main/views.py:135
 msgid "Something went wrong. Try again later."
 msgstr "Algo salió mal. Intenta de nuevo más tarde."
 
@@ -646,21 +654,29 @@ msgstr ""
 "Si no fuiste tú, ignora este correo: las direcciones sin confirmar nunca "
 "reciben la newsletter."
 
-#: usermanager/views.py:35
+#: usermanager/views.py:36
+msgid ""
+"You've tried to subscribe several times in a short time. Please try again "
+"later."
+msgstr ""
+"Has intentado suscribirte varias veces en poco tiempo. Inténtalo de nuevo "
+"más tarde."
+
+#: usermanager/views.py:48
 msgid "We couldn't send you the confirmation email. Please try again later."
 msgstr ""
 "No pudimos enviarte el correo de confirmación. Inténtalo de nuevo más tarde."
 
-#: usermanager/views.py:39
+#: usermanager/views.py:52
 msgid "Almost there! Check your inbox and confirm your subscription."
 msgstr "¡Ya casi está! Revisa tu correo y confirma tu suscripción."
 
-#: usermanager/views.py:43
+#: usermanager/views.py:56
 msgid ""
 "We were unable to subscribe you to your newsletter. Something went wrong."
 msgstr "No pude suscribirte a tu boletín informativo. Algo salió mal."
 
-#: usermanager/views.py:64
+#: usermanager/views.py:77
 msgid ""
 "This confirmation link is invalid or has expired. Subscribe again to get a "
 "new one."
@@ -668,10 +684,10 @@ msgstr ""
 "Este enlace de confirmación no es válido o ha caducado. Suscríbete de nuevo "
 "para recibir otro."
 
-#: usermanager/views.py:68
+#: usermanager/views.py:81
 msgid "Your subscription is confirmed. Thank you!"
 msgstr "Tu suscripción está confirmada. ¡Gracias!"
 
-#: usermanager/views.py:81
+#: usermanager/views.py:94
 msgid "Confirm your subscription to Bracho"
 msgstr "Confirma tu suscripción a Bracho"

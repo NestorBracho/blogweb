@@ -1,5 +1,6 @@
 import re
 import time
+from datetime import timedelta
 from unittest import mock
 
 from django.contrib.auth import get_user_model
@@ -7,8 +8,10 @@ from django.contrib.messages import get_messages
 from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
-from config.testing import reverse_in
+from config.testing import EmptyCacheMixin, reverse_in
+from config.throttling import FormThrottle
 
 from .models import NewsletterSubscriber
 
@@ -18,7 +21,7 @@ def last_message(response):
     return [str(message) for message in get_messages(response.wsgi_request)][-1]
 
 
-class AddNewsletterSubscriberViewTests(TestCase):
+class AddNewsletterSubscriberViewTests(EmptyCacheMixin, TestCase):
     def subscribe(self, email, next_url=None, language='en'):
         next_url = next_url or reverse_in(language, 'main:about')
         return self.client.post(reverse_in(language, 'main:newsletter-subscriber'), {'email': email, 'next': next_url})
@@ -78,12 +81,19 @@ class AddNewsletterSubscriberViewTests(TestCase):
 
         self.assertIn('invalid or has expired', last_message(response))
 
-    def test_resends_the_link_to_pending_addresses(self):
-        self.subscribe('reader@example.com')
-        self.subscribe('reader@example.com')
+    def test_resends_the_link_to_pending_addresses_once_an_hour_at_most(self):
+        first = self.subscribe('reader@example.com')
+        too_soon = self.subscribe('reader@example.com')
+        an_hour_later = timezone.now() + timedelta(hours=1)
+        with mock.patch('django.utils.timezone.now', return_value=an_hour_later):
+            self.subscribe('reader@example.com')
 
         self.assertEqual(NewsletterSubscriber.objects.count(), 1)
         self.assertEqual(len(mail.outbox), 2)
+        # Nothing tells whether the link went out again
+        self.assertEqual(too_soon.status_code, first.status_code)
+        self.assertEqual(too_soon['Location'], first['Location'])
+        self.assertEqual(last_message(too_soon), last_message(first))
 
     def test_answers_the_same_for_confirmed_addresses_without_emailing_them(self):
         pending = self.subscribe('new@example.com')
@@ -104,6 +114,9 @@ class AddNewsletterSubscriberViewTests(TestCase):
 
         self.assertIn("couldn't send", last_message(response))
         self.assertTrue(NewsletterSubscriber.objects.filter(email='reader@example.com').exists())
+        # Nothing went out, so trying again sends the link straight away
+        self.subscribe('reader@example.com')
+        self.assertEqual(len(mail.outbox), 1)
 
     def test_ignores_bots_that_fill_the_hidden_field(self):
         self.client.post(
@@ -113,6 +126,18 @@ class AddNewsletterSubscriberViewTests(TestCase):
 
         self.assertFalse(NewsletterSubscriber.objects.exists())
         self.assertEqual(mail.outbox, [])
+
+    def test_limits_how_many_times_each_visitor_subscribes(self):
+        allowed = FormThrottle('newsletter').num_requests
+        for number in range(allowed):
+            self.subscribe(f'reader{number}@example.com')
+
+        response = self.subscribe('one-more@example.com', language='es')
+
+        self.assertRedirects(response, reverse_in('es', 'main:about'), fetch_redirect_response=False)
+        self.assertIn('Has intentado suscribirte varias veces', last_message(response))
+        self.assertFalse(NewsletterSubscriber.objects.filter(email='one-more@example.com').exists())
+        self.assertEqual(len(mail.outbox), allowed)
 
     def test_never_redirects_to_another_site(self):
         response = self.subscribe('reader@example.com', next_url='https://evil.example/')

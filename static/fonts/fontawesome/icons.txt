@@ -1,0 +1,12 @@
+# The Font Awesome icons the site uses: the font (solid, regular or brands) and the icon's name without "fa-".
+# static/fonts/fontawesome/ only has these. After adding one, run tools/subset_fonts.py; a test checks this list
+# against the templates and scripts.
+solid arrow-left
+solid arrow-up
+solid rss
+solid xmark
+brands facebook-f
+brands github
+brands linkedin
+brands linkedin-in
+brands x-twitter

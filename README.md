@@ -50,6 +50,8 @@ REST API, tests and linting in CI, and a hardened self-hosted deployment that co
   ([`config/throttling.py`](config/throttling.py)).
 - A Content-Security-Policy that only lets the site's own scripts run (none inline), on top of HSTS and Django's
   other security headers.
+- Fonts and icons served by the site itself, cut down to the characters and icons it uses: pages make no requests
+  to Google Fonts or a CDN.
 - Light and dark themes.
 - An optional command that drafts posts with OpenAI for me to review (see [AI-assisted drafts](#ai-assisted-drafts)).
 
@@ -120,11 +122,12 @@ blog/          posts and categories: views, REST API, RSS feed, sitemaps, drafti
 main/          home, about and contact pages, template tags
 usermanager/   newsletter subscribers: sign-up and confirmation
 templates/     base layout and shared partials
-static/        theme assets and images
+static/        theme assets, images and fonts
 locale/        Spanish translations
 deploy/        nginx, systemd, backup and update scripts, server guide (in Spanish)
 docs/adr/      architecture decision records
 brand/         brand kit: logo, favicons, share image and their generator
+tools/         the script that makes the font files in static/fonts/
 ```
 
 The apps' Python code depends in one direction only: `main` reads `blog`'s posts, and every app uses the shared
@@ -260,7 +263,13 @@ The visual design (the page markup, [`static/css/main.css`](static/css/main.css)
 [Artem Sheludko](https://jekyllthemes.io/developers/artem-sheludko), ported here to Django templates. Those files
 are subject to the theme's own license.
 
+The fonts in [`static/fonts/`](static/fonts) are [Poppins](https://github.com/itfoundry/Poppins) and
+[Roboto Mono](https://github.com/googlefonts/RobotoMono), under the SIL Open Font License, and the icons of
+[Font Awesome Free](https://fontawesome.com) 6.5.1 (font under the SIL Open Font License, icons under CC BY 4.0).
+[`tools/subset_fonts.py`](tools/subset_fonts.py) cuts them down to what the site uses; each font's license is
+next to it.
+
 ## License
 
-The code is released under the [MIT License](LICENSE), except for the theme assets listed under
-[Credits](#credits).
+The code is released under the [MIT License](LICENSE), except for the theme assets and the fonts listed
+under [Credits](#credits).

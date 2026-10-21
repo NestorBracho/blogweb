@@ -24,7 +24,7 @@ msgid "Science, storytelling & software, by Nestor Bracho."
 msgstr "Ciencia, historias y software, por Nestor Bracho."
 
 #: blog/templates/blog/_lib/_article_card.html:22
-#: blog/templates/blog/post.html:39
+#: blog/templates/blog/post.html:44
 #: templates/lib/_search_result_template.html:17
 msgid "min read"
 msgstr "min de lectura"
@@ -49,19 +49,19 @@ msgstr "Publicaciones más recientes"
 msgid "Older posts"
 msgstr "Publicaciones anteriores"
 
-#: blog/templates/blog/post.html:57
+#: blog/templates/blog/post.html:62
 msgid "Share this"
 msgstr "Compartir"
 
-#: blog/templates/blog/post.html:85
+#: blog/templates/blog/post.html:90
 msgid "Older post"
 msgstr "Publicación anterior"
 
-#: blog/templates/blog/post.html:93
+#: blog/templates/blog/post.html:98
 msgid "Newer post"
 msgstr "Publicación siguiente"
 
-#: blog/templates/blog/post.html:108
+#: blog/templates/blog/post.html:113
 msgid "Related"
 msgstr "Relacionados"
 
@@ -266,15 +266,15 @@ msgstr ""
 "No dejes de aprender. No pierdas la curiosidad. Y construye cosas que de "
 "verdad importen."
 
-#: main/templates/main/contact.html:31 main/templates/main/contact.html:41
+#: main/templates/main/contact.html:26 main/templates/main/contact.html:36
 msgid "Get In Touch"
 msgstr "Ponte en contacto"
 
-#: main/templates/main/contact.html:38
+#: main/templates/main/contact.html:33
 msgid "Back to home"
 msgstr "Vuelve al inicio"
 
-#: main/templates/main/contact.html:44
+#: main/templates/main/contact.html:39
 msgid ""
 "Plug into the grid, whether you’re building\n"
 "                    something bold or need a sharp mind in the system, this "
@@ -284,23 +284,23 @@ msgstr ""
 "¿Buscas un dev que hable en código y entienda el sistema? Transmite por "
 "aquí. <br><i>Construyamos el futuro juntos.</i>"
 
-#: main/templates/main/contact.html:57
+#: main/templates/main/contact.html:52
 msgid "Your Name"
 msgstr "Tu nombre"
 
-#: main/templates/main/contact.html:58
+#: main/templates/main/contact.html:53
 msgid "Your name"
 msgstr "Tu nombre"
 
-#: main/templates/main/contact.html:64 main/templates/main/contact.html:65
+#: main/templates/main/contact.html:59 main/templates/main/contact.html:60
 msgid "Your Email"
 msgstr "Tu correo"
 
-#: main/templates/main/contact.html:71 main/templates/main/contact.html:72
+#: main/templates/main/contact.html:66 main/templates/main/contact.html:67
 msgid "Your Message"
 msgstr "Tu mensaje"
 
-#: main/templates/main/contact.html:78
+#: main/templates/main/contact.html:73
 msgid "I will only use your details to reply to you."
 msgstr "Solo usaré tus datos para responderte."
 
@@ -309,7 +309,7 @@ msgstr "Solo usaré tus datos para responderte."
 msgid "Privacy policy"
 msgstr "Política de privacidad"
 
-#: main/templates/main/contact.html:82
+#: main/templates/main/contact.html:77
 msgid "Send Now"
 msgstr "Enviar ahora"
 
@@ -475,15 +475,15 @@ msgstr "El servidor está castigado y está pensando en lo que hizo."
 msgid "Try refreshing, or come back after a coffee"
 msgstr "Trata de refrescar, o vuelve después de un café"
 
-#: templates/base.html:45
+#: templates/base.html:41
 msgid "Close search"
 msgstr "Cerrar búsqueda"
 
-#: templates/base.html:48
+#: templates/base.html:44
 msgid "Search posts"
 msgstr "Buscar publicaciones"
 
-#: templates/base.html:50
+#: templates/base.html:46
 msgid "Type to search..."
 msgstr "Escribe para buscar..."
 

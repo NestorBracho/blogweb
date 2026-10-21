@@ -15,10 +15,15 @@
 
                 <div class="post-head">
 
-                    <div class="post-image">
-                        <img class="lazy loaded" alt="{{  object.description }}"
-                             data-ll-status="loaded" src="{{ object.cover_urls.post }}">
-                    </div>
+                    {% if object.cover %}
+                        {# The sizes blog/covers.py makes, all 4:3: this place's (twice 856x642) and, for phones, the cards' #}
+                        <div class="post-image">
+                            <img class="lazy loaded" alt="{{  object.description }}" data-ll-status="loaded"
+                                 src="{{ object.cover_urls.post }}" width="1712" height="1284" fetchpriority="high"
+                                 srcset="{{ object.cover_urls.card }} 824w, {{ object.cover_urls.post }} 1712w"
+                                 sizes="(max-width: 576px) 100vw, 856px">
+                        </div>
+                    {% endif %}
 
 
                     <div class="post-info">

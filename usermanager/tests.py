@@ -1,5 +1,6 @@
 import re
 import time
+from datetime import timedelta
 from unittest import mock
 
 from django.contrib.auth import get_user_model
@@ -7,6 +8,7 @@ from django.contrib.messages import get_messages
 from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from config.testing import reverse_in
 
@@ -78,12 +80,19 @@ class AddNewsletterSubscriberViewTests(TestCase):
 
         self.assertIn('invalid or has expired', last_message(response))
 
-    def test_resends_the_link_to_pending_addresses(self):
-        self.subscribe('reader@example.com')
-        self.subscribe('reader@example.com')
+    def test_resends_the_link_to_pending_addresses_once_an_hour_at_most(self):
+        first = self.subscribe('reader@example.com')
+        too_soon = self.subscribe('reader@example.com')
+        an_hour_later = timezone.now() + timedelta(hours=1)
+        with mock.patch('django.utils.timezone.now', return_value=an_hour_later):
+            self.subscribe('reader@example.com')
 
         self.assertEqual(NewsletterSubscriber.objects.count(), 1)
         self.assertEqual(len(mail.outbox), 2)
+        # Nothing tells whether the link went out again
+        self.assertEqual(too_soon.status_code, first.status_code)
+        self.assertEqual(too_soon['Location'], first['Location'])
+        self.assertEqual(last_message(too_soon), last_message(first))
 
     def test_answers_the_same_for_confirmed_addresses_without_emailing_them(self):
         pending = self.subscribe('new@example.com')
@@ -104,6 +113,9 @@ class AddNewsletterSubscriberViewTests(TestCase):
 
         self.assertIn("couldn't send", last_message(response))
         self.assertTrue(NewsletterSubscriber.objects.filter(email='reader@example.com').exists())
+        # Nothing went out, so trying again sends the link straight away
+        self.subscribe('reader@example.com')
+        self.assertEqual(len(mail.outbox), 1)
 
     def test_ignores_bots_that_fill_the_hidden_field(self):
         self.client.post(

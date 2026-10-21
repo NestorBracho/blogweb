@@ -1,6 +1,6 @@
 /*
- * The "~/bracho_" wordmark (templates/lib/_brand_wordmark.html). Spec: brand/BRAND.md.
- * Kept apart from main.css, which is the Coderon theme's stylesheet.
+ * Styles of my own on top of the Coderon theme, kept apart from main.css (the theme's stylesheet): the "~/bracho_"
+ * wordmark (templates/lib/_brand_wordmark.html, spec in brand/BRAND.md) and colour contrast fixes.
  */
 
 .brand-wordmark {
@@ -51,4 +51,23 @@
 /* Footer */
 .footer__info__title .brand-wordmark {
     font-size: 28px;
+}
+
+/*
+ * Colour contrast: white text needs a background dark enough for 4.5:1 (WCAG AA), in light and dark mode alike.
+ */
+
+/* Secondary buttons ("Let's Work Together", "Join Now"): the theme's turquoise (#60b0ba) gave 2.5:1. Same hue,
+   darker: 4.5:1. */
+:root {
+    --secondary-color: #3b8088;
+}
+
+/* Category labels take their colour from the database, and some are var(--dark-gray), which gave 2.6:1. On the
+   labels it becomes the brand's muted grey for light backgrounds (brand/BRAND.md): 4.7:1. */
+.post-tag,
+.article__tag,
+.tag-cloud__item,
+.section-tags__name {
+    --dark-gray: var(--blue-gray);
 }

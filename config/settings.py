@@ -25,6 +25,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 SECRET_KEY = env('SECRET_KEY')
 
+# Debugging only: error pages with tracebacks, and runserver serving static and media files. Never on the server.
 DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = env('ALLOWED_HOSTS')
@@ -244,12 +245,10 @@ STORAGES = {
     'default': {
         'BACKEND': 'django.core.files.storage.FileSystemStorage',
     },
+    # Compressed copies, with a hash of their contents in the name so browsers can cache them for good. collectstatic
+    # writes the list of names; with DEBUG on, pages link the files by their plain names and don't need it.
     'staticfiles': {
-        'BACKEND': (
-            'django.contrib.staticfiles.storage.StaticFilesStorage'
-            if DEBUG
-            else 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-        ),
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
     },
 }
 
@@ -278,19 +277,20 @@ SECURE_CSP = {
 }
 
 
-# Production hardening
+# HTTPS and security headers
+# The site is only served over HTTPS: nginx and Cloudflare terminate TLS and forward the original scheme. To serve it
+# over plain http, as runserver does, turn the redirect and the secure cookies off in the environment (README.md).
 
-if not DEBUG:
-    # nginx/Cloudflare terminate TLS and forward the original scheme
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SECURE_SSL_REDIRECT = env.bool('SECURE_SSL_REDIRECT', default=True)
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_HSTS_SECONDS = env.int('SECURE_HSTS_SECONDS', default=60 * 60 * 24 * 30)
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
-    X_FRAME_OPTIONS = 'DENY'
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = env.bool('SECURE_SSL_REDIRECT', default=True)
+SESSION_COOKIE_SECURE = env.bool('SESSION_COOKIE_SECURE', default=True)
+CSRF_COOKIE_SECURE = env.bool('CSRF_COOKIE_SECURE', default=True)
+# Only sent over HTTPS, so a laptop never gets it
+SECURE_HSTS_SECONDS = env.int('SECURE_HSTS_SECONDS', default=60 * 60 * 24 * 30)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+X_FRAME_OPTIONS = 'DENY'
 
 
 LOGGING = {
@@ -327,6 +327,9 @@ LOGGING = {
         },
     },
 }
+
+# Tests run without what only the server provides: HTTPS from nginx, and collectstatic's files
+TEST_RUNNER = 'config.test_runner.TestRunner'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

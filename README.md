@@ -145,6 +145,10 @@ Create a `.env` file for development. Every other setting has a default that wor
 SECRET_KEY=dev-only-not-secret
 DEBUG=True
 EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
+# runserver speaks plain http; the server, only HTTPS
+SECURE_SSL_REDIRECT=False
+SESSION_COOKIE_SECURE=False
+CSRF_COOKIE_SECURE=False
 ```
 
 ```bash
@@ -165,7 +169,8 @@ ruff format --check .
 coverage run manage.py test && coverage report
 ```
 
-Tests expect `DEBUG=True`, as in CI: with `DEBUG=False` the production settings redirect every request to HTTPS.
+Tests pass whatever `DEBUG` says. They run with the production settings, less what only the server provides: HTTPS
+and the files `collectstatic` writes ([`config/test_runner.py`](config/test_runner.py)).
 
 ## Dependencies
 

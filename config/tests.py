@@ -1,15 +1,19 @@
-"""Tests for the site-wide alerts: error emails (LOGGING in config/settings.py) and the email_admins command."""
+"""Tests for site-wide settings: error emails (LOGGING in config/settings.py) and the email_admins command, HTTPS, and
+the test runner."""
 
 import logging
 import smtplib
 from io import StringIO
 from unittest import mock
 
+from django.conf import settings
 from django.core import mail
 from django.core.management import CommandError, call_command
-from django.test import TestCase, override_settings
+from django.templatetags.static import static
+from django.test import SimpleTestCase, TestCase, override_settings
 
 from config.log import OncePerError
+from config.test_runner import TestRunner
 from config.testing import reverse_in
 
 ADMINS = [('ops@example.com', 'ops@example.com')]
@@ -106,3 +110,38 @@ class EmailAdminsCommandTests(TestCase):
         with mock.patch('main.management.commands.email_admins.mail_admins', side_effect=smtplib.SMTPException('down')):
             with self.assertRaisesMessage(CommandError, 'Could not send the email: down'):
                 call_command('email_admins', 'Backup failed', 'Details')
+
+
+# The test runner turns the redirect off for the other tests (config/test_runner.py)
+@override_settings(SECURE_SSL_REDIRECT=True)
+class HTTPSTests(TestCase):
+    """nginx hands the site every request over plain http, and says in X-Forwarded-Proto how the visitor sent it."""
+
+    def test_plain_http_is_redirected_to_https(self):
+        url = reverse_in('en', 'main:about')
+
+        response = self.client.get(url)
+
+        self.assertRedirects(response, f'https://testserver{url}', status_code=301, fetch_redirect_response=False)
+
+    def test_requests_that_came_over_https_are_not_redirected_again(self):
+        response = self.client.get(reverse_in('en', 'main:about'), headers={'X-Forwarded-Proto': 'https'})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.wsgi_request.is_secure())
+
+
+class TestRunnerTests(SimpleTestCase):
+    def test_tests_need_neither_https_nor_collectstatic(self):
+        self.assertFalse(settings.SECURE_SSL_REDIRECT)
+        self.assertEqual(static('favicon/favicon.ico'), '/static/favicon/favicon.ico')
+
+    def test_parallel_workers_that_load_the_settings_anew_get_the_same(self):
+        # What a worker started with spawn has before its setup: the settings as the environment gives them
+        with override_settings(SECURE_SSL_REDIRECT=True, STATIC_ROOT='/srv/blog/staticfiles'):
+            worker_settings = TestRunner.parallel_test_suite.process_setup()
+            try:
+                self.assertFalse(settings.SECURE_SSL_REDIRECT)
+                self.assertIsNone(settings.STATIC_ROOT)
+            finally:
+                worker_settings.disable()

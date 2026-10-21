@@ -534,6 +534,13 @@ class ContactFormViewTests(TestCase):
 
         self.assertContains(response, '<html lang="es"')
 
+    def test_the_photo_loads_first(self):
+        # It is the largest thing on the first screen at desktop widths
+        response = self.client.get(reverse('main:contact'))
+
+        self.assertContains(response, 'fetchpriority="high"')
+        self.assertNotContains(response, 'loading="lazy"')
+
     def test_ignores_bots_that_fill_the_hidden_field(self):
         response = self.client.post(reverse('main:contact'), {**self.data, 'contact_me_by_fax_only': 'spam'})
 

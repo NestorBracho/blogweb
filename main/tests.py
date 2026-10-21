@@ -341,6 +341,12 @@ class PageAccessibilityTests(TestCase):
                 )
                 self.assertContains(response, f'tabindex="-1" data-enlarge-label="{button}"')
 
+    def test_the_only_main_landmark_needs_no_label(self):
+        response = self.client.get(reverse_in('es', 'main:index'))
+
+        self.assertContains(response, '<main', count=1)
+        self.assertContains(response, '<main class="content">')
+
 
 class LanguageInTheURLTests(TestCase):
     """Pages live under /en/ and /es/; a path without a language goes to the visitor's (docs/adr/0006)."""

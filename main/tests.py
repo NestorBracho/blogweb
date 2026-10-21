@@ -315,6 +315,39 @@ class HeaderTests(TestCase):
                 self.assertEqual(self.client.cookies[settings.LANGUAGE_COOKIE_NAME].value, chosen)
 
 
+class PageAccessibilityTests(TestCase):
+    """The rest of base.html works with a keyboard too, and screen readers hear it in the page's language."""
+
+    def test_back_to_top_is_a_button_named_in_each_language(self):
+        for language, name in [('en', 'Back to top'), ('es', 'Volver arriba')]:
+            with self.subTest(language=language):
+                response = self.client.get(reverse_in(language, 'main:index'))
+
+                self.assertContains(response, f'<button type="button" class="top" aria-label="{name}"')
+
+    def test_enlarged_post_images_open_in_a_dialog_named_in_each_language(self):
+        post = create_post('With images')
+
+        for language, dialog, button in [
+            ('en', 'Enlarged image', 'Enlarge image'),
+            ('es', 'Imagen ampliada', 'Ampliar imagen'),
+        ]:
+            with self.subTest(language=language):
+                response = self.client.get(reverse_in(language, 'blog:post-detail', slug=post.slug))
+
+                # static/js/common.js names each image with data-enlarge-label and focuses the dialog
+                self.assertContains(
+                    response, f'<div class="images-overlay" role="dialog" aria-modal="true" aria-label="{dialog}"'
+                )
+                self.assertContains(response, f'tabindex="-1" data-enlarge-label="{button}"')
+
+    def test_the_only_main_landmark_needs_no_label(self):
+        response = self.client.get(reverse_in('es', 'main:index'))
+
+        self.assertContains(response, '<main', count=1)
+        self.assertContains(response, '<main class="content">')
+
+
 class LanguageInTheURLTests(TestCase):
     """Pages live under /en/ and /es/; a path without a language goes to the visitor's (docs/adr/0006)."""
 

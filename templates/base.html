@@ -70,7 +70,7 @@
     {% endif %}
 
     <!-- begin content -->
-    <main class="content" aria-label="Content">
+    <main class="content">
 
         {% block content %}{% endblock %}
 
@@ -91,9 +91,14 @@
 
 {% block modals %}{% endblock %}
 
-<div class="top" title="Top"><i class="fa-solid fa-arrow-up"></i></div>
+{% translate 'Back to top' as back_to_top %}
+<button type="button" class="top" aria-label="{{ back_to_top }}" title="{{ back_to_top }}">
+    <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
+</button>
 
-<div class="images-overlay"></div>
+{# static/js/common.js shows the enlarged post images here, and names the images with data-enlarge-label #}
+<div class="images-overlay" role="dialog" aria-modal="true" aria-label="{% translate 'Enlarged image' %}"
+     tabindex="-1" data-enlarge-label="{% translate 'Enlarge image' %}"></div>
 
 <script src="{% static 'js/jquery-3.7.1.min.js' %}"></script>
 <script src="{% static 'js/scripts.js' %}"></script>

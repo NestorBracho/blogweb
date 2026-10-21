@@ -399,6 +399,20 @@ class PostAPITests(TestCase):
         self.assertEqual(response.status_code, 403)
         self.assertFalse(Post.objects.filter(title_en='Spam').exists())
 
+    def test_staff_passwords_sign_nobody_in(self):
+        # Only the admin's session does: the API is no place to try passwords
+        get_user_model().objects.create_user(username='editor', password='correct horse', is_staff=True)
+        draft = create_post('Draft', is_published=False)
+        credentials = base64.b64encode(b'editor:correct horse').decode()
+        headers = {'Authorization': f'Basic {credentials}'}
+
+        created = self.client.post(self.url, {'title_en': 'Spam'}, headers=headers)
+        read = self.client.get(reverse('api:post-detail', args=[draft.pk]), headers=headers)
+
+        self.assertEqual(created.status_code, 403)
+        self.assertFalse(Post.objects.filter(title_en='Spam').exists())
+        self.assertEqual(read.status_code, 404)
+
     def test_staff_can_create_draft_posts(self):
         self.client.force_login(get_user_model().objects.create_user(username='editor', is_staff=True))
         category = create_category()

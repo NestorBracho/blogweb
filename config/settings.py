@@ -113,6 +113,11 @@ DATABASES = {
 }
 
 REST_FRAMEWORK = {
+    # Staff sign in through the admin and the API takes that session. Not Basic auth, which would let anyone try
+    # passwords against the API without knowing the admin's path.
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
     'DEFAULT_PAGINATION_CLASS': 'blog.api.pagination.PageSizePagination',
     'DEFAULT_PERMISSION_CLASSES': [
         'blog.api.permissions.IsAdminOrReadOnly',

@@ -15,7 +15,8 @@ from django.utils import translation
 from django.views.defaults import server_error
 
 from config.middleware import ContentSecurityPolicyMiddleware
-from config.testing import reverse_in, structured_data
+from config.testing import EmptyCacheMixin, reverse_in, structured_data
+from config.throttling import FormThrottle
 
 from . import seo
 from .models import ContactRequest
@@ -510,7 +511,7 @@ class SocialLinksTests(TestCase):
         self.assertContains(response, 'href="https://www.linkedin.com/in/example"', count=3)
 
 
-class ContactFormViewTests(TestCase):
+class ContactFormViewTests(EmptyCacheMixin, TestCase):
     data = {'name': 'Ada', 'email': 'ada@example.com', 'message': 'Hello!'}
 
     def test_stores_the_request_and_emails_it(self):
@@ -553,6 +554,25 @@ class ContactFormViewTests(TestCase):
 
         self.assertRedirects(response, reverse('main:index'), fetch_redirect_response=False)
         self.assertTrue(ContactRequest.objects.filter(email='ada@example.com').exists())
+
+    def test_limits_how_many_requests_each_visitor_sends(self):
+        allowed = FormThrottle('contact').num_requests
+        visitor = {'CF-Connecting-IP': '203.0.113.7'}
+        for _ in range(allowed):
+            self.client.post(reverse('main:contact'), self.data, headers=visitor)
+
+        too_many = self.client.post(
+            reverse_in('es', 'main:contact'), {**self.data, 'message': 'Una más'}, headers=visitor
+        )
+        someone_else = self.client.post(reverse('main:contact'), self.data, headers={'CF-Connecting-IP': '203.0.113.8'})
+
+        # The form comes back in the page's language, with what was typed
+        self.assertContains(too_many, 'Has enviado varios mensajes en poco tiempo', status_code=429)
+        self.assertContains(too_many, 'value="Ada"', status_code=429)
+        self.assertContains(too_many, '>Una más</textarea>', status_code=429)
+        self.assertFalse(ContactRequest.objects.filter(message='Una más').exists())
+        self.assertRedirects(someone_else, reverse('main:index'), fetch_redirect_response=False)
+        self.assertEqual(len(mail.outbox), allowed + 1)
 
 
 class ContactRequestAdminTests(TestCase):

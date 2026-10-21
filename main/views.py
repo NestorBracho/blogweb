@@ -8,6 +8,7 @@ from django.views import generic
 
 from blog.models import content_language
 from config.forms import HONEYPOT_FIELD
+from config.throttling import FormThrottle
 
 from . import structured_data
 from .forms import ContactForm
@@ -79,6 +80,14 @@ class ContactFormView(generic.CreateView):
         return super().get_context_data(**kwargs)
 
     def form_valid(self, form):
+        if not FormThrottle('contact').allow_request(self.request, self):
+            # The form comes back with what they wrote, to send it again later
+            form.add_error(
+                None,
+                _("You've sent several messages in a short time. Please try again later: your message is still here."),
+            )
+            return self.render_to_response(self.get_context_data(form=form), status=429)
+
         http_response = super().form_valid(form)
         messages.success(
             self.request,

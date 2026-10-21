@@ -491,6 +491,14 @@ msgstr "Escribe para buscar..."
 msgid "Back to top"
 msgstr "Volver arriba"
 
+#: templates/base.html:100
+msgid "Enlarged image"
+msgstr "Imagen ampliada"
+
+#: templates/base.html:101
+msgid "Enlarge image"
+msgstr "Ampliar imagen"
+
 #: templates/lib/_honeypot_field.html:6
 msgid "Leave this field empty"
 msgstr "Deja este campo vacío"

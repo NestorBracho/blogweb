@@ -230,16 +230,24 @@ document.addEventListener("DOMContentLoaded", function() {
   // Zoom Image
   ======================= */
   if (imagesOverlay) {
-    const images = document.querySelectorAll('.post__content img, .page__content img, .gallery__image img');
+    const images = document.querySelectorAll('.post__content img, .page__content img, .gallery__image img'),
+      enlargeLabel = imagesOverlay.dataset.enlargeLabel;
+    let zoomedImage = null;
 
     const clearOverlay = () => {
       imagesOverlay.classList.remove('active');
       imagesOverlay.innerHTML = '';
+      // Keyboard users carry on from the image they enlarged
+      if (zoomedImage) {
+        zoomedImage.focus();
+        zoomedImage = null;
+      }
     };
 
-    const createImageElement = (src) => {
+    const createImageElement = (src, alt) => {
       const img = document.createElement('img');
       img.src = src;
+      img.alt = alt;
       return img;
     };
 
@@ -250,22 +258,53 @@ document.addEventListener("DOMContentLoaded", function() {
       return descriptionElem;
     };
 
+    const openOverlay = (image) => {
+      const galleryImage = image.closest('.gallery__image');
+      const description = galleryImage?.querySelector('.gallery__image__caption')?.textContent || '';
+      imagesOverlay.classList.add('active');
+
+      imagesOverlay.innerHTML = '';
+      imagesOverlay.appendChild(createImageElement(image.dataset.src || image.src, image.alt));
+
+      if (description) {
+        imagesOverlay.appendChild(createDescriptionElement(description));
+      }
+
+      zoomedImage = image;
+      imagesOverlay.focus();
+    };
+
     images.forEach(image => {
+      // A button for keyboards and screen readers: Enter or Space enlarges it, like a click
+      image.setAttribute('role', 'button');
+      image.setAttribute('tabindex', '0');
+      image.setAttribute('aria-label', image.alt ? `${enlargeLabel}: ${image.alt}` : enlargeLabel);
+
       image.addEventListener('click', () => {
-        const galleryImage = image.closest('.gallery__image');
-        const description = galleryImage?.querySelector('.gallery__image__caption')?.textContent || '';
-        imagesOverlay.classList.add('active');
+        openOverlay(image);
+      });
 
-        imagesOverlay.innerHTML = '';
-        imagesOverlay.appendChild(createImageElement(image.dataset.src || image.src));
-
-        if (description) {
-          imagesOverlay.appendChild(createDescriptionElement(description));
+      image.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openOverlay(image);
         }
       });
     });
 
     imagesOverlay.addEventListener('click', clearOverlay);
+
+    // Escape closes the enlarged image, and the focus stays on it until then: the page behind is covered
+    document.addEventListener('keydown', e => {
+      if (!imagesOverlay.classList.contains('active')) {
+        return;
+      }
+      if (e.key === 'Escape') {
+        clearOverlay();
+      } else if (e.key === 'Tab') {
+        e.preventDefault();
+      }
+    });
   }
 
 

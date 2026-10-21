@@ -325,6 +325,22 @@ class PageAccessibilityTests(TestCase):
 
                 self.assertContains(response, f'<button type="button" class="top" aria-label="{name}"')
 
+    def test_enlarged_post_images_open_in_a_dialog_named_in_each_language(self):
+        post = create_post('With images')
+
+        for language, dialog, button in [
+            ('en', 'Enlarged image', 'Enlarge image'),
+            ('es', 'Imagen ampliada', 'Ampliar imagen'),
+        ]:
+            with self.subTest(language=language):
+                response = self.client.get(reverse_in(language, 'blog:post-detail', slug=post.slug))
+
+                # static/js/common.js names each image with data-enlarge-label and focuses the dialog
+                self.assertContains(
+                    response, f'<div class="images-overlay" role="dialog" aria-modal="true" aria-label="{dialog}"'
+                )
+                self.assertContains(response, f'tabindex="-1" data-enlarge-label="{button}"')
+
 
 class LanguageInTheURLTests(TestCase):
     """Pages live under /en/ and /es/; a path without a language goes to the visitor's (docs/adr/0006)."""

@@ -49,6 +49,15 @@ def make_sizes(cover: FieldFile, folder: str) -> dict[str, str]:
     return paths
 
 
+def stored_size(storage, path: str) -> tuple[int, int] | None:
+    """Width and height of a size already saved (small covers make smaller ones), read from the file's header."""
+    try:
+        with storage.open(path) as file, Image.open(file) as image:
+            return image.size
+    except OSError:
+        return None
+
+
 def fit(image: Image.Image, width: int, height: int) -> Image.Image:
     """The image cropped to the shape of width x height around its centre and scaled down to it, never up."""
     scale = min(1, image.width / width, image.height / height)

@@ -43,8 +43,8 @@
 
                             <div class="hero__description">
 
-                                <p>{% blocktranslate trimmed %}
-                                    I have spent more than 12 years building web platforms with Python and Django,
+                                <p>{% blocktranslate trimmed with years=owner.years %}
+                                    I have spent more than {{ years }} years building web platforms with Python and Django,
                                     focused on backend design and system architecture. Since 2022 I have been building
                                     data platforms for the World Bank Group that are used across several African
                                     countries. Before that: the payment platform at Selia, Nokia’s Zina CRM and six

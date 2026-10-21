@@ -17,7 +17,8 @@
 
                     <ul class="cv__contact list-reset">
                         {% if owner.location %}<li>{{ owner.location }}</li>{% endif %}
-                        {% if owner.email %}<li><a href="mailto:{{ owner.email }}">{{ owner.email }}</a></li>{% endif %}
+                        {# Cloudflare's Email Obfuscation would swap the address for a script-only link that CV parsers can't read #}
+                        {% if owner.email %}<li><!--email_off--><a href="mailto:{{ owner.email }}">{{ owner.email }}</a><!--/email_off--></li>{% endif %}
                         {% if owner.linkedin_url %}<li><a href="{{ owner.linkedin_url }}" target="_blank" rel="noopener">LinkedIn</a></li>{% endif %}
                         {% if owner.github_url %}<li><a href="{{ owner.github_url }}" target="_blank" rel="noopener">GitHub</a></li>{% endif %}
                     </ul>

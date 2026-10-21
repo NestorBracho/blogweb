@@ -85,6 +85,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'config.context_processors.sidebar',
                 'config.context_processors.owner',
+                'config.context_processors.newsletter',
             ],
         },
     },
@@ -163,10 +164,17 @@ CONTACT_EMAIL = env('CONTACT_EMAIL', default=DEFAULT_FROM_EMAIL)
 
 OWNER_EMAIL = env('OWNER_EMAIL', default='')
 OWNER_PHONE = env('OWNER_PHONE', default='')
-OWNER_LOCATION = env('OWNER_LOCATION', default='')
+# Where he lives, in English; OWNER_LOCATION_ES is the Spanish version, the English one when unset
+OWNER_LOCATIONS = {
+    'en': env('OWNER_LOCATION', default=''),
+}
+OWNER_LOCATIONS['es'] = env('OWNER_LOCATION_ES', default=OWNER_LOCATIONS['en'])
 
 # Job title on the home page, the CV, page titles and link previews. It changes now and then, so it lives here only.
 OWNER_ROLE = 'Senior Full Stack Engineer'
+
+# The year his career started (January), for the "more than N years" on the home page, the CV and link previews
+OWNER_CAREER_START_YEAR = 2013
 
 # The CV as a PDF in each language, linked from /cv/. They hold the phone number, so they live on the server
 # (e.g. under MEDIA_ROOT/cv/), not in the repo. Leave one empty to hide its download button.
@@ -178,6 +186,11 @@ OWNER_CV_PDF_URLS = {
 # Public profiles linked from the footer and sidebar. Leave one empty to hide its icon.
 OWNER_GITHUB_URL = env('OWNER_GITHUB_URL', default='https://github.com/NestorBracho')
 OWNER_LINKEDIN_URL = env('OWNER_LINKEDIN_URL', default='https://www.linkedin.com/in/nestor-bracho')
+
+
+# The newsletter sign-up in the sidebar and its part of the privacy policy. Off until something sends the newsletter
+# (and its unsubscribe link); the sign-up views and their double opt-in keep working either way.
+NEWSLETTER_ENABLED = env.bool('NEWSLETTER_ENABLED', default=False)
 
 
 # OpenAI, only needed by the draft_article command

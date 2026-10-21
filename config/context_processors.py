@@ -1,8 +1,15 @@
+import datetime
+
 from django.conf import settings
 from django.utils.functional import SimpleLazyObject
 
-from blog.models import Category, Post
+from blog.models import Category, Post, content_language
 from main.home import HOME_PAGE_SIZE
+
+
+def years_of_experience():
+    """Whole years since his career started, for "more than N years": it started in January, so N is always true."""
+    return datetime.date.today().year - settings.OWNER_CAREER_START_YEAR
 
 
 def owner(request):
@@ -12,11 +19,16 @@ def owner(request):
             'role': settings.OWNER_ROLE,
             'email': settings.OWNER_EMAIL,
             'phone': settings.OWNER_PHONE,
-            'location': settings.OWNER_LOCATION,
+            'location': settings.OWNER_LOCATIONS[content_language()],
+            'years': years_of_experience(),
             'github_url': settings.OWNER_GITHUB_URL,
             'linkedin_url': settings.OWNER_LINKEDIN_URL,
         }
     }
+
+
+def newsletter(request):
+    return {'newsletter_enabled': settings.NEWSLETTER_ENABLED}
 
 
 def sidebar(request):

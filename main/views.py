@@ -6,14 +6,20 @@ from django.templatetags.static import static
 from django.utils.translation import gettext as _
 from django.views import generic
 
+from blog.covers import SOCIAL_SIZE
 from blog.models import Category, Post, content_language
 from config import structured_data
+from config.context_processors import years_of_experience
 from config.forms import HONEYPOT_FIELD
 from config.throttling import FormThrottle
 
 from .forms import ContactForm
 from .home import HACKERS_HAVEN_CATEGORIES, HACKERS_HAVEN_POSTS, HOME_PAGE_SIZE
 from .models import ContactRequest
+
+# Link previews of the pages recruiters land on show his name and role (brand/source/gen.py makes it from OWNER_ROLE);
+# the rest keep the brand image
+PROFILE_SOCIAL_IMAGE = 'images/og-profile.png'
 
 
 class HomePostsMixin:
@@ -28,6 +34,8 @@ class IndexView(HomePostsMixin, generic.ListView):
 
     def get_context_data(self, **kwargs):
         kwargs['structured_data'] = structured_data.home_page(self.request)
+        kwargs['social_image_url'] = static(PROFILE_SOCIAL_IMAGE)
+        kwargs['social_image_size'] = SOCIAL_SIZE
         # Only queried if the page shows it (many_posts, in config/context_processors.py)
         kwargs['hackers_haven'] = (
             Category.objects.with_published_posts()
@@ -60,10 +68,9 @@ class AboutView(generic.TemplateView):
 
         kwargs['page_title'] = _('About Me')
         kwargs['meta_description'] = _(
-            'Get to know Nestor, a fullstack software engineer passionate about backend '
-            'systems, Python, AWS, and technology for social impact. Discover his journey, '
-            'skills, and mission to build meaningful digital tools.'
-        )
+            'Get to know Nestor Bracho, %(role)s: backend systems, Python and technology for social impact. '
+            'His journey, skills and what drives him.'
+        ) % {'role': settings.OWNER_ROLE}
 
         return super().get_context_data(**kwargs)
 
@@ -72,10 +79,14 @@ class CVView(generic.TemplateView):
     template_name = 'main/cv.html'
 
     def get_context_data(self, **kwargs):
-        kwargs['page_title'] = _('CV')
+        # The role in the title too: it's what search results and link previews show first
+        kwargs['full_title'] = _('CV · Nestor Bracho, %(role)s') % {'role': settings.OWNER_ROLE}
         kwargs['meta_description'] = _(
-            'CV of Nestor Bracho, %(role)s with more than 12 years building web platforms with Python and Django.'
-        ) % {'role': settings.OWNER_ROLE}
+            'CV of Nestor Bracho, %(role)s with more than %(years)s years building web platforms with Python and '
+            'Django.'
+        ) % {'role': settings.OWNER_ROLE, 'years': years_of_experience()}
+        kwargs['social_image_url'] = static(PROFILE_SOCIAL_IMAGE)
+        kwargs['social_image_size'] = SOCIAL_SIZE
         kwargs['pdf_url'] = settings.OWNER_CV_PDF_URLS[content_language()]
         kwargs['structured_data'] = structured_data.profile_page(self.request)
 
@@ -104,7 +115,6 @@ class ContactFormView(generic.CreateView):
             'Plug into the grid, whether you’re building something bold or need a '
             'sharp mind in the system, this is your uplink to start working together.'
         )
-        kwargs['social_image_url'] = static('images/40.jpg')
 
         return super().get_context_data(**kwargs)
 

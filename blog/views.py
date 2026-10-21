@@ -4,6 +4,7 @@ from django.views import generic
 
 from config import structured_data
 
+from . import covers
 from .models import Category, Post
 
 
@@ -20,6 +21,10 @@ class PostDetailView(generic.DetailView):
         context['structured_data'] = structured_data.blog_posting(self.request, post)
         if post.cover:
             context['social_image_url'] = post.cover_urls['social']
+            # Without its social size yet (make_cover_sizes), the original stands in and previews size it themselves
+            social_path = post.cover_sizes.get('paths', {}).get('social')
+            if social_path:
+                context['social_image_size'] = covers.stored_size(post.cover.storage, social_path)
         context.update(self.get_navigation(post))
         return context
 

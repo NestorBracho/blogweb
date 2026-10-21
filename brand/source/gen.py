@@ -2,7 +2,7 @@
 
 Qué necesita y cómo se ejecuta: README.md, en esta carpeta.
 """
-import io, os, sys
+import io, os, re, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FONT_FILES = {w: os.path.join(HERE, f"package/files/roboto-mono-latin-{w}-normal.woff2") for w in (500, 700)}
@@ -165,6 +165,31 @@ og = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}
       f'</svg>')
 write("social/og-image.svg", og)
 png(og, "social/og-image.png", W, H)
+
+# --- OG image 1200x630 con nombre y cargo, para las páginas que ven los reclutadores (home y CV)
+# El cargo sale de OWNER_ROLE en config/settings.py, para que no haya dos copias; si cambia, se vuelve a generar
+SETTINGS = os.path.join(HERE, "..", "..", "config", "settings.py")
+role_match = re.search(r"^OWNER_ROLE = '([^']+)'$", open(SETTINGS).read(), re.MULTILINE)
+if not role_match:
+    sys.exit(f"OWNER_ROLE not found in {SETTINGS}")
+role = role_match.group(1)
+X = 96
+small_w = 240
+ks = small_w / vb[2]
+name_d, name_b, name_adv = text_path("Nestor Bracho", 700, 92, 0, 0)
+role_d, role_b, role_adv = text_path(role, 500, 44, 0, 0, tracking=0)
+if max(name_adv, role_adv) > W - 2 * X:
+    sys.exit(f"The role is too long for the profile image: {role!r}")
+profile = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}">'
+           f'<rect width="{W}" height="{H}" fill="{INK}"/>'
+           f'<g transform="translate({X} 96) scale({ks:.4f}) translate({-vb[0]:.2f} {-vb[1]:.2f})">{body}</g>'
+           f'<path transform="translate({X} 340)" d="{name_d}" fill="{TEXT_D}"/>'
+           f'<path transform="translate({X} 416)" d="{role_d}" fill="{MUTED_D}"/>'
+           f'<path transform="translate({X} {H - 56})" d="{url_d}" fill="{MUTED_L}"/>'
+           f'<rect x="0" y="{H - 8}" width="{W}" height="8" fill="{ACCENT}"/>'
+           f'</svg>')
+write("social/og-profile.svg", profile)
+png(profile, "social/og-profile.png", W, H)
 
 # --- Hoja de contacto para revisar
 def b64png(svg_str, w, h=None):

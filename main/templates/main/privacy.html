@@ -17,7 +17,9 @@
                 <div class="page__content">
                     {% comment %}
                         A legal text reads better whole in each language than split into translation strings.
-                        Keep both versions in sync, and update the date when either changes.
+                        Keep both versions in sync, and update the date when either changes. The newsletter parts only
+                        show while NEWSLETTER_ENABLED is on (config/settings.py). The email_off comments
+                        keep Cloudflare from hiding the address behind a script, as on the CV.
                     {% endcomment %}
                     {% if LANGUAGE_CODE == 'es' %}
                         <p><em>Última actualización: 21 de octubre de 2026</em></p>
@@ -25,7 +27,7 @@
                         <h2>Quién es responsable</h2>
                         <p>
                             Este sitio lo gestiona Nestor Bracho. Para cualquier cuestión sobre tus datos, escríbeme
-                            {% if owner.email %}a <a href="mailto:{{ owner.email }}">{{ owner.email }}</a> o {% endif %}a
+                            {% if owner.email %}a <!--email_off--><a href="mailto:{{ owner.email }}">{{ owner.email }}</a><!--/email_off--> o {% endif %}a
                             través del <a href="{{ contact_url }}">formulario de contacto</a>.
                         </p>
 
@@ -36,12 +38,14 @@
                                 responderte. Se guardan en la base de datos del sitio y me llegan por email. Los conservo
                                 mientras sean necesarios para la conversación y los borro si me lo pides.
                             </li>
+                            {% if newsletter_enabled %}
                             <li>
                                 <strong>Newsletter:</strong> tu email y las fechas de alta y de confirmación. Solo te
                                 escribiré si confirmas la suscripción con el enlace que te envío (doble confirmación); las
                                 direcciones sin confirmar nunca reciben la newsletter. Puedes darte de baja cuando quieras
                                 escribiéndome, y cada newsletter incluirá un enlace para hacerlo.
                             </li>
+                            {% endif %}
                             <li>
                                 <strong>Registros del servidor:</strong> como cualquier web, el servidor anota la dirección
                                 IP, la fecha, la página pedida y el navegador de cada visita. Sirven para la seguridad y
@@ -49,9 +53,14 @@
                             </li>
                         </ul>
                         <p>
+                            {% if newsletter_enabled %}
                             La base legal es tu consentimiento en el caso de la newsletter, y tu propia petición o mi
-                            interés legítimo en responderte y mantener el sitio seguro en los demás casos. No vendo ni
-                            cedo tus datos a nadie.
+                            interés legítimo en responderte y mantener el sitio seguro en los demás casos.
+                            {% else %}
+                            La base legal es tu propia petición o mi interés legítimo en responderte y mantener el sitio
+                            seguro.
+                            {% endif %}
+                            No vendo ni cedo tus datos a nadie.
                         </p>
 
                         <h2>Cookies y almacenamiento local</h2>
@@ -76,7 +85,7 @@
                             <li><strong>Google Cloud</strong> aloja el servidor y la base de datos, en Estados Unidos.</li>
                             <li>
                                 Un <strong>proveedor de envío de correo</strong> entrega los emails del formulario de
-                                contacto y de la newsletter.
+                                contacto{% if newsletter_enabled %} y de la newsletter{% endif %}.
                             </li>
                         </ul>
                         <p>Estos proveedores pueden tratar datos fuera de tu país, también en Estados Unidos.</p>
@@ -97,7 +106,7 @@
                         <h2>Who is responsible</h2>
                         <p>
                             This site is run by Nestor Bracho. For anything about your data, write to me
-                            {% if owner.email %}at <a href="mailto:{{ owner.email }}">{{ owner.email }}</a> or {% endif %}through
+                            {% if owner.email %}at <!--email_off--><a href="mailto:{{ owner.email }}">{{ owner.email }}</a><!--/email_off--> or {% endif %}through
                             the <a href="{{ contact_url }}">contact form</a>.
                         </p>
 
@@ -108,12 +117,14 @@
                                 in the site's database and sent to my inbox. I keep them while the conversation needs them
                                 and delete them if you ask.
                             </li>
+                            {% if newsletter_enabled %}
                             <li>
                                 <strong>Newsletter:</strong> your email and the dates you signed up and confirmed. I will only
                                 write to you after you confirm through the link I send (double opt-in); unconfirmed
                                 addresses never receive the newsletter. You can leave at any time by writing to me, and
                                 every newsletter will include a link to unsubscribe.
                             </li>
+                            {% endif %}
                             <li>
                                 <strong>Server logs:</strong> like any website, the server records the IP address, date,
                                 requested page and browser of each visit. They are used for security and troubleshooting
@@ -121,9 +132,14 @@
                             </li>
                         </ul>
                         <p>
+                            {% if newsletter_enabled %}
                             The legal basis is your consent for the newsletter, and your own request or my legitimate
-                            interest in replying to you and keeping the site secure otherwise. I don't sell or share your
-                            data with anyone.
+                            interest in replying to you and keeping the site secure otherwise.
+                            {% else %}
+                            The legal basis is your own request or my legitimate interest in replying to you and keeping
+                            the site secure.
+                            {% endif %}
+                            I don't sell or share your data with anyone.
                         </p>
 
                         <h2>Cookies and local storage</h2>
@@ -147,7 +163,7 @@
                             </li>
                             <li><strong>Google Cloud</strong> hosts the server and database, in the United States.</li>
                             <li>
-                                An <strong>email delivery provider</strong> sends the contact form and newsletter emails.
+                                An <strong>email delivery provider</strong> sends the contact form{% if newsletter_enabled %} and newsletter{% endif %} emails.
                             </li>
                         </ul>
                         <p>These providers may process data outside your country, including in the United States.</p>

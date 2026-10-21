@@ -7,10 +7,10 @@ from django.utils.translation import gettext as _
 from django.views import generic
 
 from blog.models import Category, Post, content_language
+from config import structured_data
 from config.forms import HONEYPOT_FIELD
 from config.throttling import FormThrottle
 
-from . import structured_data
 from .forms import ContactForm
 from .models import ContactRequest
 

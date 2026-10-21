@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext as _
 from django.views import generic
 
-from main import structured_data
+from config import structured_data
 
 from .models import Category, Post
 

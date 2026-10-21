@@ -25,7 +25,7 @@ from config.testing import EmptyCacheMixin, create_category, create_post, revers
 from config.throttling import AnonRateThrottle, WriteRateThrottle
 
 from .drafting import ArticleDraft
-from .models import Post
+from .models import Category, Post
 from .rendering import render_markdown
 
 
@@ -767,6 +767,28 @@ class PostSlugTests(TestCase):
         second = create_post('Same title')
 
         self.assertEqual((first.slug, second.slug), ('same-title', 'same-title-1'))
+
+
+class PublishedPostsTests(TestCase):
+    def test_leave_out_drafts(self):
+        category = create_category()
+        published = create_post('Published', category=category)
+        create_post('Draft', category=category, is_published=False)
+
+        self.assertEqual(list(Post.objects.published()), [published])
+        self.assertEqual(list(category.posts.published()), [published])
+
+    def test_date_each_category_by_its_newest_published_post(self):
+        older = create_category('older-topic')
+        create_post('Old', days_ago=5, category=older)
+        create_post('Draft written today', category=older, is_published=False)
+        newer = create_category('newer-topic')
+        recent = create_post('Recent', days_ago=1, category=newer)
+
+        categories = list(Category.objects.with_published_posts().order_by('-latest_post'))
+
+        self.assertEqual(categories, [newer, older])
+        self.assertEqual(categories[0].latest_post, recent.created)
 
 
 class CategoryAPITests(EmptyCacheMixin, TestCase):

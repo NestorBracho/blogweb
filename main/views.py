@@ -24,7 +24,7 @@ HACKERS_HAVEN_POSTS = 5
 class HomePostsMixin:
     """The home's list of posts, newest first, a page at a time (?page=)."""
 
-    queryset = Post.objects.filter(is_published=True).select_related('category').order_by('-created')
+    queryset = Post.objects.published().select_related('category').order_by('-created')
     paginate_by = HOME_PAGE_SIZE
 
 

@@ -6,7 +6,8 @@ from .models import Category, Post
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ['name_en', 'name_es', 'slug', 'color', 'post_count']
+    list_display = ['name_en', 'name_es', 'parent', 'slug', 'color', 'post_count']
+    list_select_related = ['parent']
     search_fields = ['name_en', 'name_es', 'slug']
     prepopulated_fields = {'slug': ['name_en']}
 

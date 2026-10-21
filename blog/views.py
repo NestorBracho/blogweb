@@ -8,7 +8,7 @@ from .models import Category, Post
 
 
 class PostDetailView(generic.DetailView):
-    queryset = Post.objects.filter(is_published=True).select_related('category')
+    queryset = Post.objects.published().select_related('category')
     template_name = 'blog/post.html'
 
     def get_context_data(self, **kwargs):
@@ -43,7 +43,7 @@ class CategoryDetailView(generic.ListView):
         return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
-        return self.category.posts.filter(is_published=True).select_related('category').order_by('-created')
+        return self.category.posts.published().select_related('category').order_by('-created')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

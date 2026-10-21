@@ -183,10 +183,10 @@ python manage.py draft_article "Ownership in Rust" --category programming [--no-
 
 The command asks OpenAI's Responses API for an article in both languages as structured output (a Pydantic model the SDK
 turns into a strict JSON schema and parses the answer into), saves it as an **unpublished draft** and, unless
-`--no-cover` is passed, generates a cover image. Nothing is published automatically: drafts are meant to be reviewed
-and edited in the admin. It needs `OPENAI_API_KEY`; the model can be changed with `OPENAI_MODEL` (default
-`gpt-6-astra`). The tests give the command a real client whose requests are answered in memory, so they never call the
-API.
+`--no-cover` is passed, generates a cover image with the Image API. Nothing is published automatically: drafts are meant
+to be reviewed and edited in the admin. It needs `OPENAI_API_KEY`; `OPENAI_MODEL` (default `gpt-6-astra`) writes the
+article and `OPENAI_IMAGE_MODEL` (default `gpt-image-2.5-flare`) draws the cover. The tests give the command a real
+client whose requests are answered in memory, so they never call the API.
 
 ## API
 

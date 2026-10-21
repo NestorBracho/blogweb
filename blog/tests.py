@@ -726,7 +726,7 @@ def output_text(text):
     return {'type': 'output_text', 'text': text, 'annotations': []}
 
 
-@override_settings(OPENAI_API_KEY='test-key', OPENAI_MODEL='test-model')
+@override_settings(OPENAI_API_KEY='test-key', OPENAI_MODEL='test-model', OPENAI_IMAGE_MODEL='test-image-model')
 class DraftArticleCommandTests(TestCase):
     draft = ArticleDraft(
         title_en='Ownership in Rust',
@@ -741,7 +741,7 @@ class DraftArticleCommandTests(TestCase):
         self.category = create_category()
         # No request ever leaves the test: the command gets a real client whose requests are answered by fake_api(),
         # so the SDK still builds them and parses the replies as it does with the real API
-        cover = base64.b64encode(image_file(size=(1024, 1024)).read()).decode()
+        cover = base64.b64encode(image_file(size=(1536, 1024)).read()).decode()
         self.replies = {
             '/v1/responses': article_reply(output_text(self.draft.model_dump_json())),
             '/v1/images/generations': {'created': 0, 'data': [{'b64_json': cover}]},
@@ -810,9 +810,11 @@ class DraftArticleCommandTests(TestCase):
             self.draft_article()
 
             post = Post.objects.get(slug='ownership-in-rust')
-            self.assertEqual(stored_image(post.cover.name), ('PNG', (1024, 1024)))
+            self.assertEqual(stored_image(post.cover.name), ('PNG', (1536, 1024)))
             self.assertEqual(list(post.cover_sizes['paths']), ['post', 'card', 'thumb', 'social'])
-        self.assertIn('Ownership in Rust', self.requests['/v1/images/generations']['prompt'])
+        request = self.requests['/v1/images/generations']
+        self.assertEqual(request['model'], 'test-image-model')
+        self.assertIn('Ownership in Rust', request['prompt'])
 
     def test_keeps_the_draft_when_the_cover_fails(self):
         self.replies['/v1/images/generations'] = httpx2.Response(503, json={'error': {'message': 'Unavailable'}})
@@ -821,6 +823,14 @@ class DraftArticleCommandTests(TestCase):
 
         self.assertFalse(Post.objects.get(slug='ownership-in-rust').cover)
         self.assertIn('without a cover', output)
+
+    def test_keeps_the_draft_when_no_image_comes_back(self):
+        self.replies['/v1/images/generations'] = {'created': 0, 'data': []}
+
+        output = self.draft_article()
+
+        self.assertFalse(Post.objects.get(slug='ownership-in-rust').cover)
+        self.assertIn('without a cover: the model returned no image', output)
 
     def test_reports_a_refusal_without_saving_anything(self):
         self.replies['/v1/responses'] = article_reply({'type': 'refusal', 'refusal': 'I cannot write that.'})

@@ -31,7 +31,7 @@ class Command(BaseCommand):
         if not options['no_cover']:
             try:
                 generate_cover(client, post)
-            except OpenAIError as error:
+            except (DraftingError, OpenAIError) as error:
                 self.stdout.write(self.style.WARNING(f'Saved the draft without a cover: {error}'))
 
         admin_url = reverse('admin:blog_post_change', args=[post.pk])

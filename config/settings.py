@@ -162,7 +162,9 @@ OWNER_LINKEDIN_URL = env('OWNER_LINKEDIN_URL', default='https://www.linkedin.com
 # OpenAI, only needed by the draft_article command
 
 OPENAI_API_KEY = env('OPENAI_API_KEY', default='')
+# The model that writes the article and the one that draws its cover
 OPENAI_MODEL = env('OPENAI_MODEL', default='gpt-6-astra')
+OPENAI_IMAGE_MODEL = env('OPENAI_IMAGE_MODEL', default='gpt-image-2.5-flare')
 
 
 # Password validation

@@ -87,15 +87,17 @@ def fit_column(text: str, field_name: str) -> str:
     return Truncator(text).chars(field.max_length) if isinstance(field, CharField) and field.max_length else text
 
 
-def generate_cover(client, post):
+def generate_cover(client: OpenAI, post: Post) -> None:
     image = client.images.generate(
-        model='dall-e-3',
+        model=settings.OPENAI_IMAGE_MODEL,
         prompt=(
             f'Editorial illustration for a technology blog post titled "{post.title_en}": {post.description_en}. '
             'Modern and clean, without any text.'
         ),
-        quality='hd',
-        size='1024x1024',
-        response_format='b64_json',
+        quality='high',
+        # Landscape: covers fill 4:3 boxes and link previews are wider still, so less is cropped than from a square
+        size='1536x1024',
     )
+    if not image.data or not image.data[0].b64_json:
+        raise DraftingError('the model returned no image')
     post.cover.save(f'{post.slug}.png', ContentFile(base64.b64decode(image.data[0].b64_json)))

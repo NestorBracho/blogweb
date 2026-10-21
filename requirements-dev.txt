@@ -209,7 +209,7 @@ typing-inspection==0.4.4
     #   pydantic
 urllib3==2.8.0
     # via requests
-virtualenv==21.14.7
+virtualenv==21.14.9
     # via pre-commit
 wheel==0.48.0
     # via pip-tools

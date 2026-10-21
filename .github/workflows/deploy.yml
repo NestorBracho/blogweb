@@ -103,8 +103,8 @@ jobs:
       - name: Health check
         run: |
           for i in 1 2 3 4 5 6; do
-            code=$(curl -s -o /dev/null -w '%{http_code}' https://nestorbracho.com/en/)
-            location=$(curl -s -o /dev/null -w '%{redirect_url}' https://nestorbracho.com/)
+            code=$(curl -s -m 20 -o /dev/null -w '%{http_code}' https://nestorbracho.com/en/)
+            location=$(curl -s -m 20 -o /dev/null -w '%{redirect_url}' https://nestorbracho.com/)
             if [ "$code" = "200" ] && [ "$location" = "https://nestorbracho.com/en/" ]; then
               echo "Site is up"; exit 0
             fi

@@ -1,8 +1,28 @@
 // Loaded in <head>, before the page is drawn, so it never flashes the wrong theme. It lives in a file rather than
 // inline because the Content-Security-Policy only allows scripts from the site itself.
 const defaultTheme = "dark";
-const isToggleEnabled = true;
-const userTheme = localStorage.getItem("theme");
+
+// The browser can refuse local storage (blocked site data, some private windows) and throw: then nothing is
+// remembered, and the page still works. common.js saves the choices with these too.
+function readSetting(key) {
+    try {
+        return localStorage.getItem(key);
+    } catch (error) {
+        return null;
+    }
+}
+
+function saveSetting(key, value) {
+    try {
+        if (value === null) {
+            localStorage.removeItem(key);
+        } else {
+            localStorage.setItem(key, value);
+        }
+    } catch (error) {
+        // Not remembered for the next page, which is all
+    }
+}
 
 function setTheme(mode) {
     if (mode === "dark") {
@@ -14,17 +34,9 @@ function setTheme(mode) {
     }
 }
 
-if (isToggleEnabled) {
-    if (userTheme) {
-        setTheme(userTheme);
-    } else {
-        setTheme(defaultTheme);
-    }
-} else {
-    setTheme(defaultTheme);
-}
+setTheme(readSetting("theme") || defaultTheme);
 
-if (localStorage.getItem("classView") === "list") {
+if (readSetting("classView") === "list") {
     document.documentElement.setAttribute("list", "");
     document.documentElement.classList.add('view-list');
 }

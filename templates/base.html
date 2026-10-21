@@ -22,6 +22,8 @@
 
 <body>
 
+{# The first thing the keyboard reaches: jumps over the header and the navigation #}
+<a class="skip-link" href="#content">{% translate 'Skip to content' %}</a>
 
 <!-- begin global wrap -->
 <div class="global-wrap">
@@ -70,7 +72,7 @@
     {% endif %}
 
     <!-- begin content -->
-    <main class="content">
+    <main class="content" id="content" tabindex="-1">
 
         {% block content %}{% endblock %}
 

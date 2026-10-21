@@ -128,16 +128,16 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
   // Theme Switcher (a toggle button: aria-pressed is true in dark mode)
-  if (toggleTheme && isToggleEnabled) {
+  if (toggleTheme) {
     toggleTheme.setAttribute("aria-pressed", html.classList.contains("dark-mode"));
     toggleTheme.addEventListener("click", () => {
       const isDarkMode = html.classList.contains("dark-mode");
       if (isDarkMode) {
         setTheme("light");
-        localStorage.setItem("theme", "light");
+        saveSetting("theme", "light");
       } else {
         setTheme("dark");
-        localStorage.setItem("theme", "dark");
+        saveSetting("theme", "dark");
       }
       toggleTheme.setAttribute("aria-pressed", !isDarkMode);
     });
@@ -148,11 +148,11 @@ document.addEventListener("DOMContentLoaded", function() {
   function viewToggle() {
     if (html.classList.contains('view-list')) {
       html.classList.remove('view-list');
-      localStorage.removeItem("classView");
+      saveSetting("classView", null);
       document.documentElement.removeAttribute("list");
     } else {
       html.classList.add('view-list');
-      localStorage.setItem("classView", "list");
+      saveSetting("classView", "list");
       document.documentElement.setAttribute("list", "");
     }
   }

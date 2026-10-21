@@ -6,14 +6,15 @@ from unittest import mock
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
 from django.core import mail
-from django.test import TestCase
-from django.urls import reverse
-from django.utils import timezone
+from django.test import SimpleTestCase, TestCase
+from django.urls import resolve, reverse
+from django.utils import timezone, translation
 
 from config.testing import EmptyCacheMixin, reverse_in
 from config.throttling import FormThrottle
 
 from .models import NewsletterSubscriber
+from .views import AddNewsletterSubscriberView, ConfirmSubscriptionView
 
 
 def last_message(response):
@@ -24,7 +25,9 @@ def last_message(response):
 class AddNewsletterSubscriberViewTests(EmptyCacheMixin, TestCase):
     def subscribe(self, email, next_url=None, language='en'):
         next_url = next_url or reverse_in(language, 'main:about')
-        return self.client.post(reverse_in(language, 'main:newsletter-subscriber'), {'email': email, 'next': next_url})
+        return self.client.post(
+            reverse_in(language, 'usermanager:newsletter-subscriber'), {'email': email, 'next': next_url}
+        )
 
     def confirmation_link(self, email_message):
         return re.search(r'https?://\S+/newsletter/confirm/\S+/', email_message.body).group()
@@ -63,7 +66,7 @@ class AddNewsletterSubscriberViewTests(EmptyCacheMixin, TestCase):
 
         response = self.client.get(f'/newsletter/confirm/{token}/', follow=True)
 
-        self.assertEqual(response.redirect_chain[0], (reverse_in('en', 'main:newsletter-confirm', token), 302))
+        self.assertEqual(response.redirect_chain[0], (reverse_in('en', 'usermanager:newsletter-confirm', token), 302))
         self.assertIsNotNone(NewsletterSubscriber.objects.get().confirmed_at)
 
     def test_expired_links_do_not_confirm(self):
@@ -77,7 +80,7 @@ class AddNewsletterSubscriberViewTests(EmptyCacheMixin, TestCase):
         self.assertIsNone(NewsletterSubscriber.objects.get().confirmed_at)
 
     def test_tampered_links_do_not_confirm(self):
-        response = self.client.get(reverse_in('en', 'main:newsletter-confirm', 'not-a-signed-token'))
+        response = self.client.get(reverse_in('en', 'usermanager:newsletter-confirm', 'not-a-signed-token'))
 
         self.assertIn('invalid or has expired', last_message(response))
 
@@ -120,7 +123,7 @@ class AddNewsletterSubscriberViewTests(EmptyCacheMixin, TestCase):
 
     def test_ignores_bots_that_fill_the_hidden_field(self):
         self.client.post(
-            reverse_in('en', 'main:newsletter-subscriber'),
+            reverse_in('en', 'usermanager:newsletter-subscriber'),
             {'email': 'bot@example.com', 'contact_me_by_fax_only': 'spam'},
         )
 
@@ -143,6 +146,21 @@ class AddNewsletterSubscriberViewTests(EmptyCacheMixin, TestCase):
         response = self.subscribe('reader@example.com', next_url='https://evil.example/')
 
         self.assertRedirects(response, reverse_in('en', 'main:index'), fetch_redirect_response=False)
+
+
+class NewsletterURLTests(SimpleTestCase):
+    def test_keep_their_addresses_in_each_language(self):
+        # Confirmation emails already sent link to these addresses
+        token = NewsletterSubscriber().confirmation_token()
+        for language in ['en', 'es']:
+            subscribe = f'/{language}/newsletter/'
+            confirm = f'/{language}/newsletter/confirm/{token}/'
+            with self.subTest(language=language), translation.override(language):
+                self.assertEqual(reverse('usermanager:newsletter-subscriber'), subscribe)
+                self.assertEqual(reverse('usermanager:newsletter-confirm', args=[token]), confirm)
+                self.assertEqual(resolve(subscribe).func.view_class, AddNewsletterSubscriberView)
+                self.assertEqual(resolve(confirm).func.view_class, ConfirmSubscriptionView)
+                self.assertEqual(resolve(confirm).kwargs, {'token': token})
 
 
 class NewsletterSubscriberAdminTests(TestCase):

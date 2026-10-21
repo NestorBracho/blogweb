@@ -7,18 +7,13 @@ from django.utils.translation import gettext as _
 from django.views import generic
 
 from blog.models import Category, Post, content_language
+from config import structured_data
 from config.forms import HONEYPOT_FIELD
 from config.throttling import FormThrottle
 
-from . import structured_data
 from .forms import ContactForm
+from .home import HACKERS_HAVEN_CATEGORIES, HACKERS_HAVEN_POSTS, HOME_PAGE_SIZE
 from .models import ContactRequest
-
-# Posts per page in the home's list, The Binary Journal
-HOME_PAGE_SIZE = 4
-# Hacker's Haven: the categories with the newest posts, and the latest posts in each
-HACKERS_HAVEN_CATEGORIES = 4
-HACKERS_HAVEN_POSTS = 5
 
 
 class HomePostsMixin:

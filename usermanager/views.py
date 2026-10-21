@@ -85,7 +85,7 @@ class ConfirmSubscriptionView(generic.View):
 def send_confirmation_email(request, subscriber):
     context = {
         'confirm_url': request.build_absolute_uri(
-            reverse('main:newsletter-confirm', args=[subscriber.confirmation_token()])
+            reverse('usermanager:newsletter-confirm', args=[subscriber.confirmation_token()])
         ),
         'days': CONFIRMATION_LINK_MAX_AGE.days,
         'site_url': request.build_absolute_uri(reverse('main:index')),

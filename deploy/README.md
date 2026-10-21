@@ -71,15 +71,27 @@ sudo chown -R blog:www-data /srv/blog
 sudo chmod 750 /srv/blog
 ```
 
+`unattended-upgrades` instala cada noche los parches de seguridad, pero los del kernel o de librerías como `libc` no
+se aplican hasta reiniciar. Que reinicie solo cuando haga falta, a las 04:00 (hora del servidor, UTC), después de la
+copia de las 03:30. Gunicorn y nginx arrancan solos al encender:
+
+```bash
+cat /etc/apt/apt.conf.d/20auto-upgrades   # las dos líneas deben terminar en "1"
+printf '%s\n' 'Unattended-Upgrade::Automatic-Reboot "true";' 'Unattended-Upgrade::Automatic-Reboot-Time "04:00";' \
+  | sudo tee /etc/apt/apt.conf.d/52unattended-upgrades-reboot
+apt-config dump | grep Automatic-Reboot   # comprueba: "true" y "04:00"
+```
+
+Si existe `/var/run/reboot-required`, hay un reinicio pendiente (`/var/run/reboot-required.pkgs` dice por qué
+paquetes). Los reinicios hechos salen en `last reboot`.
+
 ## 3. Código y entorno
 
-Como el repo es privado, crea una *deploy key* de solo lectura:
+El repo es público, así que se clona por HTTPS, sin *deploy key*:
 
 ```bash
 sudo -iu blog
-ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -N ""
-cat ~/.ssh/id_ed25519.pub   # pégala en GitHub → repo → Settings → Deploy keys
-git clone git@github.com:NestorBracho/blogweb.git /srv/blog/app
+git clone https://github.com/NestorBracho/blogweb.git /srv/blog/app
 python3 -m venv /srv/blog/venv
 /srv/blog/venv/bin/pip install -r /srv/blog/app/requirements.txt
 cp /srv/blog/app/.env.example /srv/blog/app/.env
@@ -329,7 +341,6 @@ Lo que cambia respecto a Oracle (el resto de la guía, desde el paso 2, es igual
   echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-swappiness.conf
   ```
 
-- **Repo público**: se clona por HTTPS, sin deploy key.
 - **Certificado de origen** generado con CSR propia para que la clave privada no salga del servidor:
 
   ```bash

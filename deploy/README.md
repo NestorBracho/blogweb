@@ -21,7 +21,7 @@ Estructura en el servidor:
 ├── data/           # db.sqlite3
 ├── media/          # imágenes subidas
 ├── staticfiles/    # salida de collectstatic
-└── backups/
+└── backups/        # copias nocturnas (backup.sh) y de antes de cada migración (update.sh)
 ```
 
 ---
@@ -229,16 +229,26 @@ sudo systemctl start blog
 
 Las imágenes: `sudo -u blog tar -xzf media-FECHA.tar.gz -C /srv/blog`, tras descargar el archivo de la misma forma.
 
+Antes de cada despliegue con migraciones, `update.sh` guarda además una copia de la base de datos en
+`/srv/blog/backups/pre-migrate-FECHA-HORA-COMMIT.sqlite3.gz` (las cinco últimas; no se suben a Drive). Para deshacer
+una migración que salió mal, se restaura igual que arriba, desde ese archivo.
+
 ## 9. Actualizar la web
 
 ```bash
 sudo -iu blog /srv/blog/app/deploy/update.sh
 ```
 
+Si el despliegue trae migraciones, antes copia la base de datos ([Restaurar](#restaurar)) y, si la copia falla, se
+detiene sin migrar ni recargar.
+
 El script recarga Gunicorn sin cortar la web: `systemctl reload` le manda `HUP`, el socket sigue abierto, los workers
 nuevos cargan el código nuevo y los viejos terminan las peticiones que tenían a medias. Lo que llega mientras tanto
 espera un momento en vez de dar 502. Solo reinicia del todo cuando se actualiza el propio Gunicorn, porque el proceso
 maestro sigue ejecutando la versión con la que arrancó; ese despliegue sí corta unos segundos.
+
+Un cambio en `update.sh` se aplica a partir del despliegue **siguiente**: el que lo trae sigue ejecutando la versión
+con la que empezó.
 
 Si cambias `gunicorn.service`, guarda la unidad actual, instala la nueva y reinicia (corta la web unos segundos):
 

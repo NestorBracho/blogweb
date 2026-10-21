@@ -151,15 +151,19 @@ sudo nano /etc/ssl/cloudflare/origin.key   # clave privada
 sudo chmod 600 /etc/ssl/cloudflare/origin.key
 ```
 
-5. Configura nginx (cambia `tudominio.com` por el tuyo):
+5. Configura nginx (con otro dominio, cambia `nestorbracho.com` en el fichero):
 
 ```bash
 sudo cp /srv/blog/app/deploy/nginx.conf /etc/nginx/sites-available/blog
-sudo sed -i 's/tudominio.com/TU-DOMINIO/g' /etc/nginx/sites-available/blog
 sudo ln -s /etc/nginx/sites-available/blog /etc/nginx/sites-enabled/blog
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t && sudo systemctl reload nginx
 ```
+
+La configuración toma la IP del visitante de la cabecera `CF-Connecting-IP` cuando la petición viene de los rangos de
+Cloudflare, así que los logs de nginx muestran visitantes y no servidores de Cloudflare. Con esa IP limita los envíos
+de los formularios de contacto y newsletter (`POST` a `/en/contact/`, `/es/newsletter/`…) a 5 por minuto tras una
+ráfaga de 5; los demás reciben `429`. Los rechazos quedan en `/var/log/nginx/blog.error.log` (`limiting requests`).
 
 6. Opcional pero recomendado: *Zero Trust → Access* para proteger la URL del admin
    con un código enviado a tu email.
@@ -316,6 +320,7 @@ Lo que cambia respecto a Oracle (el resto de la guía, desde el paso 2, es igual
 
   Para comprobarlo, la IP directa no debe responder y el dominio sí:
   `curl -k --connect-timeout 5 https://IP_DEL_SERVIDOR` debe agotar el tiempo.
+  Los mismos rangos están en `set_real_ip_from` de `deploy/nginx.conf`: actualízalos también allí.
 - **Swap obligatorio** (1 GB de RAM):
 
   ```bash

@@ -7,6 +7,7 @@ import hashlib
 import io
 
 from django.core.files.base import ContentFile
+from django.db.models.fields.files import FieldFile
 from PIL import Image, ImageOps
 
 # Every place a cover appears is a 4:3 box that the image fills, cropped around its centre (CSS object-fit: cover).
@@ -20,11 +21,11 @@ SIZES = {
 SOCIAL_SIZE = (1200, 630)
 
 
-def make_sizes(cover, folder):
+def make_sizes(cover: FieldFile, folder: str) -> dict[str, str]:
     """
-    Saves `cover` (a FieldFile) at every size under covers/<folder>/ and returns the paths by size name. Files are
-    named after the cover's content and their size, so a new cover or a new size gets new URLs (Cloudflare caches
-    /media/ for 30 days), and sizes that already exist are not made again.
+    Saves `cover` at every size under covers/<folder>/ and returns the paths by size name. Files are named after the
+    cover's content and their size, so a new cover or a new size gets new URLs (Cloudflare caches /media/ for 30 days),
+    and sizes that already exist are not made again.
     """
     with cover.open('rb'):
         data = cover.read()
@@ -48,13 +49,13 @@ def make_sizes(cover, folder):
     return paths
 
 
-def fit(image, width, height):
+def fit(image: Image.Image, width: int, height: int) -> Image.Image:
     """The image cropped to the shape of width x height around its centre and scaled down to it, never up."""
     scale = min(1, image.width / width, image.height / height)
     return ImageOps.fit(image, (round(width * scale), round(height * scale)), Image.Resampling.LANCZOS)
 
 
-def without_transparency(image):
+def without_transparency(image: Image.Image) -> Image.Image:
     """An RGB copy of the image, with any transparent parts on white."""
     if image.mode == 'RGB':
         return image.copy()

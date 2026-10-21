@@ -17,6 +17,25 @@
     margin-top: 16px;
 }
 
+/* Once the columns stack, the CV button would land below the fold (858px at 390x844), and LinkedIn's in-app browser
+   is shorter still: show it right under the role. The HTML keeps it after the intro, as on desktop. */
+@media (max-width: 1024px) {
+    .hero__right {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .hero__actions {
+        order: 1;
+        margin: 0 0 24px;
+    }
+
+    .hero__description {
+        order: 2;
+        margin-bottom: 0;
+    }
+}
+
 /* Shown under "Load more" when the next posts can't be loaded (scripts.js) */
 .load-more-error {
     margin: 16px 0 0;

@@ -1,8 +1,9 @@
 import logging
 import math
 
+from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Max, Prefetch, Q
+from django.db.models import OuterRef, Prefetch, Subquery
 from django.urls import reverse
 from django.utils import translation
 from django.utils.text import slugify
@@ -41,12 +42,12 @@ class CategoryQuerySet(models.QuerySet):
         Categories readers can see: those with at least one published post. Empty ones stay in the admin, ready
         for future posts, and show up on their own once one is published. `latest_post` is the newest one's date.
         """
-        latest_post = Max('posts__created', filter=Q(posts__is_published=True))
-        return self.annotate(latest_post=latest_post).filter(latest_post__isnull=False)
+        newest = Post.objects.published().filter(category=OuterRef('pk')).order_by('-created')
+        return self.annotate(latest_post=Subquery(newest.values('created')[:1])).filter(latest_post__isnull=False)
 
     def with_latest_posts(self, count):
         """Gives each category a `latest_posts` list: its newest published posts, at most `count`, in one query."""
-        posts = Post.objects.filter(is_published=True).order_by('-created')[:count]
+        posts = Post.objects.published().order_by('-created')[:count]
         return self.prefetch_related(Prefetch('posts', queryset=posts, to_attr='latest_posts'))
 
 
@@ -55,18 +56,48 @@ class Category(TranslatedFieldsMixin, BaseModel):
     name_en = models.CharField(max_length=120)
     slug = models.SlugField(max_length=120, unique=True)
     color = models.CharField(max_length=120)
-    sub_category = models.ForeignKey('Category', on_delete=models.CASCADE, null=True, blank=True)
+    # Deleting a category moves the ones inside it to the top level. The field used to be `sub_category` and its
+    # column keeps that name: renaming the column would break the code still running while a deploy migrates.
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        related_name='children',
+        null=True,
+        blank=True,
+        db_column='sub_category_id',
+        help_text='The broader category this one is part of, if any.',
+    )
 
     objects = CategoryQuerySet.as_manager()
 
     def __str__(self):
         return self.name()
 
+    def clean(self):
+        # A category can't be inside itself, directly or through the ones above it. Remembering the ones already
+        # seen also stops the walk at a loop saved some other way.
+        seen = {self.pk}
+        ancestor = self.parent
+        while ancestor is not None:
+            if ancestor.pk in seen:
+                raise ValidationError({'parent': "A category can't be inside itself."})
+            seen.add(ancestor.pk)
+            ancestor = ancestor.parent
+
     def name(self):
         return self.translated('name')
 
     def get_absolute_url(self):
         return reverse('blog:category-detail', kwargs={'slug': self.slug})
+
+
+class PostQuerySet(models.QuerySet):
+    def published(self):
+        """
+        The posts readers can see, and the site's one definition of "published": every page, feed and list of posts
+        starts here. Drafts stay in the admin and, for staff, in the API.
+        """
+        return self.filter(is_published=True)
 
 
 class Post(TranslatedFieldsMixin, BaseModel):
@@ -85,6 +116,8 @@ class Post(TranslatedFieldsMixin, BaseModel):
     read_time = models.IntegerField(default=1, editable=False)
 
     is_published = models.BooleanField(default=False)
+
+    objects = PostQuerySet.as_manager()
 
     def __str__(self):
         return self.slug

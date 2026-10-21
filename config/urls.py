@@ -43,6 +43,7 @@ urlpatterns += i18n_patterns(
     # The CV used to be a blog post; keep old links working. Before blog.urls, which would take "resume" as a slug.
     path('post/resume', RedirectView.as_view(pattern_name='main:cv', permanent=True)),
     path('', include('main.urls')),
+    path('', include('usermanager.urls')),
     path('', include('blog.urls')),
 )
 

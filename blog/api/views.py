@@ -34,7 +34,7 @@ class PostModelViewSet(LanguageHeaderMixin, viewsets.ModelViewSet):
         # admin. Staff can read, edit, publish or delete any post, drafts included, by its id.
         queryset = super().get_queryset()
         if self.action == 'list' or not self.request.user.is_staff:
-            return queryset.filter(is_published=True)
+            return queryset.published()
         return queryset
 
     @property

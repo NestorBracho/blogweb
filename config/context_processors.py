@@ -2,7 +2,7 @@ from django.conf import settings
 from django.utils.functional import SimpleLazyObject
 
 from blog.models import Category, Post
-from main.views import HOME_PAGE_SIZE
+from main.home import HOME_PAGE_SIZE
 
 
 def owner(request):
@@ -20,7 +20,7 @@ def owner(request):
 
 
 def sidebar(request):
-    published = Post.objects.filter(is_published=True)
+    published = Post.objects.published()
     return {
         'categories': Category.objects.with_published_posts().order_by('-latest_post'),
         # Shown in both the sidebar and the footer: one queryset, so one query per page

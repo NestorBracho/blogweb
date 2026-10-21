@@ -117,10 +117,10 @@ the database before running migrations. Gunicorn reloads gracefully, so a deploy
 ## Project structure
 
 ```
-config/        settings, root URLs, base model, context processors
+config/        settings, root URLs, context processors and the modules the apps share
 blog/          posts and categories: views, REST API, RSS feed, sitemaps, drafting command
 main/          home, about and contact pages, template tags
-usermanager/   newsletter subscribers
+usermanager/   newsletter subscribers: sign-up and confirmation
 templates/     base layout and shared partials
 static/        theme assets, images and fonts
 locale/        Spanish translations
@@ -129,6 +129,10 @@ docs/adr/      architecture decision records
 brand/         brand kit: logo, favicons, share image and their generator
 tools/         the script that makes the font files in static/fonts/
 ```
+
+The apps' Python code depends in one direction only: `main` reads `blog`'s posts, and every app uses the shared
+modules in `config/` (base model, forms, rate limits, sitemaps, structured data). Only `config`'s settings, root URLs
+and context processors know about every app.
 
 ## Running locally
 

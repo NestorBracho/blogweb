@@ -1,6 +1,7 @@
 """
 Schema.org data (JSON-LD) that tells search engines who the site is about and what each post is. Views put it in the
-`structured_data` context variable and the page's <head> renders it.
+`structured_data` context variable and the page's <head> renders it. The blog's and the main app's views both use it,
+so it lives here rather than in either app.
 """
 
 from django.conf import settings

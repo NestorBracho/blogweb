@@ -8,6 +8,8 @@ env/
 # Local configuration and data (see .env.example)
 .env
 *.sqlite3
+# The files SQLite keeps next to an open database (-wal and -shm in WAL mode)
+*.sqlite3-*
 media/
 
 # collectstatic output; admin assets come from the installed Django version

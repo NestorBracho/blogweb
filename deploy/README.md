@@ -125,6 +125,10 @@ sudo systemctl enable --now blog
 sudo systemctl status blog
 ```
 
+La unidad aísla el servicio: todo el disco es de solo lectura salvo `data/` (la base de datos), `media/` (las imágenes)
+y el socket, sin acceso a `/home`, a dispositivos ni al kernel, y con las llamadas al sistema de un servicio normal.
+`systemd-analyze security blog` puntúa ese aislamiento (cuanto más bajo, mejor) y explica cada punto.
+
 Permite al usuario `blog` recargar y reiniciar el servicio (lo usa `deploy/update.sh`). El fichero se valida con
 `visudo` antes de instalarlo, porque un error en `/etc/sudoers.d` deja `sudo` inservible:
 
@@ -236,9 +240,20 @@ nuevos cargan el código nuevo y los viejos terminan las peticiones que tenían 
 espera un momento en vez de dar 502. Solo reinicia del todo cuando se actualiza el propio Gunicorn, porque el proceso
 maestro sigue ejecutando la versión con la que arrancó; ese despliegue sí corta unos segundos.
 
-Si cambias `gunicorn.service`, cópialo otra vez a `/etc/systemd/system/blog.service` (en Google Cloud, con el `sed`
-de los workers) y ejecuta `sudo systemctl daemon-reload`. Un cambio en `ExecStart` necesita además
-`sudo systemctl restart blog`.
+Si cambias `gunicorn.service`, guarda la unidad actual, instala la nueva y reinicia (corta la web unos segundos):
+
+```bash
+sudo cp /etc/systemd/system/blog.service /srv/blog/backups/blog.service.bak
+sudo systemd-analyze security blog | tail -1     # puntuación antes
+sudo cp /srv/blog/app/deploy/gunicorn.service /etc/systemd/system/blog.service
+sudo systemd-analyze verify /etc/systemd/system/blog.service
+sudo systemctl daemon-reload && sudo systemctl restart blog
+systemctl is-active blog && sudo journalctl -u blog -n 20 --no-pager
+sudo systemd-analyze security blog | tail -1     # puntuación después
+```
+
+Si algo falla, vuelve a la anterior: `sudo cp /srv/blog/backups/blog.service.bak /etc/systemd/system/blog.service`,
+`daemon-reload` y `restart` otra vez.
 
 ## Problemas frecuentes
 
@@ -298,7 +313,6 @@ Lo que cambia respecto a Oracle (el resto de la guía, desde el paso 2, es igual
   echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-swappiness.conf
   ```
 
-- **Gunicorn con 2 workers**: `sed 's/--workers 3/--workers 2/'` al copiar `gunicorn.service`.
 - **Repo público**: se clona por HTTPS, sin deploy key.
 - **Certificado de origen** generado con CSR propia para que la clave privada no salga del servidor:
 

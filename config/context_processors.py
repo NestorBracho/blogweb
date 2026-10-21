@@ -2,7 +2,7 @@ from django.conf import settings
 from django.utils.functional import SimpleLazyObject
 
 from blog.models import Category, Post
-from main.views import HOME_PAGE_SIZE
+from main.home import HOME_PAGE_SIZE
 
 
 def owner(request):

@@ -10,7 +10,8 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from config.testing import reverse_in
+from config.testing import EmptyCacheMixin, reverse_in
+from config.throttling import FormThrottle
 
 from .models import NewsletterSubscriber
 
@@ -20,7 +21,7 @@ def last_message(response):
     return [str(message) for message in get_messages(response.wsgi_request)][-1]
 
 
-class AddNewsletterSubscriberViewTests(TestCase):
+class AddNewsletterSubscriberViewTests(EmptyCacheMixin, TestCase):
     def subscribe(self, email, next_url=None, language='en'):
         next_url = next_url or reverse_in(language, 'main:about')
         return self.client.post(reverse_in(language, 'main:newsletter-subscriber'), {'email': email, 'next': next_url})
@@ -125,6 +126,18 @@ class AddNewsletterSubscriberViewTests(TestCase):
 
         self.assertFalse(NewsletterSubscriber.objects.exists())
         self.assertEqual(mail.outbox, [])
+
+    def test_limits_how_many_times_each_visitor_subscribes(self):
+        allowed = FormThrottle('newsletter').num_requests
+        for number in range(allowed):
+            self.subscribe(f'reader{number}@example.com')
+
+        response = self.subscribe('one-more@example.com', language='es')
+
+        self.assertRedirects(response, reverse_in('es', 'main:about'), fetch_redirect_response=False)
+        self.assertIn('Has intentado suscribirte varias veces', last_message(response))
+        self.assertFalse(NewsletterSubscriber.objects.filter(email='one-more@example.com').exists())
+        self.assertEqual(len(mail.outbox), allowed)
 
     def test_never_redirects_to_another_site(self):
         response = self.subscribe('reader@example.com', next_url='https://evil.example/')

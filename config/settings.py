@@ -135,6 +135,9 @@ REST_FRAMEWORK = {
         'anon': '60/minute',
         'user': '120/minute',
         'write': '60/hour',
+        # Contact and newsletter forms (config/throttling.FormThrottle), which send emails
+        'contact': '5/hour',
+        'newsletter': '5/hour',
     },
 }
 

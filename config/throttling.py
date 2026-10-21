@@ -45,3 +45,13 @@ class WriteRateThrottle(UserRateThrottle):
             return True
         return super().allow_request(request, view)
 
+
+class FormThrottle(ClientIPMixin, throttling.SimpleRateThrottle):
+    """Submissions of one of the site's forms (its scope) per IP address, signed in or not. Works in any Django view."""
+
+    def __init__(self, scope):
+        self.scope = scope
+        super().__init__()
+
+    def get_cache_key(self, request, view):
+        return self.cache_format % {'scope': self.scope, 'ident': self.get_ident(request)}

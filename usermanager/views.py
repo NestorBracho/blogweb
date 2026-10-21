@@ -13,6 +13,8 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.views import generic
 
+from config.throttling import FormThrottle
+
 from .forms import SubscribeForm
 from .models import NewsletterSubscriber
 
@@ -28,6 +30,13 @@ class AddNewsletterSubscriberView(generic.FormView):
     http_method_names = ['post']
 
     def form_valid(self, form):
+        # Before looking the address up, so the answer says nothing about it
+        if not FormThrottle('newsletter').allow_request(self.request, self):
+            messages.error(
+                self.request, _("You've tried to subscribe several times in a short time. Please try again later.")
+            )
+            return HttpResponseRedirect(self.get_success_url())
+
         subscriber, _created = NewsletterSubscriber.objects.get_or_create(email=form.cleaned_data['email'].lower())
         if subscriber.claim_confirmation_email(CONFIRMATION_RESEND_COOLDOWN):
             try:

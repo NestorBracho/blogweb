@@ -1,11 +1,13 @@
 import base64
+import json
+import logging
 from datetime import timedelta
 from io import BytesIO, StringIO
 from tempfile import TemporaryDirectory
-from types import SimpleNamespace
 from unittest import mock
 from urllib.parse import quote
 
+import httpx2
 from django.contrib.auth import get_user_model
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -15,7 +17,7 @@ from django.db.migrations.executor import MigrationExecutor
 from django.test import SimpleTestCase, TestCase, TransactionTestCase, override_settings
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
-from openai import OpenAIError
+from openai import OpenAI
 from PIL import Image
 
 from config.testing import reverse_in, structured_data
@@ -704,8 +706,24 @@ class CategoryAPITests(TestCase):
         self.assertEqual([post['title'] for post in categories[0]['first_5_posts']], ['New', 'Old'])
 
 
-def parsed_completion(draft=None, refusal=None):
-    return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(parsed=draft, refusal=refusal))])
+def article_reply(*content):
+    """A Responses API reply with one message made of these parts, as the API sends it."""
+    message = {'type': 'message', 'id': 'msg_test', 'role': 'assistant', 'status': 'completed', 'content': content}
+    return {
+        'id': 'resp_test',
+        'object': 'response',
+        'created_at': 0,
+        'model': 'test-model',
+        'status': 'completed',
+        'output': [message],
+        'parallel_tool_calls': True,
+        'tool_choice': 'auto',
+        'tools': [],
+    }
+
+
+def output_text(text):
+    return {'type': 'output_text', 'text': text, 'annotations': []}
 
 
 @override_settings(OPENAI_API_KEY='test-key', OPENAI_MODEL='test-model')
@@ -721,15 +739,33 @@ class DraftArticleCommandTests(TestCase):
 
     def setUp(self):
         self.category = create_category()
-        # No request ever leaves the test: the command gets this fake client instead of a real one
-        self.openai = mock.MagicMock()
-        self.openai.beta.chat.completions.parse.return_value = parsed_completion(self.draft)
-        self.openai.images.generate.return_value = SimpleNamespace(
-            data=[SimpleNamespace(b64_json=base64.b64encode(image_file(size=(1024, 1024)).read()).decode())]
+        # No request ever leaves the test: the command gets a real client whose requests are answered by fake_api(),
+        # so the SDK still builds them and parses the replies as it does with the real API
+        cover = base64.b64encode(image_file(size=(1024, 1024)).read()).decode()
+        self.replies = {
+            '/v1/responses': article_reply(output_text(self.draft.model_dump_json())),
+            '/v1/images/generations': {'created': 0, 'data': [{'b64_json': cover}]},
+        }
+        self.requests = {}
+        client = OpenAI(
+            api_key='test-key',
+            base_url='https://api.openai.test/v1',
+            max_retries=0,
+            http_client=httpx2.Client(transport=httpx2.MockTransport(self.fake_api)),
         )
-        patcher = mock.patch('blog.management.commands.draft_article.OpenAI', return_value=self.openai)
+        self.addCleanup(client.close)
+        patcher = mock.patch('blog.management.commands.draft_article.OpenAI', return_value=client)
         patcher.start()
         self.addCleanup(patcher.stop)
+        # httpx2 logs every request at INFO, and the root logger would print those lines among the test results
+        http_logger = logging.getLogger('httpx2')
+        self.addCleanup(http_logger.setLevel, http_logger.level)
+        http_logger.setLevel(logging.WARNING)
+
+    def fake_api(self, request):
+        self.requests[request.url.path] = json.loads(request.content)
+        reply = self.replies[request.url.path]
+        return reply if isinstance(reply, httpx2.Response) else httpx2.Response(200, json=reply)
 
     def draft_article(self, *args):
         output = StringIO()
@@ -745,20 +781,23 @@ class DraftArticleCommandTests(TestCase):
         self.assertEqual((post.title_es, post.body_es), (self.draft.title_es, self.draft.body_es))
         self.assertEqual(post.read_time, 3)
         self.assertIn(reverse('admin:blog_post_change', args=[post.pk]), output)
-        self.openai.images.generate.assert_not_called()
+        self.assertNotIn('/v1/images/generations', self.requests)
 
     def test_asks_for_structured_output(self):
         self.draft_article('--no-cover')
 
-        request = self.openai.beta.chat.completions.parse.call_args.kwargs
+        request = self.requests['/v1/responses']
         self.assertEqual(request['model'], 'test-model')
-        self.assertIs(request['response_format'], ArticleDraft)
-        self.assertIn('Rust ownership', request['messages'][-1]['content'])
+        self.assertIn('Rust ownership', request['input'])
+        # The SDK turns ArticleDraft into a strict JSON schema, so the model has to fill in every field
+        schema = request['text']['format']
+        self.assertEqual((schema['type'], schema['name'], schema['strict']), ('json_schema', 'ArticleDraft', True))
+        self.assertEqual(schema['schema']['required'], list(ArticleDraft.model_fields))
+        self.assertIs(request['store'], False)
 
     def test_shortens_texts_that_do_not_fit_their_columns(self):
-        self.openai.beta.chat.completions.parse.return_value = parsed_completion(
-            self.draft.model_copy(update={'title_en': 'A' * 80, 'description_es': 'B' * 200})
-        )
+        too_long = self.draft.model_copy(update={'title_en': 'A' * 80, 'description_es': 'B' * 200})
+        self.replies['/v1/responses'] = article_reply(output_text(too_long.model_dump_json()))
 
         self.draft_article('--no-cover')
 
@@ -773,9 +812,10 @@ class DraftArticleCommandTests(TestCase):
             post = Post.objects.get(slug='ownership-in-rust')
             self.assertEqual(stored_image(post.cover.name), ('PNG', (1024, 1024)))
             self.assertEqual(list(post.cover_sizes['paths']), ['post', 'card', 'thumb', 'social'])
+        self.assertIn('Ownership in Rust', self.requests['/v1/images/generations']['prompt'])
 
     def test_keeps_the_draft_when_the_cover_fails(self):
-        self.openai.images.generate.side_effect = OpenAIError('Image service unavailable')
+        self.replies['/v1/images/generations'] = httpx2.Response(503, json={'error': {'message': 'Unavailable'}})
 
         output = self.draft_article()
 
@@ -783,9 +823,33 @@ class DraftArticleCommandTests(TestCase):
         self.assertIn('without a cover', output)
 
     def test_reports_a_refusal_without_saving_anything(self):
-        self.openai.beta.chat.completions.parse.return_value = parsed_completion(refusal='I cannot write that.')
+        self.replies['/v1/responses'] = article_reply({'type': 'refusal', 'refusal': 'I cannot write that.'})
 
         with self.assertRaisesMessage(CommandError, 'I cannot write that.'):
+            self.draft_article()
+
+        self.assertFalse(Post.objects.filter(category=self.category).exists())
+
+    def test_reports_an_article_that_was_cut_short(self):
+        self.replies['/v1/responses'] = article_reply(output_text(self.draft.model_dump_json()[:200]))
+
+        with self.assertRaisesMessage(CommandError, 'the model returned an incomplete article'):
+            self.draft_article()
+
+        self.assertFalse(Post.objects.filter(category=self.category).exists())
+
+    def test_reports_an_answer_without_an_article(self):
+        self.replies['/v1/responses'] = article_reply()
+
+        with self.assertRaisesMessage(CommandError, 'the model returned no article'):
+            self.draft_article()
+
+        self.assertFalse(Post.objects.filter(category=self.category).exists())
+
+    def test_reports_api_errors_without_saving_anything(self):
+        self.replies['/v1/responses'] = httpx2.Response(401, json={'error': {'message': 'Incorrect API key'}})
+
+        with self.assertRaisesMessage(CommandError, 'Incorrect API key'):
             self.draft_article()
 
         self.assertFalse(Post.objects.filter(category=self.category).exists())
@@ -794,7 +858,7 @@ class DraftArticleCommandTests(TestCase):
         with self.assertRaisesMessage(CommandError, 'Unknown category "missing"'):
             call_command('draft_article', 'Rust ownership', '--category', 'missing')
 
-        self.openai.beta.chat.completions.parse.assert_not_called()
+        self.assertEqual(self.requests, {})
 
     @override_settings(OPENAI_API_KEY='')
     def test_requires_an_api_key(self):

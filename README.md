@@ -18,8 +18,8 @@ REST API, tests and linting in CI, and a hardened self-hosted deployment that co
 | To see...                              | Look at                                                                                              |
 |----------------------------------------|------------------------------------------------------------------------------------------------------|
 | Models, views, i18n                    | [`blog/`](blog), [`main/`](main), [`config/`](config)                                                 |
-| A REST API with Django REST Framework  | [`blog/api/`](blog/api): separate read/write serializers, staff-only writes                          |
-| An LLM integration                     | [`blog/drafting.py`](blog/drafting.py): OpenAI structured outputs validated with Pydantic            |
+| A REST API with Django REST Framework  | [`blog/api/`](blog/api): list, detail and write serializers, staff-only writes                       |
+| An LLM integration                     | [`blog/drafting.py`](blog/drafting.py): OpenAI Responses API, structured outputs parsed by Pydantic  |
 | Tests                                  | `*/tests.py`: views, API permissions, feeds, forms, open-redirect protection                         |
 | CI/CD                                  | [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)                                       |
 | Server configuration                   | [`deploy/`](deploy): nginx, a hardened systemd unit, backup and update scripts                       |
@@ -35,15 +35,19 @@ REST API, tests and linting in CI, and a hardened self-hosted deployment that co
 - Every page in English and Spanish at its own address (`/en/…`, `/es/…`), so both can be indexed and shared; the
   bare domain sends each visitor to their language, and English to crawlers and everyone else
   ([ADR 6](docs/adr/0006-language-in-the-url.md)). Interface strings are translated with gettext.
-- "Load more" pagination and live search served by the JSON API.
+- Lists of posts rendered on the server. "Load more" is a link to the next page that htmx turns into an in-place
+  update ([ADR 7](docs/adr/0007-server-rendered-lists-with-htmx.md)), and the live search reads the JSON API.
 - An RSS feed per language, an XML sitemap that links each page to its other language, and `robots.txt`.
 - In every page's `<head>`: a canonical URL without tracking parameters, `hreflang` links to the page in each
   language, Open Graph / Twitter Card metadata, and schema.org data (JSON-LD) for the person behind the site and
   for each post.
 - A contact form that stores every request before emailing it, so a mail outage never loses a message.
 - Newsletter sign-up with double opt-in: a signed, expiring link confirms each address, and the form never reveals
-  who is already subscribed.
+  who is already subscribed. A pending address gets the link again once an hour at most, so nobody can use the form
+  to flood someone else's inbox.
 - A honeypot field on both forms against spam bots, and a privacy policy in both languages.
+- Rate limits per visitor on the API and both forms, telling visitors apart by the address Cloudflare reports
+  ([`config/throttling.py`](config/throttling.py)).
 - A Content-Security-Policy that only lets the site's own scripts run (none inline), on top of HSTS and Django's
   other security headers.
 - Fonts and icons served by the site itself, cut down to the characters and icons it uses: pages make no requests
@@ -74,6 +78,8 @@ flowchart LR
 - **Django** serves its own static files with WhiteNoise (compressed, with cache-busting file names).
 - **SQLite** in WAL mode holds all the data. A nightly job backs up the database and the images, keeps two weeks
   of them on the server and copies them to Google Drive with rclone, where it keeps 30 days.
+- **Alerts** come by email: server errors and failed backups through the site's own SMTP provider, and downtime from
+  a GitHub Actions workflow that checks the site every 30 minutes.
 
 ### CI/CD
 
@@ -81,14 +87,15 @@ flowchart LR
 flowchart LR
     push["Push or pull request"] --> check["Check<br/>ruff, Django checks, migrations,<br/>tests + coverage, collectstatic"]
     check -->|"main only"| deploy["Deploy over SSH<br/>(forced command)"]
-    deploy --> update["deploy/update.sh<br/>pull, install, migrate,<br/>collectstatic, reload"]
+    deploy --> update["deploy/update.sh<br/>check out the commit, install,<br/>copy the DB, migrate,<br/>collectstatic, reload"]
     update --> health["Health check"]
 ```
 
 Every push and pull request runs the checks; the coverage report is published in each run's summary. Pushes to
 `main` are then deployed by GitHub Actions with an SSH key that the server only allows to run
 [`deploy/update.sh`](deploy/update.sh), and the job fails unless `/en/` answers `200` and the bare domain redirects
-there afterwards. Gunicorn reloads gracefully, so a deploy doesn't drop requests.
+there afterwards. Each run deploys the commit it checked, never an older one than the site already runs, and copies
+the database before running migrations. Gunicorn reloads gracefully, so a deploy doesn't drop requests.
 
 ## Design decisions
 
@@ -98,11 +105,12 @@ there afterwards. Gunicorn reloads gracefully, so a deploy doesn't drop requests
 4. [Deploying from CI with a forced-command SSH key](docs/adr/0004-deploy-with-a-forced-command-ssh-key.md)
 5. [Off-site backups to Google Drive](docs/adr/0005-off-site-backups-to-google-drive.md)
 6. [The language in the URL](docs/adr/0006-language-in-the-url.md)
+7. [Server-rendered lists of posts, with htmx for "Load more"](docs/adr/0007-server-rendered-lists-with-htmx.md)
 
 ## Tech stack
 
 - **Backend:** Python 3.12, Django 5.2, Django REST Framework, Markdown, Pygments and nh3
-- **Frontend:** Django templates, jQuery and Splide, on top of the Coderon theme (see [Credits](#credits))
+- **Frontend:** Django templates, htmx, jQuery and Splide, on top of the Coderon theme (see [Credits](#credits))
 - **Infrastructure:** Google Cloud, Ubuntu 24.04, nginx, Gunicorn, systemd, Cloudflare, SQLite
 - **Tooling:** GitHub Actions, ruff, coverage, pre-commit, pip-tools, pip-audit, Dependabot
 
@@ -184,11 +192,12 @@ updates every week and recompiles both files itself.
 python manage.py draft_article "Ownership in Rust" --category programming [--no-cover]
 ```
 
-The command asks OpenAI for an article in both languages as structured output (a Pydantic model the SDK turns into
-a strict JSON schema), saves it as an **unpublished draft** and, unless `--no-cover` is passed, generates a cover
-image. Nothing is published automatically: drafts are meant to be reviewed and edited in the admin. It needs
-`OPENAI_API_KEY`; the model can be changed with `OPENAI_MODEL`. The tests use a fake client, so they never call the
-API.
+The command asks OpenAI's Responses API for an article in both languages as structured output (a Pydantic model the SDK
+turns into a strict JSON schema and parses the answer into), saves it as an **unpublished draft** and, unless
+`--no-cover` is passed, generates a cover image with the Image API. Nothing is published automatically: drafts are meant
+to be reviewed and edited in the admin. It needs `OPENAI_API_KEY`; `OPENAI_MODEL` (default `gpt-6-astra`) writes the
+article and `OPENAI_IMAGE_MODEL` (default `gpt-image-2.5-flare`) draws the cover. The tests give the command a real
+client whose requests are answered in memory, so they never call the API.
 
 ## API
 
@@ -196,15 +205,22 @@ API.
 |----------------------------------|--------------------------|---------------------------------------------------------------------|
 | `GET`                            | `/api/post/?page=N`      | Published posts, newest first, four per page                        |
 | `GET`                            | `/api/post/?search=words`| Posts with every word somewhere in their title, description, body or category |
-| `GET`                            | `/api/categories`        | The four most recently active categories and their latest posts     |
+| `GET`                            | `/api/categories/`       | The four most recently active categories and their five latest posts |
 | `POST`                           | `/api/post/`             | Staff only: create a post, a draft unless `is_published` is sent    |
 | `GET`, `PUT`, `PATCH`, `DELETE`  | `/api/post/<id>/`        | Anyone can read a published post; staff can also read, edit, publish or delete drafts |
 
 Post lists are paginated; `page_size` raises the page size up to 20. They only ever show published posts, also to
-staff, because the home page reads them. Writes return the post's `id` and its `slug`, made from the English title.
+staff, because the site's search reads them. Responses are raw data for clients to format: dates in ISO 8601,
+`read_time` in minutes and the cover's URL at each size (`cover_urls`); a post read by its `id` adds its Markdown
+`body`. Writes return the post's `id` and its `slug`, made from the English title.
 The API has no language in its URL. Pages send an `X-Language` header (`en` or `es`) with their own language;
 without it, responses follow the language cookie or `Accept-Language`, and English otherwise. Links in the
 responses point to the pages in that language.
+
+Staff sign in through the admin and the API takes that session; there is no Basic or token authentication. Each
+visitor, and each staff account, can make a limited number of requests a minute, and writes have a lower limit an
+hour; past them the API answers `429` with a `Retry-After` header. The rates are in `REST_FRAMEWORK` in
+[`config/settings.py`](config/settings.py).
 
 ## Deployment
 

@@ -8,18 +8,38 @@ $(document).ready(function () {
     // Ajax Search
     // =====================
 
+    // The API sends dates as ISO 8601: show them like the server does (localized_date, "dd MMM, yyyy", in UTC)
+    const dateFormat = new Intl.DateTimeFormat(lang, {day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC'});
+
+    function formatDate(isoDate) {
+        const parts = {};
+        dateFormat.formatToParts(new Date(isoDate)).forEach(function (part) {
+            parts[part.type] = part.value;
+        });
+        return parts.day + ' ' + parts.month + ', ' + parts.year;
+    }
+
     function renderPost(post) {
         let post_template = $($('#search-result-post-template')[0].content).clone();
 
-        post_template.find('.article__image').attr('href', post.href);
+        post_template.find('.article__image').attr('href', post.url);
         post_template.find('.article__image__link').attr('src', post.cover_urls.card).attr('alt', post.title);
-        post_template.find('.article__tag').attr('href', post.category_href).text(post.category);
-        post_template.find('.article__title__link').attr('href', post.href).text(post.title);
+        if (post.category) {
+            post_template.find('.article__tag').attr('href', post.category.url).text(post.category.name);
+        } else {
+            post_template.find('.article__tags').remove();
+        }
+        post_template.find('.article__title__link').attr('href', post.url).text(post.title);
         post_template.find('.article__excerpt').text(post.description);
-        post_template.find('.article__date').attr('datetime', post.timestamp).text(post.user_friendly_date);
-        post_template.find('.article__minutes').text(post.read_time);
+        post_template.find('.article__date').attr('datetime', post.created).text(formatDate(post.created));
+        post_template.find('.article__read-time').text(post.read_time);
 
         return post_template;
+    }
+
+    // The messages are templates in the page (lib/_search_result_template.html), so they come translated
+    function showMessage(results_container, template_id) {
+        results_container.empty().append($($('#' + template_id)[0].content).clone());
     }
 
     const SEARCH_DEBOUNCE_MS = 300;
@@ -45,18 +65,22 @@ $(document).ready(function () {
                 'X-Language': lang
             },
             success: function (page) {
+                if (!page.results.length) {
+                    showMessage(results_container, 'search-no-results-template');
+                    return;
+                }
                 results_container.empty();
                 page.results.forEach(function (post) {
                     const rendered_post = renderPost(post);
                     results_container.append(rendered_post);
                 });
             },
-            statusCode: {
-                404: function () {
-                    results_container.empty();
+            error: function (xhr, status) {
+                // Cancelled by a newer query, which shows its own results
+                if (status === 'abort') {
+                    return;
                 }
-            },
-            error: function (xhr) {
+                showMessage(results_container, 'search-error-template');
             },
         });
     }

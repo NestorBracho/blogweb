@@ -1,11 +1,14 @@
 import base64
-from datetime import timedelta
+import json
+import logging
+import time
+from datetime import datetime
 from io import BytesIO, StringIO
 from tempfile import TemporaryDirectory
-from types import SimpleNamespace
 from unittest import mock
 from urllib.parse import quote
 
+import httpx2
 from django.contrib.auth import get_user_model
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -14,40 +17,17 @@ from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
 from django.test import SimpleTestCase, TestCase, TransactionTestCase, override_settings
 from django.urls import reverse, reverse_lazy
-from django.utils import timezone
-from openai import OpenAIError
+from openai import OpenAI
 from PIL import Image
+from rest_framework.throttling import SimpleRateThrottle
 
-from config.testing import reverse_in, structured_data
+from config.testing import EmptyCacheMixin, create_category, create_post, reverse_in, structured_data
+from config.throttling import AnonRateThrottle, WriteRateThrottle
 
 from . import covers
 from .drafting import ArticleDraft
-from .models import Category, Post
+from .models import Post
 from .rendering import render_markdown
-
-
-# Data migrations already seed real categories, so tests use their own slugs
-def create_category(slug='test-topic', **kwargs):
-    fields = {'name_es': slug, 'name_en': slug, 'slug': slug, 'color': '#ae00ee', **kwargs}
-    return Category.objects.create(**fields)
-
-
-def create_post(title, days_ago=0, **kwargs):
-    fields = {
-        'title_es': title,
-        'title_en': title,
-        'body_es': 'Cuerpo',
-        'body_en': 'Body',
-        'description_es': 'Descripción',
-        'description_en': 'Description',
-        'is_published': True,
-        **kwargs,
-    }
-    post = Post.objects.create(**fields)
-    # `created` is auto_now_add, so it can only be moved after the insert
-    Post.objects.filter(pk=post.pk).update(created=timezone.now() - timedelta(days=days_ago))
-    post.refresh_from_db()
-    return post
 
 
 def image_file(name='cover.png', size=(2400, 1600), mode='RGB', color='teal'):
@@ -256,11 +236,13 @@ class SidebarTests(TestCase):
         self.assertEqual(list(response.context['categories']), [published])
 
     def test_sidebar_and_footer_share_the_latest_posts(self):
-        for number in range(4):
+        # More than the home's first page shows, or the sidebar leaves them out
+        for number in range(5):
             create_post(f'Post {number}', days_ago=number)
         create_post('Draft', is_published=False)
 
-        response = self.client.get(reverse_in('en', 'main:index'))
+        # A page that lists no other posts
+        response = self.client.get(reverse_in('en', 'main:about'))
 
         latest = [post.title_en for post in response.context['latest_posts']]
         self.assertEqual(latest, ['Post 0', 'Post 1', 'Post 2'])
@@ -336,7 +318,7 @@ class SitemapTests(TestCase):
         self.assertContains(response, '<xhtml:link rel="alternate" hreflang="x-default" href="http://testserver/cv/"/>')
 
 
-class PostAPITests(TestCase):
+class PostAPITests(EmptyCacheMixin, TestCase):
     url = reverse_lazy('api:post-list')
 
     def test_lists_published_posts_a_page_at_a_time(self):
@@ -380,30 +362,81 @@ class PostAPITests(TestCase):
         self.assertEqual(len(capped.json()['results']), 20)
 
     def test_language_header_applies_to_the_whole_response(self):
-        post = create_post('Black holes', title_es='Agujeros negros', body_en='word ' * 450)
+        category = create_category(name_en='Space', name_es='Espacio')
+        post = create_post('Black holes', title_es='Agujeros negros', category=category)
 
         # The page sends the language it is in, whatever the browser prefers
         response = self.client.get(self.url, headers={'X-Language': 'es', 'Accept-Language': 'en'})
 
         result = response.json()['results'][0]
-        self.assertEqual((result['title'], result['read_time']), ('Agujeros negros', '3 min de lectura'))
-        self.assertEqual(result['href'], reverse_in('es', 'blog:post-detail', slug=post.slug))
+        self.assertEqual((result['title'], result['category']['name']), ('Agujeros negros', 'Espacio'))
+        self.assertEqual(result['url'], reverse_in('es', 'blog:post-detail', slug=post.slug))
+        self.assertEqual(result['category']['url'], reverse_in('es', 'blog:category-detail', slug=category.slug))
         self.assertIn('X-Language', response['Vary'])
 
     def test_language_follows_the_browser_without_the_header(self):
-        create_post('Black holes', title_es='Agujeros negros', body_en='word ' * 450)
+        create_post('Black holes', title_es='Agujeros negros')
 
         spanish = self.client.get(self.url, headers={'Accept-Language': 'es'})
         default = self.client.get(self.url)
 
-        self.assertEqual(spanish.json()['results'][0]['read_time'], '3 min de lectura')
-        self.assertEqual(default.json()['results'][0]['read_time'], '3 min read')
+        self.assertEqual(spanish.json()['results'][0]['title'], 'Agujeros negros')
+        self.assertEqual(default.json()['results'][0]['title'], 'Black holes')
+
+    def test_posts_are_raw_data_for_clients_to_format(self):
+        post = create_post('Black holes', body_en='word ' * 450, category=create_category(color='#4643ec'))
+
+        result = self.client.get(self.url).json()['results'][0]
+
+        self.assertEqual(
+            set(result),
+            {'id', 'slug', 'url', 'title', 'description', 'category', 'cover_urls', 'read_time', 'created', 'updated'},
+        )
+        self.assertEqual(result['id'], str(post.pk))
+        # Minutes as a number and dates as ISO 8601, with no wording in any language
+        self.assertEqual(result['read_time'], 3)
+        self.assertEqual(datetime.fromisoformat(result['created']), post.created)
+        self.assertEqual(datetime.fromisoformat(result['updated']), post.updated)
+        self.assertEqual(
+            result['category'],
+            {'slug': 'test-topic', 'name': 'test-topic', 'color': '#4643ec', 'url': '/en/tags/test-topic'},
+        )
+
+    def test_posts_without_a_category_say_so(self):
+        create_post('Uncategorized', category=None)
+
+        self.assertIsNone(self.client.get(self.url).json()['results'][0]['category'])
+
+    def test_a_single_post_comes_whole(self):
+        post = create_post('Black holes', body_en='Light *cannot* escape.', body_es='La luz no escapa.')
+
+        response = self.client.get(reverse('api:post-detail', args=[post.pk]), headers={'X-Language': 'en'})
+
+        result = response.json()
+        self.assertEqual(result['title'], 'Black holes')
+        # The Markdown it is written in, in the language asked for
+        self.assertEqual(result['body'], 'Light *cannot* escape.')
+        self.assertIs(result['is_published'], True)
 
     def test_anonymous_users_cannot_create_posts(self):
         response = self.client.post(self.url, {'title_en': 'Spam'})
 
         self.assertEqual(response.status_code, 403)
         self.assertFalse(Post.objects.filter(title_en='Spam').exists())
+
+    def test_staff_passwords_sign_nobody_in(self):
+        # Only the admin's session does: the API is no place to try passwords
+        get_user_model().objects.create_user(username='editor', password='correct horse', is_staff=True)
+        draft = create_post('Draft', is_published=False)
+        credentials = base64.b64encode(b'editor:correct horse').decode()
+        headers = {'Authorization': f'Basic {credentials}'}
+
+        created = self.client.post(self.url, {'title_en': 'Spam'}, headers=headers)
+        read = self.client.get(reverse('api:post-detail', args=[draft.pk]), headers=headers)
+
+        self.assertEqual(created.status_code, 403)
+        self.assertFalse(Post.objects.filter(title_en='Spam').exists())
+        self.assertEqual(read.status_code, 404)
 
     def test_staff_can_create_draft_posts(self):
         self.client.force_login(get_user_model().objects.create_user(username='editor', is_staff=True))
@@ -431,6 +464,7 @@ class PostAPITests(TestCase):
         self.client.force_login(get_user_model().objects.create_user(username='editor', is_staff=True))
         draft = create_post('Draft', is_published=False)
         detail_url = reverse('api:post-detail', args=[draft.pk])
+        self.assertIs(self.client.get(detail_url).json()['is_published'], False)
 
         response = self.client.patch(
             detail_url, {'title_en': 'Ready', 'is_published': True}, content_type='application/json'
@@ -470,6 +504,48 @@ class PostAPITests(TestCase):
         self.assertEqual(response.status_code, 403)
         draft.refresh_from_db()
         self.assertFalse(draft.is_published)
+
+
+class APIRateLimitTests(EmptyCacheMixin, TestCase):
+    url = reverse_lazy('api:post-list')
+
+    def test_visitors_get_a_number_of_reads_a_minute(self):
+        for _ in range(AnonRateThrottle().num_requests):
+            self.assertEqual(self.client.get(self.url).status_code, 200)
+
+        too_many = self.client.get(self.url)
+        a_minute_later = time.time() + 60
+        with mock.patch.object(SimpleRateThrottle, 'timer', return_value=a_minute_later):
+            next_minute = self.client.get(self.url)
+
+        self.assertEqual(too_many.status_code, 429)
+        self.assertIn('Retry-After', too_many)
+        self.assertEqual(next_minute.status_code, 200)
+
+    def test_counts_each_visitor_by_the_address_cloudflare_gives(self):
+        visitor = {'CF-Connecting-IP': '203.0.113.7'}
+        for _ in range(AnonRateThrottle().num_requests):
+            self.client.get(self.url, headers=visitor)
+
+        # Anyone can make up X-Forwarded-For addresses, so they don't make a new visitor
+        spoofed = self.client.get(self.url, headers={**visitor, 'X-Forwarded-For': '198.51.100.1'})
+        someone_else = self.client.get(self.url, headers={'CF-Connecting-IP': '203.0.113.8'})
+
+        self.assertEqual(spoofed.status_code, 429)
+        self.assertEqual(someone_else.status_code, 200)
+
+    def test_staff_get_fewer_writes_than_reads(self):
+        self.client.force_login(get_user_model().objects.create_user(username='editor', is_staff=True))
+        detail_url = reverse('api:post-detail', args=[create_post('Post').pk])
+        for _ in range(WriteRateThrottle().num_requests):
+            self.client.patch(detail_url, {'title_en': 'Edited'}, content_type='application/json')
+
+        write = self.client.patch(detail_url, {'title_en': 'One too many'}, content_type='application/json')
+        read = self.client.get(detail_url)
+
+        self.assertEqual(write.status_code, 429)
+        self.assertEqual(read.status_code, 200)
+        self.assertEqual(read.json()['title'], 'Edited')
 
 
 class RenderMarkdownTests(SimpleTestCase):
@@ -537,15 +613,20 @@ class CoverSizesTests(TemporaryMediaMixin, TestCase):
 
     def test_pages_show_the_size_each_place_needs(self):
         post = create_post('Covered', cover=image_file(), category=create_category())
+        # Enough older posts for the sidebar to list the latest ones
+        for number in range(4):
+            create_post(f'Older {number}', days_ago=number + 1)
 
         post_page = self.client.get(post.get_absolute_url())
         category_page = self.client.get(post.category.get_absolute_url())
+        home = self.client.get(reverse('main:index'))
 
         urls = post.cover_urls
         self.assertContains(post_page, f'src="{urls["post"]}"')
         self.assertContains(post_page, f'<meta property="og:image" content="http://testserver{urls["social"]}">')
         self.assertContains(post_page, f'src="{urls["thumb"]}"')  # the sidebar's latest posts
-        self.assertContains(category_page, f'data-src="{urls["card"]}"')
+        self.assertContains(category_page, f'<img src="{urls["card"]}"')
+        self.assertContains(home, f'<img src="{urls["card"]}"')
 
     def test_the_post_page_gives_the_size_of_its_cover_and_loads_it_first(self):
         post = create_post('Covered', cover=image_file())
@@ -713,27 +794,63 @@ class PostSlugTests(TestCase):
         self.assertEqual((first.slug, second.slug), ('same-title', 'same-title-1'))
 
 
-class CategoryAPITests(TestCase):
+class CategoryAPITests(EmptyCacheMixin, TestCase):
     def test_lists_categories_with_their_latest_published_posts(self):
         category = create_category()
-        create_post('Old', category=category)
-        create_post('New', category=category)
+        old = create_post('Old', days_ago=2, category=category)
+        create_post('New', days_ago=1, category=category)
         create_post('Draft', category=category, is_published=False)
         create_category('empty-topic')
         create_post('Only a draft', category=create_category('drafts-only'), is_published=False)
+        # Newest first by date of publication, as everywhere else, however recently a post was edited
+        old.save()
 
         response = self.client.get(reverse('api:categories'))
 
         categories = response.json()['results']
         self.assertEqual([category['slug'] for category in categories], ['test-topic'])
-        self.assertEqual([post['title'] for post in categories[0]['first_5_posts']], ['New', 'Old'])
+        self.assertEqual(set(categories[0]), {'slug', 'name', 'color', 'url', 'latest_posts'})
+        self.assertEqual([post['title'] for post in categories[0]['latest_posts']], ['New', 'Old'])
+
+    def test_shows_the_four_most_active_categories_and_five_posts_of_each(self):
+        for number in range(5):
+            category = create_category(f'topic-{number}')
+            for days_ago in range(6):
+                create_post(f'Topic {number} post {days_ago}', days_ago=10 * number + days_ago, category=category)
+
+        categories = self.client.get(reverse('api:categories')).json()['results']
+
+        self.assertEqual([category['slug'] for category in categories], [f'topic-{number}' for number in range(4)])
+        self.assertEqual([len(category['latest_posts']) for category in categories], [5, 5, 5, 5])
+
+    def test_the_address_ends_in_a_slash_like_the_others(self):
+        self.assertEqual(reverse('api:categories'), '/api/categories/')
+        self.assertEqual(reverse('api:post-list'), '/api/post/')
+        # The old address still works
+        self.assertRedirects(self.client.get('/api/categories'), '/api/categories/', status_code=301)
 
 
-def parsed_completion(draft=None, refusal=None):
-    return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(parsed=draft, refusal=refusal))])
+def article_reply(*content):
+    """A Responses API reply with one message made of these parts, as the API sends it."""
+    message = {'type': 'message', 'id': 'msg_test', 'role': 'assistant', 'status': 'completed', 'content': content}
+    return {
+        'id': 'resp_test',
+        'object': 'response',
+        'created_at': 0,
+        'model': 'test-model',
+        'status': 'completed',
+        'output': [message],
+        'parallel_tool_calls': True,
+        'tool_choice': 'auto',
+        'tools': [],
+    }
 
 
-@override_settings(OPENAI_API_KEY='test-key', OPENAI_MODEL='test-model')
+def output_text(text):
+    return {'type': 'output_text', 'text': text, 'annotations': []}
+
+
+@override_settings(OPENAI_API_KEY='test-key', OPENAI_MODEL='test-model', OPENAI_IMAGE_MODEL='test-image-model')
 class DraftArticleCommandTests(TestCase):
     draft = ArticleDraft(
         title_en='Ownership in Rust',
@@ -746,15 +863,33 @@ class DraftArticleCommandTests(TestCase):
 
     def setUp(self):
         self.category = create_category()
-        # No request ever leaves the test: the command gets this fake client instead of a real one
-        self.openai = mock.MagicMock()
-        self.openai.beta.chat.completions.parse.return_value = parsed_completion(self.draft)
-        self.openai.images.generate.return_value = SimpleNamespace(
-            data=[SimpleNamespace(b64_json=base64.b64encode(image_file(size=(1024, 1024)).read()).decode())]
+        # No request ever leaves the test: the command gets a real client whose requests are answered by fake_api(),
+        # so the SDK still builds them and parses the replies as it does with the real API
+        cover = base64.b64encode(image_file(size=(1536, 1024)).read()).decode()
+        self.replies = {
+            '/v1/responses': article_reply(output_text(self.draft.model_dump_json())),
+            '/v1/images/generations': {'created': 0, 'data': [{'b64_json': cover}]},
+        }
+        self.requests = {}
+        client = OpenAI(
+            api_key='test-key',
+            base_url='https://api.openai.test/v1',
+            max_retries=0,
+            http_client=httpx2.Client(transport=httpx2.MockTransport(self.fake_api)),
         )
-        patcher = mock.patch('blog.management.commands.draft_article.OpenAI', return_value=self.openai)
+        self.addCleanup(client.close)
+        patcher = mock.patch('blog.management.commands.draft_article.OpenAI', return_value=client)
         patcher.start()
         self.addCleanup(patcher.stop)
+        # httpx2 logs every request at INFO, and the root logger would print those lines among the test results
+        http_logger = logging.getLogger('httpx2')
+        self.addCleanup(http_logger.setLevel, http_logger.level)
+        http_logger.setLevel(logging.WARNING)
+
+    def fake_api(self, request):
+        self.requests[request.url.path] = json.loads(request.content)
+        reply = self.replies[request.url.path]
+        return reply if isinstance(reply, httpx2.Response) else httpx2.Response(200, json=reply)
 
     def draft_article(self, *args):
         output = StringIO()
@@ -770,20 +905,23 @@ class DraftArticleCommandTests(TestCase):
         self.assertEqual((post.title_es, post.body_es), (self.draft.title_es, self.draft.body_es))
         self.assertEqual(post.read_time, 3)
         self.assertIn(reverse('admin:blog_post_change', args=[post.pk]), output)
-        self.openai.images.generate.assert_not_called()
+        self.assertNotIn('/v1/images/generations', self.requests)
 
     def test_asks_for_structured_output(self):
         self.draft_article('--no-cover')
 
-        request = self.openai.beta.chat.completions.parse.call_args.kwargs
+        request = self.requests['/v1/responses']
         self.assertEqual(request['model'], 'test-model')
-        self.assertIs(request['response_format'], ArticleDraft)
-        self.assertIn('Rust ownership', request['messages'][-1]['content'])
+        self.assertIn('Rust ownership', request['input'])
+        # The SDK turns ArticleDraft into a strict JSON schema, so the model has to fill in every field
+        schema = request['text']['format']
+        self.assertEqual((schema['type'], schema['name'], schema['strict']), ('json_schema', 'ArticleDraft', True))
+        self.assertEqual(schema['schema']['required'], list(ArticleDraft.model_fields))
+        self.assertIs(request['store'], False)
 
     def test_shortens_texts_that_do_not_fit_their_columns(self):
-        self.openai.beta.chat.completions.parse.return_value = parsed_completion(
-            self.draft.model_copy(update={'title_en': 'A' * 80, 'description_es': 'B' * 200})
-        )
+        too_long = self.draft.model_copy(update={'title_en': 'A' * 80, 'description_es': 'B' * 200})
+        self.replies['/v1/responses'] = article_reply(output_text(too_long.model_dump_json()))
 
         self.draft_article('--no-cover')
 
@@ -796,21 +934,56 @@ class DraftArticleCommandTests(TestCase):
             self.draft_article()
 
             post = Post.objects.get(slug='ownership-in-rust')
-            self.assertEqual(stored_image(post.cover.name), ('PNG', (1024, 1024)))
+            self.assertEqual(stored_image(post.cover.name), ('PNG', (1536, 1024)))
             self.assertEqual(list(post.cover_sizes['paths']), ['post', 'card', 'thumb', 'social'])
+        request = self.requests['/v1/images/generations']
+        self.assertEqual(request['model'], 'test-image-model')
+        self.assertIn('Ownership in Rust', request['prompt'])
 
     def test_keeps_the_draft_when_the_cover_fails(self):
-        self.openai.images.generate.side_effect = OpenAIError('Image service unavailable')
+        self.replies['/v1/images/generations'] = httpx2.Response(503, json={'error': {'message': 'Unavailable'}})
 
         output = self.draft_article()
 
         self.assertFalse(Post.objects.get(slug='ownership-in-rust').cover)
         self.assertIn('without a cover', output)
 
+    def test_keeps_the_draft_when_no_image_comes_back(self):
+        self.replies['/v1/images/generations'] = {'created': 0, 'data': []}
+
+        output = self.draft_article()
+
+        self.assertFalse(Post.objects.get(slug='ownership-in-rust').cover)
+        self.assertIn('without a cover: the model returned no image', output)
+
     def test_reports_a_refusal_without_saving_anything(self):
-        self.openai.beta.chat.completions.parse.return_value = parsed_completion(refusal='I cannot write that.')
+        self.replies['/v1/responses'] = article_reply({'type': 'refusal', 'refusal': 'I cannot write that.'})
 
         with self.assertRaisesMessage(CommandError, 'I cannot write that.'):
+            self.draft_article()
+
+        self.assertFalse(Post.objects.filter(category=self.category).exists())
+
+    def test_reports_an_article_that_was_cut_short(self):
+        self.replies['/v1/responses'] = article_reply(output_text(self.draft.model_dump_json()[:200]))
+
+        with self.assertRaisesMessage(CommandError, 'the model returned an incomplete article'):
+            self.draft_article()
+
+        self.assertFalse(Post.objects.filter(category=self.category).exists())
+
+    def test_reports_an_answer_without_an_article(self):
+        self.replies['/v1/responses'] = article_reply()
+
+        with self.assertRaisesMessage(CommandError, 'the model returned no article'):
+            self.draft_article()
+
+        self.assertFalse(Post.objects.filter(category=self.category).exists())
+
+    def test_reports_api_errors_without_saving_anything(self):
+        self.replies['/v1/responses'] = httpx2.Response(401, json={'error': {'message': 'Incorrect API key'}})
+
+        with self.assertRaisesMessage(CommandError, 'Incorrect API key'):
             self.draft_article()
 
         self.assertFalse(Post.objects.filter(category=self.category).exists())
@@ -819,7 +992,7 @@ class DraftArticleCommandTests(TestCase):
         with self.assertRaisesMessage(CommandError, 'Unknown category "missing"'):
             call_command('draft_article', 'Rust ownership', '--category', 'missing')
 
-        self.openai.beta.chat.completions.parse.assert_not_called()
+        self.assertEqual(self.requests, {})
 
     @override_settings(OPENAI_API_KEY='')
     def test_requires_an_api_key(self):

@@ -2,7 +2,7 @@
 
 import markdown
 import nh3
-from django.utils.safestring import mark_safe
+from django.utils.safestring import SafeString, mark_safe
 from markdown.extensions import admonition, attr_list, codehilite, fenced_code, tables
 
 # Bodies come from the admin, the API and draft_article (an LLM), and Markdown passes raw HTML through, so the
@@ -19,7 +19,7 @@ ATTRIBUTES = {
 sanitizer = nh3.Cleaner(attributes=ATTRIBUTES, filter_style_properties={'text-align'})
 
 
-def render_markdown(text):
+def render_markdown(text: str) -> SafeString:
     html = markdown.markdown(
         text,
         extensions=[

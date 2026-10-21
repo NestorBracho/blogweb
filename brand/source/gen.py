@@ -1,13 +1,28 @@
-"""Genera el paquete de marca 'Bracho' (dirección B · Terminal) con el texto convertido a trazos."""
-import io, os
-from fontTools.ttLib import TTFont
-from fontTools.pens.svgPathPen import SVGPathPen
-from fontTools.pens.boundsPen import BoundsPen
-from fontTools.pens.transformPen import TransformPen
-import cairosvg
-from PIL import Image
+"""Genera el paquete de marca 'Bracho' (dirección B · Terminal) con el texto convertido a trazos.
+
+Qué necesita y cómo se ejecuta: README.md, en esta carpeta.
+"""
+import io, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+FONT_FILES = {w: os.path.join(HERE, f"package/files/roboto-mono-latin-{w}-normal.woff2") for w in (500, 700)}
+HELP = f"See {os.path.join(HERE, 'README.md')}"
+
+# Ni las dependencias ni la fuente están en el repo: si falta algo, decirlo antes de generar nada
+try:
+    import brotli  # fontTools lo necesita para leer WOFF2
+    from fontTools.ttLib import TTFont
+    from fontTools.pens.svgPathPen import SVGPathPen
+    from fontTools.pens.boundsPen import BoundsPen
+    from fontTools.pens.transformPen import TransformPen
+    import cairosvg
+    from PIL import Image
+except (ImportError, OSError) as error:  # OSError: CairoSVG instalado, pero sin la librería Cairo del sistema
+    sys.exit(f"Missing dependency: {str(error).splitlines()[0]}\n{HELP}")
+missing = [path for path in FONT_FILES.values() if not os.path.exists(path)]
+if missing:
+    sys.exit(f"Missing font file: {missing[0]}\n{HELP}")
+
 OUT = os.path.join(HERE, "out")
 for d in ["logo", "favicon", "social"]:
     os.makedirs(os.path.join(OUT, d), exist_ok=True)
@@ -19,7 +34,7 @@ MUTED_D = "#94a3b8"    # --dark-gray
 TEXT_D = "#f0f0f0"     # --light-gray (modo oscuro)
 ACCENT = "#ae00ee"     # --primary-color
 
-FONTS = {w: TTFont(os.path.join(HERE, f"package/files/roboto-mono-latin-{w}-normal.woff2")) for w in (500, 700)}
+FONTS = {w: TTFont(path) for w, path in FONT_FILES.items()}
 
 
 def text_path(s, weight, size, x, y, tracking=-0.03):

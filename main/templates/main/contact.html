@@ -45,6 +45,9 @@
                 {% csrf_token %}
                 {% include 'lib/_honeypot_field.html' with id='contact-honeypot' %}
                 {# After a failed submission the fields keep what was typed and say what to fix #}
+                {% if form.non_field_errors %}
+                    <p class="form__error" role="alert">{{ form.non_field_errors|join:' ' }}</p>
+                {% endif %}
                 <div class="form__group">
                     <label class="form__label screen-reader-text" for="form-name">{% translate 'Your Name' %}</label>
                     <input class="form__input" id="form-name" type="text" name="name" maxlength="100" placeholder="{% translate 'Your name' %}"

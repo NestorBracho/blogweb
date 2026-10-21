@@ -7,7 +7,7 @@ from rest_framework.generics import ListAPIView
 
 from blog.models import Category, Post, content_language
 
-from .serializers import CategorySerializer, PostWriteSerializer, SearchPostSerializer
+from .serializers import CategoryWithPostsSerializer, PostDetailSerializer, PostListSerializer, PostWriteSerializer
 
 
 class LanguageHeaderMixin:
@@ -28,11 +28,9 @@ class LanguageHeaderMixin:
 class PostModelViewSet(LanguageHeaderMixin, viewsets.ModelViewSet):
     queryset = Post.objects.select_related('category').order_by('-created')
     filter_backends = [SearchFilter]
-    write_serializer_class = PostWriteSerializer
-    read_serializer_class = SearchPostSerializer
 
     def get_queryset(self):
-        # The list feeds the public pages, so it only ever shows published posts, even to staff signed in to the
+        # The list feeds the site's search, so it only ever shows published posts, even to staff signed in to the
         # admin. Staff can read, edit, publish or delete any post, drafts included, by its id.
         queryset = super().get_queryset()
         if self.action == 'list' or not self.request.user.is_staff:
@@ -47,12 +45,16 @@ class PostModelViewSet(LanguageHeaderMixin, viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.action in ['create', 'update', 'partial_update']:
-            return self.write_serializer_class
-        return self.read_serializer_class
+            return PostWriteSerializer
+        if self.action == 'retrieve':
+            return PostDetailSerializer
+        return PostListSerializer
 
 
 class CategoryModelListAPIView(LanguageHeaderMixin, ListAPIView):
-    serializer_class = CategorySerializer
+    """The four most recently active categories, each with its five latest posts."""
+
+    serializer_class = CategoryWithPostsSerializer
 
     def get_queryset(self):
-        return Category.objects.with_published_posts().order_by('-latest_post')[:4]
+        return Category.objects.with_published_posts().with_latest_posts(5).order_by('-latest_post')[:4]

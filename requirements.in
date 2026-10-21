@@ -16,6 +16,6 @@ nh3
 pillow
 babel
 
-# The draft_article command. openai 2+ changes the SDK it uses (blog/drafting.py)
-openai<2
+# The draft_article command (blog/drafting.py)
+openai
 pydantic

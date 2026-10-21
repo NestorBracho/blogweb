@@ -11,6 +11,7 @@ import environ
 env = environ.Env(
     DEBUG=(bool, False),
     ALLOWED_HOSTS=(list, ['localhost', '127.0.0.1']),
+    ADMINS=(list, []),
     CSRF_TRUSTED_ORIGINS=(list, []),
     ADMIN_URL=(str, 'admin/'),
     EMAIL_PORT=(int, 587),
@@ -113,6 +114,11 @@ DATABASES = {
 }
 
 REST_FRAMEWORK = {
+    # Staff sign in through the admin and the API takes that session. Not Basic auth, which would let anyone try
+    # passwords against the API without knowing the admin's path.
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
     'DEFAULT_PAGINATION_CLASS': 'blog.api.pagination.PageSizePagination',
     'DEFAULT_PERMISSION_CLASSES': [
         'blog.api.permissions.IsAdminOrReadOnly',
@@ -120,6 +126,20 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
     ],
+    # Counted per Gunicorn worker (config/throttling.py)
+    'DEFAULT_THROTTLE_CLASSES': [
+        'config.throttling.AnonRateThrottle',
+        'config.throttling.UserRateThrottle',
+        'config.throttling.WriteRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '60/minute',
+        'user': '120/minute',
+        'write': '60/hour',
+        # Contact and newsletter forms (config/throttling.FormThrottle), which send emails
+        'contact': '5/hour',
+        'newsletter': '5/hour',
+    },
 }
 
 # Email config
@@ -133,6 +153,11 @@ EMAIL_USE_TLS = env('EMAIL_USE_TLS')
 EMAIL_TIMEOUT = 10
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='webmaster@localhost')
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
+EMAIL_SUBJECT_PREFIX = '[nestorbracho.com] '
+
+# Who gets an email when a page fails with a server error (LOGGING below) or a nightly backup fails
+# (deploy/backup.sh). Comma-separated addresses in the environment; empty, nobody does.
+ADMINS = [(address, address) for address in map(str.strip, env('ADMINS'))]
 
 # Address that receives contact form submissions
 CONTACT_EMAIL = env('CONTACT_EMAIL', default=DEFAULT_FROM_EMAIL)
@@ -162,7 +187,9 @@ OWNER_LINKEDIN_URL = env('OWNER_LINKEDIN_URL', default='https://www.linkedin.com
 # OpenAI, only needed by the draft_article command
 
 OPENAI_API_KEY = env('OPENAI_API_KEY', default='')
-OPENAI_MODEL = env('OPENAI_MODEL', default='gpt-4o')
+# The model that writes the article and the one that draws its cover
+OPENAI_MODEL = env('OPENAI_MODEL', default='gpt-6-astra')
+OPENAI_IMAGE_MODEL = env('OPENAI_IMAGE_MODEL', default='gpt-image-2.5-flare')
 
 
 # Password validation
@@ -272,8 +299,19 @@ if not DEBUG:
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {'()': 'django.utils.log.RequireDebugFalse'},
+        'once_per_error': {'()': 'config.log.OncePerError', 'seconds': 60 * 60},
+    },
     'handlers': {
         'console': {'class': 'logging.StreamHandler'},
+        # Emails ADMINS the errors Django logs, such as a page that fails with a 500, with the traceback. Only in
+        # production, and each error once an hour at most.
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false', 'once_per_error'],
+            'class': 'django.utils.log.AdminEmailHandler',
+        },
     },
     'root': {
         'handlers': ['console'],
@@ -281,8 +319,13 @@ LOGGING = {
     },
     'loggers': {
         'django': {
-            'handlers': ['console'],
+            'handlers': ['console', 'mail_admins'],
             'level': env('DJANGO_LOG_LEVEL', default='INFO'),
+            'propagate': False,
+        },
+        # A request for a host the site doesn't serve comes from a bot, not from a bug: log it without an email
+        'django.security.DisallowedHost': {
+            'handlers': ['console'],
             'propagate': False,
         },
     },

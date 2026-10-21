@@ -8,5 +8,6 @@ router.register(r'post', views.PostModelViewSet, basename='post')
 
 app_name = 'api'
 urlpatterns = [
-    path('categories', views.CategoryModelListAPIView.as_view(), name='categories'),
+    # Without the slash too: CommonMiddleware's APPEND_SLASH redirects there
+    path('categories/', views.CategoryModelListAPIView.as_view(), name='categories'),
 ] + router.urls

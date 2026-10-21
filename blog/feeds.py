@@ -11,7 +11,7 @@ class LatestPostsFeed(Feed):
     description = _('Science, storytelling & software, by Nestor Bracho.')
 
     def items(self):
-        return Post.objects.published().order_by('-created')[:20]
+        return Post.objects.published().order_by('-published_at')[:20]
 
     def item_title(self, item):
         return item.title()
@@ -20,7 +20,7 @@ class LatestPostsFeed(Feed):
         return item.description()
 
     def item_pubdate(self, item):
-        return item.created
+        return item.published_at
 
     def item_updateddate(self, item):
         return item.updated

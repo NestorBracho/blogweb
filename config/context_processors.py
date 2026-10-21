@@ -24,7 +24,7 @@ def sidebar(request):
     return {
         'categories': Category.objects.with_published_posts().order_by('-latest_post'),
         # Shown in both the sidebar and the footer: one queryset, so one query per page
-        'latest_posts': published.order_by('-created')[:3],
+        'latest_posts': published.order_by('-published_at')[:3],
         # While every post fits on the home's first page, the other lists of posts (the sidebar's and Hacker's Haven)
         # would only repeat the same ones, so they wait until there are more. Lazy: only pages with those lists count.
         'many_posts': SimpleLazyObject(lambda: published.count() > HOME_PAGE_SIZE),

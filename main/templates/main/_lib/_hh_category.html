@@ -2,9 +2,11 @@
 
     <a href="{{ category.get_absolute_url }}" class="section-tags__image" style="outline-color: {{ category.color }};">
         <span class="section-tags__name" style="background: {{ category.color }};">{{ category.name }}</span>
-        {# Categories are only listed with published posts, so there is always a first one #}
+        {# Categories are only listed with published posts, so there is always a first one; it may have no cover #}
+        {% if category.latest_posts.0.cover %}
         <img class="category-cover" src="{{ category.latest_posts.0.cover_urls.card }}" alt="{{ category.name }}"
              loading="lazy" decoding="async">
+        {% endif %}
     </a>
 
     <div class="section-tags__content">

@@ -1,11 +1,14 @@
 {% load i18n main_tags %}
 <div class="article {{ card_class }}">
     <div class="article__inner">
+        {# A post without a cover gets a card without an image, as on its own page, not an empty <img src=""> #}
+        {% if post.cover %}
         <div class="article__head">
             <a class="article__image" href="{{ post.get_absolute_url }}">
                 <img src="{{ post.cover_urls.card }}" alt="{{ post.title }}" loading="lazy" decoding="async">
             </a>
         </div>
+        {% endif %}
         <div class="article__content">
             {% if post.category %}
                 <div class="article__tags">

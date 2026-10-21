@@ -20,6 +20,7 @@ from PIL import Image
 
 from config.testing import reverse_in, structured_data
 
+from . import covers
 from .drafting import ArticleDraft
 from .models import Category, Post
 from .rendering import render_markdown
@@ -96,6 +97,11 @@ class PostDetailViewTests(TestCase):
         response = self.get(post)
 
         self.assertEqual(response.status_code, 200)
+
+    def test_post_without_cover_shows_no_image(self):
+        response = self.get(self.post)
+
+        self.assertNotContains(response, 'class="post-image"')
 
     def test_unpublished_post_is_not_found(self):
         response = self.get(self.draft)
@@ -540,6 +546,16 @@ class CoverSizesTests(TemporaryMediaMixin, TestCase):
         self.assertContains(post_page, f'<meta property="og:image" content="http://testserver{urls["social"]}">')
         self.assertContains(post_page, f'src="{urls["thumb"]}"')  # the sidebar's latest posts
         self.assertContains(category_page, f'data-src="{urls["card"]}"')
+
+    def test_the_post_page_gives_the_size_of_its_cover_and_loads_it_first(self):
+        post = create_post('Covered', cover=image_file())
+
+        response = self.client.get(post.get_absolute_url())
+
+        width, height = (2 * side for side in covers.SIZES['post'])
+        self.assertContains(
+            response, f'src="{post.cover_urls["post"]}" width="{width}" height="{height}" fetchpriority="high"'
+        )
 
     def test_the_api_gives_every_size(self):
         post = create_post('Covered', cover=image_file())

@@ -15,10 +15,13 @@
 
                 <div class="post-head">
 
-                    <div class="post-image">
-                        <img class="lazy loaded" alt="{{  object.description }}"
-                             data-ll-status="loaded" src="{{ object.cover_urls.post }}">
-                    </div>
+                    {% if object.cover %}
+                        {# The size blog/covers.py makes for this place (twice 856x642); the CSS fits it to a 4:3 box #}
+                        <div class="post-image">
+                            <img class="lazy loaded" alt="{{  object.description }}" data-ll-status="loaded"
+                                 src="{{ object.cover_urls.post }}" width="1712" height="1284" fetchpriority="high">
+                        </div>
+                    {% endif %}
 
 
                     <div class="post-info">

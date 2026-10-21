@@ -1,3 +1,4 @@
+import html
 import json
 import posixpath
 import re
@@ -26,48 +27,78 @@ from .models import ContactRequest
 from .views import HOME_PAGE_SIZE
 
 
-class HomeTests(TestCase):
-    def test_intro_is_translated(self):
-        spanish = self.client.get(reverse_in('es', 'main:index'))
-        english = self.client.get(reverse_in('en', 'main:index'))
+def page_title(response):
+    return html.unescape(re.search(r'<title>(.*?)</title>', response.content.decode()).group(1))
 
-        self.assertContains(spanish, 'Llevo más de 12 años construyendo plataformas web')
-        self.assertContains(english, 'I have spent more than 12 years building web platforms')
+
+def meta(response, name):
+    """The content of the page's <meta name="…"> or <meta property="…">."""
+    match = re.search(rf'<meta (?:name|property)="{re.escape(name)}" content="([^"]*)">', response.content.decode())
+    return html.unescape(match.group(1))
+
+
+def inner_html(response, css_class):
+    """What the page's first element with that class holds. It mustn't hold another element of its own tag."""
+    match = re.search(rf'<(\w+) class="{css_class}">(.*?)</\1>', response.content.decode(), re.DOTALL)
+    return match.group(2)
+
+
+# The copy is free to change: these tests check who the page is about, its language and where it leads
+class HomeTests(TestCase):
+    def get_home(self, language):
+        return self.client.get(reverse_in(language, 'main:index'))
+
+    def test_intro_is_in_the_language_of_the_page(self):
+        spanish = self.get_home('es')
+        english = self.get_home('en')
+
+        self.assertContains(spanish, '<html lang="es"')
+        self.assertContains(english, '<html lang="en"')
+        # Every paragraph, translated
+        spanish_intro = re.findall(r'<p>(.*?)</p>', inner_html(spanish, 'hero__description'), re.DOTALL)
+        english_intro = re.findall(r'<p>(.*?)</p>', inner_html(english, 'hero__description'), re.DOTALL)
+        self.assertEqual(len(spanish_intro), len(english_intro))
+        for spanish_paragraph, english_paragraph in zip(spanish_intro, english_intro, strict=True):
+            self.assertNotEqual(spanish_paragraph, english_paragraph)
 
     def test_says_who_i_am_in_search_results_and_link_previews(self):
-        response = self.client.get(reverse_in('en', 'main:index'))
+        for language in ['en', 'es']:
+            with self.subTest(language=language):
+                response = self.get_home(language)
+                title = page_title(response)
 
-        self.assertContains(response, '<title>Nestor Bracho, Senior Full Stack Engineer</title>')
-        self.assertContains(response, '<meta property="og:title" content="Nestor Bracho, Senior Full Stack Engineer">')
-        self.assertContains(response, '<meta property="og:description" content="Senior Full Stack Engineer with more')
+                self.assertIn('Nestor Bracho', title)
+                self.assertIn(settings.OWNER_ROLE, title)
+                self.assertEqual(meta(response, 'og:title'), title)
+                self.assertIn(settings.OWNER_ROLE, meta(response, 'description'))
+                self.assertEqual(meta(response, 'og:description'), meta(response, 'description'))
 
     @override_settings(OWNER_ROLE='Staff Engineer')
     def test_the_role_is_set_in_one_place(self):
         home = self.client.get(reverse_in('es', 'main:index'))
         cv = self.client.get(reverse_in('es', 'main:cv'))
 
-        self.assertContains(home, '<title>Nestor Bracho, Staff Engineer</title>')
-        self.assertContains(home, '<meta name="description" content="Staff Engineer con más de 12 años')
-        self.assertContains(home, '<p class="hero__subtitle">Staff Engineer · Python/Django</p>')
-        self.assertContains(cv, '<p class="cv__headline">Staff Engineer · Python/Django</p>')
-        self.assertContains(cv, '<meta name="description" content="CV de Nestor Bracho, Staff Engineer con más')
-        # The CV's job history keeps its own titles; only the headline follows the setting
-        self.assertNotContains(cv, '<p class="cv__headline">Senior Full Stack Engineer')
+        self.assertIn('Staff Engineer', page_title(home))
+        self.assertIn('Staff Engineer', meta(home, 'description'))
+        self.assertIn('Staff Engineer', inner_html(home, 'hero__subtitle'))
+        self.assertIn('Staff Engineer', inner_html(cv, 'cv__headline'))
+        self.assertIn('Staff Engineer', meta(cv, 'description'))
 
     def test_points_from_the_role_to_the_personal_blog(self):
-        spanish = self.client.get(reverse_in('es', 'main:index'))
-        english = self.client.get(reverse_in('en', 'main:index'))
+        for language in ['en', 'es']:
+            with self.subTest(language=language):
+                response = self.get_home(language)
 
-        self.assertContains(spanish, 'Fuera del trabajo, <a href="#blog">escribo aquí</a>')
-        self.assertContains(english, 'Outside work, I <a href="#blog">write here</a>')
-        self.assertContains(english, 'id="blog"')
+                self.assertIn('<a href="#blog">', inner_html(response, 'hero__description'))
+                self.assertContains(response, 'id="blog"')
 
-    def test_footer_describes_the_site_in_each_language(self):
-        spanish = self.client.get(reverse_in('es', 'main:index'))
-        english = self.client.get(reverse_in('en', 'main:index'))
+    def test_footer_says_whose_site_it_is_in_each_language(self):
+        spanish = inner_html(self.get_home('es'), 'footer__info__description')
+        english = inner_html(self.get_home('en'), 'footer__info__description')
 
-        self.assertContains(spanish, 'Ciencia, historias y software. Esta es la web personal de Nestor Bracho')
-        self.assertContains(english, 'Science, storytelling &amp; software. This is the personal site of Nestor Bracho')
+        self.assertIn('Nestor Bracho', spanish)
+        self.assertIn('Nestor Bracho', english)
+        self.assertNotEqual(spanish, english)
 
     def test_leads_to_the_cv_and_the_contact_form(self):
         response = self.client.get(reverse('main:index'))
@@ -121,7 +152,7 @@ class HomePostsTests(TestCase):
         self.create_posts(1)
 
         for page in ['2', 'two']:
-            with self.subTest(page=page):
+            with self.subTest(page=page), self.assertLogs('django.request', 'WARNING'):
                 self.assertEqual(self.client.get(reverse_in('en', 'main:index'), {'page': page}).status_code, 404)
                 self.assertEqual(self.client.get(reverse_in('en', 'main:more-posts'), {'page': page}).status_code, 404)
 
@@ -463,7 +494,8 @@ class ErrorPageTests(TestCase):
         # A path nothing matches, and a page whose view finds nothing to show
         for url in ['/en/no-such-page/', reverse_in('en', 'blog:post-detail', slug='no-such-post')]:
             with self.subTest(url=url):
-                response = self.client.get(url)
+                with self.assertLogs('django.request', 'WARNING'):
+                    response = self.client.get(url)
 
                 self.assertContains(response, '<title>Page not found - Nestor Bracho</title>', status_code=404)
                 self.assertContains(response, 'Back to homepage', status_code=404)
@@ -471,7 +503,8 @@ class ErrorPageTests(TestCase):
                 self.assertNotContains(response, 'hreflang', status_code=404)
                 self.assertNotContains(response, 'og:url', status_code=404)
 
-        spanish = self.client.get('/es/no-such-page/')
+        with self.assertLogs('django.request', 'WARNING'):
+            spanish = self.client.get('/es/no-such-page/')
         self.assertContains(spanish, '<title>Página no encontrada - Nestor Bracho</title>', status_code=404)
 
 
@@ -764,9 +797,10 @@ class ContactFormViewTests(EmptyCacheMixin, TestCase):
         for _ in range(allowed):
             self.client.post(reverse('main:contact'), self.data, headers=visitor)
 
-        too_many = self.client.post(
-            reverse_in('es', 'main:contact'), {**self.data, 'message': 'Una más'}, headers=visitor
-        )
+        with self.assertLogs('django.request', 'WARNING'):
+            too_many = self.client.post(
+                reverse_in('es', 'main:contact'), {**self.data, 'message': 'Una más'}, headers=visitor
+            )
         someone_else = self.client.post(reverse('main:contact'), self.data, headers={'CF-Connecting-IP': '203.0.113.8'})
 
         # The form comes back in the page's language, with what was typed
@@ -784,11 +818,13 @@ class ContactRequestAdminTests(TestCase):
         self.request = ContactRequest.objects.create(name='Ada', email='ada@example.com', message='Hello!')
 
     def test_requests_can_be_read_but_not_created(self):
-        expected_status = {
-            reverse('admin:main_contactrequest_changelist'): 200,
-            reverse('admin:main_contactrequest_change', args=[self.request.pk]): 200,
-            reverse('admin:main_contactrequest_add'): 403,
-        }
-        for url, status in expected_status.items():
+        for url in [
+            reverse('admin:main_contactrequest_changelist'),
+            reverse('admin:main_contactrequest_change', args=[self.request.pk]),
+        ]:
             with self.subTest(url=url):
-                self.assertEqual(self.client.get(url).status_code, status)
+                self.assertEqual(self.client.get(url).status_code, 200)
+
+        # Django logs the refusal with its traceback
+        with self.assertLogs('django.request', 'WARNING'):
+            self.assertEqual(self.client.get(reverse('admin:main_contactrequest_add')).status_code, 403)

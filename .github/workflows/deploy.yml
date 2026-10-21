@@ -21,7 +21,8 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       SECRET_KEY: ci-only-not-a-real-secret
-      DEBUG: "True"
+      # As on the server
+      DEBUG: "False"
     steps:
       - uses: actions/checkout@v7
 
@@ -50,8 +51,10 @@ jobs:
       - name: Known vulnerabilities in dependencies
         run: pip-audit -r requirements-dev.txt
 
+      # With Django's deployment checklist (SILENCED_SYSTEM_CHECKS in config/settings.py has the exceptions), and a key
+      # as random as the server's: the checklist rightly rejects the job's placeholder
       - name: Django system checks
-        run: python manage.py check
+        run: SECRET_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(64))')" python manage.py check --deploy --fail-level WARNING
 
       - name: No missing migrations
         run: python manage.py makemigrations --check --dry-run
@@ -67,10 +70,9 @@ jobs:
           coverage report
           coverage report --format=markdown >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Static files build (production storage)
+      - name: Static files build
         run: python manage.py collectstatic --noinput -v0
         env:
-          DEBUG: "False"
           STATIC_ROOT: /tmp/staticfiles
 
   deploy:

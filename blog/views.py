@@ -27,9 +27,9 @@ class PostDetailView(generic.DetailView):
         published = self.get_queryset()
         related = published.filter(category=post.category) if post.category else published.none()
         return {
-            'previous_post': published.filter(created__lt=post.created).order_by('-created').first(),
-            'next_post': published.filter(created__gt=post.created).order_by('created').first(),
-            'related_posts': related.exclude(pk=post.pk).order_by('-created')[:3],
+            'previous_post': published.filter(published_at__lt=post.published_at).order_by('-published_at').first(),
+            'next_post': published.filter(published_at__gt=post.published_at).order_by('published_at').first(),
+            'related_posts': related.exclude(pk=post.pk).order_by('-published_at')[:3],
         }
 
 
@@ -43,7 +43,7 @@ class CategoryDetailView(generic.ListView):
         return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
-        return self.category.posts.published().select_related('category').order_by('-created')
+        return self.category.posts.published().select_related('category').order_by('-published_at')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

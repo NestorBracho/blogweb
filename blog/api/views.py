@@ -26,7 +26,7 @@ class LanguageHeaderMixin:
 
 
 class PostModelViewSet(LanguageHeaderMixin, viewsets.ModelViewSet):
-    queryset = Post.objects.select_related('category').order_by('-created')
+    queryset = Post.objects.select_related('category').order_by('-published_at', '-created')
     filter_backends = [SearchFilter]
 
     def get_queryset(self):

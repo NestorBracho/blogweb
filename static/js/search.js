@@ -31,7 +31,7 @@ $(document).ready(function () {
         }
         post_template.find('.article__title__link').attr('href', post.url).text(post.title);
         post_template.find('.article__excerpt').text(post.description);
-        post_template.find('.article__date').attr('datetime', post.created).text(formatDate(post.created));
+        post_template.find('.article__date').attr('datetime', post.published_at).text(formatDate(post.published_at));
         post_template.find('.article__read-time').text(post.read_time);
 
         return post_template;

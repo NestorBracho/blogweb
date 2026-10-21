@@ -3,9 +3,9 @@ import math
 
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import OuterRef, Prefetch, Subquery
+from django.db.models import Exists, OuterRef, Prefetch, Subquery
 from django.urls import reverse
-from django.utils import translation
+from django.utils import timezone, translation
 from django.utils.text import slugify
 from PIL import Image
 
@@ -42,12 +42,14 @@ class CategoryQuerySet(models.QuerySet):
         Categories readers can see: those with at least one published post. Empty ones stay in the admin, ready
         for future posts, and show up on their own once one is published. `latest_post` is the newest one's date.
         """
-        newest = Post.objects.published().filter(category=OuterRef('pk')).order_by('-created')
-        return self.annotate(latest_post=Subquery(newest.values('created')[:1])).filter(latest_post__isnull=False)
+        posts = Post.objects.published().filter(category=OuterRef('pk'))
+        # Filtered on Exists rather than on the date: a post published without save() (a bulk update) has none
+        newest = posts.order_by('-published_at').values('published_at')[:1]
+        return self.annotate(latest_post=Subquery(newest)).filter(Exists(posts))
 
     def with_latest_posts(self, count):
         """Gives each category a `latest_posts` list: its newest published posts, at most `count`, in one query."""
-        posts = Post.objects.published().order_by('-created')[:count]
+        posts = Post.objects.published().order_by('-published_at')[:count]
         return self.prefetch_related(Prefetch('posts', queryset=posts, to_attr='latest_posts'))
 
 
@@ -116,6 +118,14 @@ class Post(TranslatedFieldsMixin, BaseModel):
     read_time = models.IntegerField(default=1, editable=False)
 
     is_published = models.BooleanField(default=False)
+    # When readers first got the post, which is not when it was created: draft_article saves drafts that may be
+    # rewritten for weeks. Set on the first publication; unpublishing keeps it, so a post taken down to fix it comes
+    # back with its date and its place in the lists, and feed readers don't show it again as new.
+    published_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text='Set when the post is first published. Change it only to correct the date readers see.',
+    )
 
     objects = PostQuerySet.as_manager()
 
@@ -128,6 +138,11 @@ class Post(TranslatedFieldsMixin, BaseModel):
             self.slug = self.unique_slug(self.title_en or self.title_es)
         # Both languages show the same figure, so use the longer text
         self.read_time = max(estimate_read_time(self.body_en), estimate_read_time(self.body_es))
+        # Likewise the publication date, on the first save that publishes the post
+        if self.is_published and self.published_at is None:
+            self.published_at = timezone.now()
+            if kwargs.get('update_fields') is not None:
+                kwargs['update_fields'] = {*kwargs['update_fields'], 'published_at'}
 
         super().save(*args, **kwargs)
 

@@ -18,7 +18,7 @@
             </h2>
             <p class="article__excerpt">{{ post.description }}</p>
             <div class="article__meta">
-                <time class="article__date" datetime="{{ post.created|iso8601 }}">{{ post.created|localized_date }}</time>
+                <time class="article__date" datetime="{{ post.published_at|iso8601 }}">{{ post.published_at|localized_date }}</time>
                 <div class="article__minutes">{{ post.read_time }} {% translate 'min read' %}</div>
             </div>
         </div>

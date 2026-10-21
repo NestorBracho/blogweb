@@ -45,8 +45,9 @@ def create_post(title, days_ago=0, **kwargs):
         **kwargs,
     }
     post = Post.objects.create(**fields)
-    # `created` is auto_now_add, so it can only be moved after the insert
-    Post.objects.filter(pk=post.pk).update(created=timezone.now() - timedelta(days=days_ago))
+    # `created` is auto_now_add, so it can only be moved after the insert. Published posts came out that same day.
+    when = timezone.now() - timedelta(days=days_ago)
+    Post.objects.filter(pk=post.pk).update(created=when, published_at=when if post.published_at else None)
     post.refresh_from_db()
     return post
 

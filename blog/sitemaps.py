@@ -5,7 +5,7 @@ from .models import Category, Post
 
 class PostSitemap(TranslatedSitemap):
     def items(self):
-        return Post.objects.published().order_by('-created')
+        return Post.objects.published().order_by('-published_at')
 
     def lastmod(self, obj):
         return obj.updated

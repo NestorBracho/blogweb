@@ -53,7 +53,7 @@ class PostListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        # read_time is in minutes; created and updated are ISO 8601
+        # read_time is in minutes; dates are ISO 8601. published_at is when readers first got the post
         fields = [
             'id',
             'slug',
@@ -63,6 +63,7 @@ class PostListSerializer(serializers.ModelSerializer):
             'category',
             'cover_urls',
             'read_time',
+            'published_at',
             'created',
             'updated',
         ]

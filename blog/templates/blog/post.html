@@ -3,7 +3,7 @@
 
 {% block meta_seo %}
 {{ block.super }}
-<meta property="article:published_time" content="{{ object.created|iso8601 }}">
+<meta property="article:published_time" content="{{ object.published_at|iso8601 }}">
 <meta property="article:modified_time" content="{{ object.updated|iso8601 }}">
 {% endblock %}
 
@@ -38,7 +38,7 @@
 
                         <div class="post-meta">
                             <div class="post-meta__bottom">
-                                <time class="post-date" datetime="{{ object.created|iso8601 }}">{{  object.created|localized_date }}</time>
+                                <time class="post-date" datetime="{{ object.published_at|iso8601 }}">{{  object.published_at|localized_date }}</time>
                                 –
                                 <span class="post-minutes">
                                     {{ object.read_time }} {% translate 'min read' %}

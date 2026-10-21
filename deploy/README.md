@@ -1,8 +1,8 @@
-# Despliegue (Google Cloud e2-micro / Oracle Cloud Always Free)
+# Despliegue (Google Cloud e2-micro)
 
 > **Producción actual:** Google Cloud, VM `e2-micro` en `us-east1-b` (Ubuntu 24.04, 1 GB RAM
-> + 2 GB swap, Gunicorn con 2 workers). Ver [Google Cloud](#google-cloud-e2-micro) abajo;
-> los pasos de Oracle quedan como alternativa si algún día hay capacidad para una A1.
+> + 2 GB swap, Gunicorn con 2 workers). Oracle Cloud queda como alternativa en el
+> [apéndice](#apéndice-oracle-cloud-always-free), por si algún día hay capacidad para una A1.
 
 Arquitectura final:
 
@@ -21,42 +21,70 @@ Estructura en el servidor:
 ├── data/           # db.sqlite3
 ├── media/          # imágenes subidas
 ├── staticfiles/    # salida de collectstatic
-└── backups/        # copias nocturnas (backup.sh) y de antes de cada migración (update.sh)
+└── backups/        # copias nocturnas db-*/media-* (backup.sh) y pre-migrate-* de antes de cada migración (update.sh)
 ```
 
 ---
 
-## 1. Cuenta y VM en Oracle
+## 1. Cuenta y VM en Google Cloud
 
-1. Crea la cuenta en https://www.oracle.com/cloud/free/ y elige como **home region** una
-   cercana (p. ej. Madrid o Frankfurt). No se puede cambiar después.
-2. **Recomendado:** pasa la cuenta a *Pay As You Go*. Mientras uses solo recursos
-   Always Free no te cobran nada, pero evita que Oracle reclame instancias "inactivas"
-   (un blog con poco tráfico lo es). Crea también una alerta de presupuesto de 1 € en
-   *Billing → Budgets* para estar tranquilo.
-3. *Compute → Instances → Create instance*:
-   - Image: **Ubuntu 24.04** (Canonical).
-   - Shape: **VM.Standard.A1.Flex** (Ampere ARM), 1 OCPU y 6 GB de RAM es de sobra.
-   - Networking: crea una VCN nueva con subnet pública y **asigna IP pública**.
-   - SSH keys: sube tu clave pública (`~/.ssh/id_ed25519.pub`).
-   - Si da error *Out of capacity*, prueba otro *Availability Domain* o reintenta más tarde.
-4. Abre los puertos en la **Security List** de la subnet
-   (*Networking → VCN → Security Lists → Default → Add Ingress Rules*):
-   - Source `0.0.0.0/0`, TCP, destination port `80`
-   - Source `0.0.0.0/0`, TCP, destination port `443`
+- **Gratis solo si** la VM es `e2-micro`, está en `us-west1`, `us-central1` o `us-east1`,
+  y el disco es `pd-standard` de ≤ 30 GB. Una sola VM.
+- **Fin del periodo de prueba (90 días)**: para que la VM siga encendida hay que pasar la
+  cuenta de facturación a pago ("Upgrade"). Mientras solo uses recursos Always Free no hay cargos.
+- **Tráfico de salida**: el plan gratuito incluye 1 GB/mes. Cloudflare cachea estáticos e
+  imágenes, así que la mayor parte del tráfico no sale de la VM.
+
+Crea en tu Mac la clave SSH con la que entrarás al servidor:
+
+```bash
+ssh-keygen -t ed25519 -f ~/.ssh/blog-server -C "blog-server"
+```
+
+Crea la VM desde Cloud Shell (`https://shell.cloud.google.com`), con el contenido de `~/.ssh/blog-server.pub` en
+lugar de `CLAVE_PUBLICA`:
+
+```bash
+# 80/443 solo desde Cloudflare: nadie puede saltárselo atacando la IP directamente
+CLOUDFLARE_IPS=$(curl -sf https://www.cloudflare.com/ips-v4 | paste -sd, -)
+test -n "$CLOUDFLARE_IPS" && gcloud compute firewall-rules create allow-web --allow=tcp:80,tcp:443 \
+  --source-ranges="$CLOUDFLARE_IPS" --target-tags=http-server,https-server \
+  --description="HTTP(S) only from Cloudflare: https://www.cloudflare.com/ips-v4"
+# La red default abre el escritorio remoto de Windows a todo internet; en Linux sobra
+gcloud compute firewall-rules delete default-allow-rdp
+gcloud compute instances create blog-nestorbracho \
+  --zone=us-east1-b --machine-type=e2-micro \
+  --image-family=ubuntu-2404-lts-amd64 --image-project=ubuntu-os-cloud \
+  --boot-disk-size=30GB --boot-disk-type=pd-standard \
+  --tags=http-server,https-server \
+  --metadata=ssh-keys="nestor:CLAVE_PUBLICA"
+```
+
+El firewall lo gestiona la regla `allow-web`: no hace falta tocar iptables en la VM.
+
+**Rangos de Cloudflare**: cambian muy de vez en cuando. Si Cloudflare publica rangos nuevos (o la web da error 522),
+actualiza la regla:
+
+```bash
+CLOUDFLARE_IPS=$(curl -sf https://www.cloudflare.com/ips-v4 | paste -sd, -)
+test -n "$CLOUDFLARE_IPS" && gcloud compute firewall-rules update allow-web --source-ranges="$CLOUDFLARE_IPS"
+```
+
+Para comprobarlo, la IP directa no debe responder y el dominio sí: `curl -k --connect-timeout 5 https://IP_DEL_SERVIDOR`
+debe agotar el tiempo. Los mismos rangos están en `set_real_ip_from` de `deploy/nginx.conf`: actualízalos también allí.
 
 ## 2. Preparar el servidor
 
 ```bash
-ssh ubuntu@IP_DEL_SERVIDOR
+ssh -i ~/.ssh/blog-server nestor@IP_DEL_SERVIDOR
 ```
 
-Las imágenes de Oracle traen iptables cerrando todo excepto SSH. Abre 80 y 443:
+Swap, obligatorio con 1 GB de RAM:
 
 ```bash
-sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 80 -j ACCEPT
-sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 443 -j ACCEPT
-sudo netfilter-persistent save
+sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-swappiness.conf
 ```
 
 Paquetes y usuario de la app:
@@ -104,9 +132,9 @@ nano /srv/blog/app/.env     # rellena todo (SECRET_KEY nueva, dominio, email, AD
 Desde **tu Mac** (en la carpeta del proyecto):
 
 ```bash
-scp db.sqlite3 ubuntu@IP_DEL_SERVIDOR:/tmp/db.sqlite3
+scp -i ~/.ssh/blog-server db.sqlite3 nestor@IP_DEL_SERVIDOR:/tmp/db.sqlite3
 tar -czf /tmp/media.tar.gz media
-scp /tmp/media.tar.gz ubuntu@IP_DEL_SERVIDOR:/tmp/
+scp -i ~/.ssh/blog-server /tmp/media.tar.gz nestor@IP_DEL_SERVIDOR:/tmp/
 ```
 
 En el servidor:
@@ -154,14 +182,18 @@ sudo visudo -cf /tmp/blog.sudoers && sudo install -m 440 /tmp/blog.sudoers /etc/
 1. Añade tu dominio a Cloudflare (plan Free) y cambia los nameservers en tu registrador.
 2. DNS: registro `A` para `@` y otro para `www` → IP del servidor, **proxied** (nube naranja).
 3. *SSL/TLS → Overview*: modo **Full (strict)**.
-4. *SSL/TLS → Origin Server → Create Certificate* (15 años). Guarda ambos en el servidor:
+4. Certificado de origen, con una CSR propia para que la clave privada no salga del servidor:
 
 ```bash
 sudo mkdir -p /etc/ssl/cloudflare
-sudo nano /etc/ssl/cloudflare/origin.pem   # certificado
-sudo nano /etc/ssl/cloudflare/origin.key   # clave privada
+sudo openssl req -new -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes \
+  -keyout /etc/ssl/cloudflare/origin.key -out /etc/ssl/cloudflare/origin.csr -subj "/CN=nestorbracho.com"
 sudo chmod 600 /etc/ssl/cloudflare/origin.key
+cat /etc/ssl/cloudflare/origin.csr
 ```
+
+   En Cloudflare: *SSL/TLS → Origin Server → Create Certificate → Use my private key and CSR*, pega la CSR y guarda
+   el certificado resultante en `/etc/ssl/cloudflare/origin.pem` (`sudo nano /etc/ssl/cloudflare/origin.pem`).
 
 5. Configura nginx (con otro dominio, cambia `nestorbracho.com` en el fichero):
 
@@ -221,7 +253,9 @@ sudo -u blog crontab -e
 30 3 * * * /srv/blog/app/deploy/backup.sh >> /srv/blog/backups/backup.log 2>&1
 ```
 
-Cada noche el script guarda la base de datos y `media/` en `/srv/blog/backups` (conserva 14 días). Si existe un
+Cada noche el script guarda la base de datos y `media/` en `/srv/blog/backups` como `db-FECHA.sqlite3.gz` y
+`media-FECHA.tar.gz`, y borra las suyas de más de 14 días. No toca nada más de la carpeta: ni las copias
+`pre-migrate-*` de `update.sh` ([Restaurar](#restaurar)), que poda el propio `update.sh`, ni `backup.log`. Si existe un
 remote de rclone llamado `backup`, además los sube a Google Drive y conserva allí 30 días
 ([ADR 5](../docs/adr/0005-off-site-backups-to-google-drive.md)). Sin ese remote, avisa en `backup.log` y las copias
 se quedan solo en el servidor. Si falla algún paso, la copia o la subida, envía un email a `ADMINS`
@@ -280,8 +314,10 @@ sudo -iu blog /srv/blog/app/deploy/update.sh
 ```
 
 A mano despliega el último commit de `main`. Desde GitHub Actions, el del run (ver [CI/CD](#cicd-github-actions)).
-Si el despliegue trae migraciones, antes copia la base de datos ([Restaurar](#restaurar)) y, si la copia falla, se
-detiene sin migrar ni recargar.
+Si el despliegue trae migraciones, antes copia la base de datos ([Restaurar](#restaurar)). Si la copia falla, o la
+instalación de dependencias, vuelve al commit anterior, reinstala sus dependencias y se detiene con error sin migrar
+ni recargar. Así un reinicio posterior (de systemd o el automático de las 04:00) arranca el código que corresponde a
+la base de datos, no uno nuevo sin sus migraciones.
 
 El script recarga Gunicorn sin cortar la web: `systemctl reload` le manda `HUP`, el socket sigue abierto, los workers
 nuevos cargan el código nuevo y los viejos terminan las peticiones que tenían a medias. Lo que llega mientras tanto
@@ -314,76 +350,10 @@ Si algo falla, vuelve a la anterior: `sudo cp /srv/blog/backups/blog.service.bak
 | 400 Bad Request | `ALLOWED_HOSTS` en `.env` |
 | 403 CSRF al hacer login/enviar formularios | `CSRF_TRUSTED_ORIGINS` con `https://` |
 | Bucle de redirecciones | Cloudflare debe estar en **Full (strict)**, no en *Flexible* |
-| No carga nada desde fuera | Security List **y** iptables (paso 1.4 y 2) |
-| Error 522 de Cloudflare (GCP) | Rangos de Cloudflare en la regla `allow-web` desactualizados |
+| No carga nada desde fuera | Regla `allow-web` del firewall (paso 1). En Oracle, Security List **e** iptables ([apéndice](#apéndice-oracle-cloud-always-free)) |
+| Error 522 de Cloudflare | Rangos de Cloudflare desactualizados en la regla `allow-web` (paso 1) |
 | Imágenes 404 | Permisos de `/srv/blog/media` (grupo `www-data`) |
 | Algo deja de cargar y la consola del navegador dice "Content Security Policy" | `SECURE_CSP` en `config/settings.py`. Solo admite scripts del propio sitio: Rocket Loader, Web Analytics o Bot Fight Mode de Cloudflare inyectan los suyos |
-
----
-
-## Google Cloud (e2-micro)
-
-Lo que cambia respecto a Oracle (el resto de la guía, desde el paso 2, es igual):
-
-- **Gratis solo si** la VM es `e2-micro`, está en `us-west1`, `us-central1` o `us-east1`,
-  y el disco es `pd-standard` de ≤ 30 GB. Una sola VM.
-- **Crear la VM** desde Cloud Shell (`https://shell.cloud.google.com`):
-
-  ```bash
-  # 80/443 solo desde Cloudflare: nadie puede saltárselo atacando la IP directamente
-  CLOUDFLARE_IPS=$(curl -sf https://www.cloudflare.com/ips-v4 | paste -sd, -)
-  test -n "$CLOUDFLARE_IPS" && gcloud compute firewall-rules create allow-web --allow=tcp:80,tcp:443 \
-    --source-ranges="$CLOUDFLARE_IPS" --target-tags=http-server,https-server \
-    --description="HTTP(S) only from Cloudflare: https://www.cloudflare.com/ips-v4"
-  # La red default abre el escritorio remoto de Windows a todo internet; en Linux sobra
-  gcloud compute firewall-rules delete default-allow-rdp
-  gcloud compute instances create blog-nestorbracho \
-    --zone=us-east1-b --machine-type=e2-micro \
-    --image-family=ubuntu-2404-lts-amd64 --image-project=ubuntu-os-cloud \
-    --boot-disk-size=30GB --boot-disk-type=pd-standard \
-    --tags=http-server,https-server \
-    --metadata=ssh-keys="nestor:$(cat ~/.ssh/oracle-blog.pub)"
-  ```
-
-- **No hace falta tocar iptables** (paso 2): el firewall lo gestiona la regla `allow-web`.
-- **Rangos de Cloudflare**: cambian muy de vez en cuando. Si Cloudflare publica rangos nuevos
-  (o la web da error 522), actualiza la regla:
-
-  ```bash
-  CLOUDFLARE_IPS=$(curl -sf https://www.cloudflare.com/ips-v4 | paste -sd, -)
-  test -n "$CLOUDFLARE_IPS" && gcloud compute firewall-rules update allow-web --source-ranges="$CLOUDFLARE_IPS"
-  ```
-
-  Para comprobarlo, la IP directa no debe responder y el dominio sí:
-  `curl -k --connect-timeout 5 https://IP_DEL_SERVIDOR` debe agotar el tiempo.
-  Los mismos rangos están en `set_real_ip_from` de `deploy/nginx.conf`: actualízalos también allí.
-- **Swap obligatorio** (1 GB de RAM):
-
-  ```bash
-  sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
-  echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
-  echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-swappiness.conf
-  ```
-
-- **Certificado de origen** generado con CSR propia para que la clave privada no salga del servidor:
-
-  ```bash
-  sudo openssl req -new -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes \
-    -keyout /etc/ssl/cloudflare/origin.key -out /etc/ssl/cloudflare/origin.csr -subj "/CN=nestorbracho.com"
-  ```
-
-  En Cloudflare: *SSL/TLS → Origin Server → Create Certificate → Use my private key and CSR*,
-  pega la CSR y guarda el certificado resultante en `/etc/ssl/cloudflare/origin.pem`.
-- **Tráfico de salida**: el plan gratuito incluye 1 GB/mes. Cloudflare cachea estáticos e
-  imágenes, así que la mayor parte del tráfico no sale de la VM.
-- **Fin del periodo de prueba (90 días)**: para que la VM siga encendida hay que pasar la
-  cuenta de facturación a pago ("Upgrade"). Mientras solo uses recursos Always Free no hay cargos.
-
-Acceso SSH:
-
-```bash
-ssh -i ~/.ssh/oracle-blog nestor@IP_DEL_SERVIDOR
-```
 
 ---
 
@@ -408,7 +378,7 @@ Configuración inicial (una sola vez, desde tu Mac):
 
 ```bash
 ssh-keygen -t ed25519 -f ~/.ssh/github-deploy -N "" -C "github-actions-deploy"
-ssh -i ~/.ssh/oracle-blog nestor@IP_DEL_SERVIDOR "sudo -u blog install -d -m 700 /srv/blog/.ssh && echo 'restrict,command=\"/srv/blog/app/deploy/update.sh\" $(cat ~/.ssh/github-deploy.pub)' | sudo -u blog tee -a /srv/blog/.ssh/authorized_keys >/dev/null && sudo chmod 600 /srv/blog/.ssh/authorized_keys"
+ssh -i ~/.ssh/blog-server nestor@IP_DEL_SERVIDOR "sudo -u blog install -d -m 700 /srv/blog/.ssh && echo 'restrict,command=\"/srv/blog/app/deploy/update.sh\" $(cat ~/.ssh/github-deploy.pub)' | sudo -u blog tee -a /srv/blog/.ssh/authorized_keys >/dev/null && sudo chmod 600 /srv/blog/.ssh/authorized_keys"
 gh secret set DEPLOY_SSH_KEY < ~/.ssh/github-deploy
 gh secret set DEPLOY_HOST --body IP_DEL_SERVIDOR
 ssh-keyscan -t ed25519 IP_DEL_SERVIDOR | gh secret set DEPLOY_KNOWN_HOSTS
@@ -416,3 +386,40 @@ ssh-keyscan -t ed25519 IP_DEL_SERVIDOR | gh secret set DEPLOY_KNOWN_HOSTS
 
 Para revocar el acceso de GitHub: borra la línea correspondiente de
 `/srv/blog/.ssh/authorized_keys` y el secreto `DEPLOY_SSH_KEY`.
+
+---
+
+## Apéndice: Oracle Cloud Always Free
+
+Alternativa a Google Cloud si algún día hay capacidad para una A1 (más RAM, también gratis). Sustituye el paso 1; el
+resto de la guía es igual, con el usuario `ubuntu` en vez de `nestor` en los comandos `ssh`/`scp` y sin swap (con
+6 GB de RAM no hace falta).
+
+1. Crea la cuenta en https://www.oracle.com/cloud/free/ y elige como **home region** una
+   cercana (p. ej. Madrid o Frankfurt). No se puede cambiar después.
+2. **Recomendado:** pasa la cuenta a *Pay As You Go*. Mientras uses solo recursos
+   Always Free no te cobran nada, pero evita que Oracle reclame instancias "inactivas"
+   (un blog con poco tráfico lo es). Crea también una alerta de presupuesto de 1 € en
+   *Billing → Budgets* para estar tranquilo.
+3. *Compute → Instances → Create instance*:
+   - Image: **Ubuntu 24.04** (Canonical).
+   - Shape: **VM.Standard.A1.Flex** (Ampere ARM), 1 OCPU y 6 GB de RAM es de sobra.
+   - Networking: crea una VCN nueva con subnet pública y **asigna IP pública**.
+   - SSH keys: sube tu clave pública (`~/.ssh/blog-server.pub`).
+   - Si da error *Out of capacity*, prueba otro *Availability Domain* o reintenta más tarde.
+4. Abre 80 y 443 **solo a Cloudflare**, igual que la regla `allow-web` de Google Cloud, en las dos capas que tiene
+   Oracle:
+   - En la **Security List** de la subnet (*Networking → VCN → Security Lists → Default → Add Ingress Rules*), una
+     regla por cada rango de https://www.cloudflare.com/ips-v4: source el rango, TCP, destination port `80`; y otra
+     igual con el `443`.
+   - En la VM: las imágenes de Oracle traen iptables cerrando todo excepto SSH. Abre 80 y 443 a esos mismos rangos:
+
+     ```bash
+     CLOUDFLARE_IPS=$(curl -sf https://www.cloudflare.com/ips-v4)
+     test -n "$CLOUDFLARE_IPS" && for range in $CLOUDFLARE_IPS; do
+       sudo iptables -I INPUT 6 -s "$range" -m state --state NEW -p tcp -m multiport --dports 80,443 -j ACCEPT
+     done
+     sudo netfilter-persistent save
+     ```
+
+   Si Cloudflare cambia sus rangos, actualiza las dos capas (y `set_real_ip_from` en `deploy/nginx.conf`).

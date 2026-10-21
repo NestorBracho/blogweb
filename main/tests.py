@@ -404,6 +404,55 @@ class CVViewTests(TestCase):
         self.assertContains(english, 'Professional experience')
         self.assertContains(english, '<title>CV - Nestor Bracho</title>')
 
+    def test_explains_the_jobs_that_overlap(self):
+        # Freelance work ran alongside other jobs: each one says so next to its dates, or they read like a mistake
+        jobs = {
+            'en': [
+                (
+                    '<strong>World Bank Group</strong> · Contract · Madrid, remote · Jun 2023 – Present',
+                    'In parallel with my role at Selia until Sep 2023 and with Ekwi-three in 2024.',
+                ),
+                (
+                    '<strong>Ekwi-three GmbH</strong> · Freelance · Remote · May 2024 – Dec 2024',
+                    'In parallel with my World Bank Group contract.',
+                ),
+                (
+                    '<strong>Selia</strong> · Full-time · Remote · Jan 2022 – Sep 2023',
+                    'From Dec 2022, in parallel with my World Bank Group projects.',
+                ),
+                (
+                    '<strong>World Bank Group</strong> · Freelance · Remote · Dec 2022 – Mar 2023',
+                    'In parallel with my full-time role at Selia.',
+                ),
+            ],
+            'es': [
+                (
+                    '<strong>Grupo Banco Mundial</strong> · Contrato · Madrid, remoto · jun 2023 – actualidad',
+                    'En paralelo con mi puesto en Selia hasta sep 2023 y con Ekwi-three en 2024.',
+                ),
+                (
+                    '<strong>Ekwi-three GmbH</strong> · Freelance · Remoto · may 2024 – dic 2024',
+                    'En paralelo con mi contrato en el Grupo Banco Mundial.',
+                ),
+                (
+                    '<strong>Selia</strong> · Jornada completa · Remoto · ene 2022 – sep 2023',
+                    'Desde dic 2022, en paralelo con mis proyectos para el Grupo Banco Mundial.',
+                ),
+                (
+                    '<strong>Grupo Banco Mundial</strong> · Freelance · Remoto · dic 2022 – mar 2023',
+                    'En paralelo con mi puesto a jornada completa en Selia.',
+                ),
+            ],
+        }
+        for language, notes in jobs.items():
+            response = self.client.get(reverse_in(language, 'main:cv'))
+
+            for meta, note in notes:
+                with self.subTest(language=language, note=note):
+                    expected = f'<p class="cv__job-meta">{meta}<br><span class="cv__note">{note}</span></p>'
+
+                    self.assertContains(response, expected, html=True)
+
     def test_offers_the_pdf_in_the_page_language(self):
         spanish = self.client.get(reverse_in('es', 'main:cv'))
         english = self.client.get(reverse_in('en', 'main:cv'))

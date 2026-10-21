@@ -76,6 +76,8 @@ flowchart LR
 - **Django** serves its own static files with WhiteNoise (compressed, with cache-busting file names).
 - **SQLite** in WAL mode holds all the data. A nightly job backs up the database and the images, keeps two weeks
   of them on the server and copies them to Google Drive with rclone, where it keeps 30 days.
+- **Alerts** come by email: server errors and failed backups through the site's own SMTP provider, and downtime from
+  a GitHub Actions workflow that checks the site every 30 minutes.
 
 ### CI/CD
 

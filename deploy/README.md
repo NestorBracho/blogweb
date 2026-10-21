@@ -180,7 +180,7 @@ ráfaga de 5; los demás reciben `429`. Los rechazos quedan en `/var/log/nginx/b
 6. Opcional pero recomendado: *Zero Trust → Access* para proteger la URL del admin
    con un código enviado a tu email.
 
-## 7. Email
+## 7. Email y avisos
 
 Crea una cuenta en Brevo o Resend, verifica tu dominio (añaden registros SPF/DKIM en
 Cloudflare DNS) y pon las credenciales SMTP en `.env`. Prueba:
@@ -188,6 +188,29 @@ Cloudflare DNS) y pon las credenciales SMTP en `.env`. Prueba:
 ```bash
 sudo -iu blog bash -c 'cd /srv/blog/app && ../venv/bin/python manage.py sendtestemail tu@email.com'
 ```
+
+### Avisos
+
+Con `ADMINS` en `.env` (una dirección, o varias separadas por comas), el servidor avisa por email, por ese mismo SMTP:
+
+- De cada error de servidor (una página que da 500), con la traza. El mismo error llega como mucho una vez por hora
+  y worker, para no gastar la cuota diaria del SMTP (300 en el plan gratuito de Brevo), que comparte con el
+  formulario de contacto y la newsletter. `journalctl -u blog` los tiene todos.
+- De cada copia nocturna que falle (`backup.sh`, paso 8), con el paso que falló.
+
+Sin `ADMINS` no avisa de nada. Después de añadirla, recarga la web para que la lea y prueba los dos avisos:
+
+```bash
+sudo systemctl reload blog
+sudo -iu blog bash -c 'cd /srv/blog/app && ../venv/bin/python manage.py sendtestemail --admins'
+sudo -iu blog bash -c 'cd /srv/blog/app && ../venv/bin/python manage.py email_admins "Prueba" "Los avisos llegan"'
+```
+
+Si la web deja de responder, avisa GitHub: el workflow [`uptime.yml`](../.github/workflows/uptime.yml) pide `/en/` y
+`/` cada 30 minutos, y si fallan, el run falla y GitHub manda un email a quien cambió por última vez su línea `cron`
+(tú, al fusionar). En GitHub, *Settings → Notifications → Actions* debe tener el email activado para los workflows
+que fallan. En un repo público, GitHub **desactiva los workflows programados tras 60 días sin actividad** en el
+repo; si pasa, vuelve a activarlo en *Actions → Uptime → Enable workflow*.
 
 ## 8. Backups
 
@@ -201,7 +224,8 @@ sudo -u blog crontab -e
 Cada noche el script guarda la base de datos y `media/` en `/srv/blog/backups` (conserva 14 días). Si existe un
 remote de rclone llamado `backup`, además los sube a Google Drive y conserva allí 30 días
 ([ADR 5](../docs/adr/0005-off-site-backups-to-google-drive.md)). Sin ese remote, avisa en `backup.log` y las copias
-se quedan solo en el servidor.
+se quedan solo en el servidor. Si falla algún paso, la copia o la subida, envía un email a `ADMINS`
+([Avisos](#avisos)) con el comando que falló.
 
 ### Copia en Google Drive
 
@@ -225,8 +249,8 @@ El servidor no tiene navegador, así que la autorización se reparte entre el se
    sudo -iu blog rclone ls backup:blog-backups
    ```
 
-Si algún día falla la subida (por ejemplo, porque revocaste el acceso en tu cuenta de Google), `backup.log` lo dice.
-Para volver a autorizar: `sudo -iu blog rclone config reconnect backup:`.
+Si algún día falla la subida (por ejemplo, porque revocaste el acceso en tu cuenta de Google), te llega un email y
+`backup.log` dice por qué. Para volver a autorizar: `sudo -iu blog rclone config reconnect backup:`.
 
 ### Restaurar
 

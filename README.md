@@ -133,9 +133,11 @@ brand/         brand kit: logo, favicons, share image and their generator
 tools/         the script that makes the font files in static/fonts/
 ```
 
-The apps' Python code depends in one direction only: `main` reads `blog`'s posts, and every app uses the shared
+The apps' Python imports go in one direction only: `main` reads `blog`'s posts, and every app uses the shared
 modules in `config/` (base model, forms, rate limits, sitemaps, structured data). Only `config`'s settings, root URLs
-and context processors know about every app.
+and context processors know about every app. Templates are the exception: `blog`'s templates and the shared layout
+load `main`'s template tags (`{% load main_tags %}`), which include the canonical and alternate-language URLs from
+`main/seo.py` that every page uses.
 
 ## Running locally
 
@@ -252,15 +254,25 @@ text ([`templates/lib/_brand_wordmark.html`](templates/lib/_brand_wordmark.html)
 So that anyone reviewing this repository knows what to judge me on:
 
 - **Design.** The visual design is the Coderon Jekyll theme (see [Credits](#credits)). I ported its markup to Django
-  templates and left its stylesheet and scripts as they were. The styles I added live in their own files
-  ([`static/css/brand.css`](static/css/brand.css) and `main/static/main/*/styles.css`).
-- **June 2025 to September 2026: the project itself.** The apps and models, the bilingual content, the REST API, the
-  contact and newsletter forms, and the first version of the article generator.
-- **Since September 2026: AI-first.** I use Claude Code as a pair programmer. It worked with me on the CI/CD
-  pipeline and the deployment guide, the fixes from a code review, the tests, the architecture decision records and
-  this README, and most of those commits say so in a `Co-Authored-By: Claude` trailer. Since October 2026 every
-  change goes through a pull request that has to pass CI, and I review and merge each one myself. The brand kit in
-  [`brand/`](brand) was made with Claude Design.
+  templates. Its stylesheet and scripts are mostly as they came, with fixes where the site needed them: keyboard
+  support for the header controls, the back to top button and the image zoom ([#32](https://github.com/NestorBracho/blogweb/pull/32),
+  [#53](https://github.com/NestorBracho/blogweb/pull/53)), the icon fonts served from the site itself
+  ([#50](https://github.com/NestorBracho/blogweb/pull/50)), and a script moved out of the page for the Content-Security-Policy.
+  The styles I added live in their own files ([`static/css/brand.css`](static/css/brand.css) and
+  `main/static/main/*/styles.css`).
+- **June–July 2025: the project itself.** The apps and models, the bilingual content, the REST API, the contact and
+  newsletter forms, and the first version of the article generator.
+- **September–October 2026: AI-first.** After more than a year without changes, I did the rest in about three weeks
+  with Claude Code as a pair programmer: the CI/CD pipeline and the deployment guide, the fixes from a code review,
+  the tests, the architecture decision records and this README. Nearly all of those commits say so in a
+  `Co-Authored-By: Claude` trailer. Since October 2026 every change goes through a pull request: I scope each
+  change, check it locally and merge it once CI passes. The brand kit in [`brand/`](brand) was made with Claude
+  Design.
+- **What I decided.** The choices recorded in [`docs/adr/`](docs/adr) are mine; Claude co-wrote the code that
+  carries them out and the records themselves. For example: SQLite in production
+  ([ADR 1](docs/adr/0001-sqlite-in-production.md)), one free-tier VM ([ADR 2](docs/adr/0002-single-free-tier-vm.md)) behind Cloudflare
+  ([ADR 3](docs/adr/0003-cloudflare-in-front-of-the-origin.md)), and `/en/` and `/es/` in every URL with English
+  by default ([ADR 6](docs/adr/0006-language-in-the-url.md)).
 - **Posts.** The two posts still published from June 2025 were drafted by the first version of the article
   generator. [`draft_article`](blog/management/commands/draft_article.py) now only saves drafts, for me to rewrite
   before publishing.

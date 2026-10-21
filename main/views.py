@@ -25,7 +25,7 @@ PROFILE_SOCIAL_IMAGE = 'images/og-profile.png'
 class HomePostsMixin:
     """The home's list of posts, newest first, a page at a time (?page=)."""
 
-    queryset = Post.objects.published().select_related('category').order_by('-created')
+    queryset = Post.objects.published().select_related('category').order_by('-published_at')
     paginate_by = HOME_PAGE_SIZE
 
 

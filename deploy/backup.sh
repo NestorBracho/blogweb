@@ -27,7 +27,8 @@ sqlite3 "$BASE/data/db.sqlite3" ".backup '$DEST/db-$STAMP.sqlite3'"
 gzip -f "$DEST/db-$STAMP.sqlite3"
 tar -czf "$DEST/media-$STAMP.tar.gz" -C "$BASE" media
 
-find "$DEST" -type f -mtime +"$KEEP_DAYS" -delete
+# Only this script's own copies: update.sh keeps its pre-migrate-* copies in the same folder and prunes them itself
+find "$DEST" -maxdepth 1 -type f \( -name 'db-*.sqlite3.gz' -o -name 'media-*.tar.gz' \) -mtime +"$KEEP_DAYS" -delete
 
 if ! command -v rclone >/dev/null || ! rclone listremotes | grep -q '^backup:$'; then
     echo "$(date '+%F %T') No rclone remote named \"backup\": this backup stays on the server only." >&2

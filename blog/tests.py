@@ -18,6 +18,8 @@ from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
 from django.test import SimpleTestCase, TestCase, TransactionTestCase, override_settings
 from django.urls import reverse, reverse_lazy
+from django.utils import timezone
+from django.utils.feedgenerator import rfc2822_date
 from openai import OpenAI
 from PIL import Image
 from rest_framework.throttling import SimpleRateThrottle
@@ -134,7 +136,7 @@ class PostDetailViewTests(TestCase):
         response = self.get(self.post)
 
         self.assertContains(response, '<meta property="og:type" content="article">')
-        published, modified = self.post.created.isoformat(), self.post.updated.isoformat()
+        published, modified = self.post.published_at.isoformat(), self.post.updated.isoformat()
         self.assertContains(response, f'<meta property="article:published_time" content="{published}">')
         self.assertContains(response, f'<meta property="article:modified_time" content="{modified}">')
 
@@ -146,8 +148,20 @@ class PostDetailViewTests(TestCase):
         self.assertEqual((data['@type'], data['headline']), ('BlogPosting', 'Agujeros negros'))
         self.assertEqual((data['description'], data['inLanguage']), ('Sobre agujeros negros', 'es'))
         self.assertEqual(data['url'], f'http://testserver{reverse_in("es", "blog:post-detail", slug=post.slug)}')
-        self.assertEqual(data['datePublished'], post.created.isoformat())
+        self.assertEqual(data['datePublished'], post.published_at.isoformat())
+        self.assertEqual(data['dateModified'], post.updated.isoformat())
         self.assertEqual(data['author']['name'], 'Nestor Bracho')
+
+    def test_structured_data_dates_the_post_by_its_publication(self):
+        # A draft written weeks before it came out
+        post = create_post('Rewritten', days_ago=30, is_published=False)
+        post.is_published = True
+        post.save()
+
+        data = structured_data(self.get(post))
+
+        self.assertEqual(data['datePublished'], post.published_at.isoformat())
+        self.assertNotEqual(data['datePublished'], post.created.isoformat())
 
     def test_structured_data_cannot_close_its_script_element(self):
         title = '</script><script>alert(1)</script>'
@@ -357,6 +371,20 @@ class FeedTests(TestCase):
                 self.assertContains(response, f'<title>{title}</title><link>{post_url}</link>')
                 self.assertContains(page, f'type="application/rss+xml" title="Nestor Bracho" href="{feed_url}"')
 
+    def test_feed_dates_and_orders_posts_by_their_publication(self):
+        older = create_post('Published last week', days_ago=7)
+        # Drafted before the other post, published today
+        newer = create_post('Drafted a month ago', days_ago=30, is_published=False)
+        newer.is_published = True
+        newer.save()
+
+        response = self.client.get(reverse('blog:feed'))
+
+        content = response.content.decode()
+        self.assertLess(content.index('Drafted a month ago'), content.index('Published last week'))
+        for post in [newer, older]:
+            self.assertIn(f'<pubDate>{rfc2822_date(post.published_at)}</pubDate>', content)
+
 
 class SitemapTests(TestCase):
     def test_sitemap_lists_pages_and_published_content(self):
@@ -460,11 +488,24 @@ class PostAPITests(EmptyCacheMixin, TestCase):
 
         self.assertEqual(
             set(result),
-            {'id', 'slug', 'url', 'title', 'description', 'category', 'cover_urls', 'read_time', 'created', 'updated'},
+            {
+                'id',
+                'slug',
+                'url',
+                'title',
+                'description',
+                'category',
+                'cover_urls',
+                'read_time',
+                'published_at',
+                'created',
+                'updated',
+            },
         )
         self.assertEqual(result['id'], str(post.pk))
         # Minutes as a number and dates as ISO 8601, with no wording in any language
         self.assertEqual(result['read_time'], 3)
+        self.assertEqual(datetime.fromisoformat(result['published_at']), post.published_at)
         self.assertEqual(datetime.fromisoformat(result['created']), post.created)
         self.assertEqual(datetime.fromisoformat(result['updated']), post.updated)
         self.assertEqual(
@@ -545,6 +586,7 @@ class PostAPITests(EmptyCacheMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         draft.refresh_from_db()
         self.assertEqual((draft.title_en, draft.is_published), ('Ready', True))
+        self.assertIsNotNone(draft.published_at)
         # Publishing doesn't move the post to a new URL
         self.assertEqual(draft.slug, 'draft')
 
@@ -895,6 +937,31 @@ class CategoryParentMigrationTests(MigrationTestCase):
                 self.assertNotIn('TABLE', sql.getvalue())
 
 
+class PublicationDateMigrationTests(MigrationTestCase):
+    before = [('blog', '0007_category_parent')]
+    after = [('blog', '0008_post_published_at')]
+
+    def test_published_posts_keep_the_date_they_showed(self):
+        old_post = self.migrate(self.before).get_model('blog', 'Post')
+        fields = {'body_en': 'Body', 'body_es': 'Cuerpo', 'description_en': 'Description', 'description_es': 'Desc'}
+        published = old_post.objects.create(
+            slug='published', title_en='Out', title_es='Fuera', is_published=True, **fields
+        )
+        old_post.objects.create(slug='draft', title_en='Draft', title_es='Borrador', **fields)
+
+        new_post = self.migrate(self.after).get_model('blog', 'Post')
+
+        self.assertEqual(new_post.objects.get(slug='published').published_at, published.created)
+        self.assertIsNone(new_post.objects.get(slug='draft').published_at)
+
+    def test_only_adds_a_column(self):
+        # So the code still running during a deploy, which doesn't know the column, keeps working
+        sql = StringIO()
+        call_command('sqlmigrate', 'blog', '0008_post_published_at', stdout=sql)
+        self.assertIn('ALTER TABLE "blog_post" ADD COLUMN "published_at"', sql.getvalue())
+        self.assertNotIn('CREATE TABLE', sql.getvalue())
+
+
 class PostSlugTests(TestCase):
     def test_slug_comes_from_the_english_title(self):
         post = Post.objects.create(
@@ -941,7 +1008,70 @@ class PublishedPostsTests(TestCase):
         categories = list(Category.objects.with_published_posts().order_by('-latest_post'))
 
         self.assertEqual(categories, [newer, older])
-        self.assertEqual(categories[0].latest_post, recent.created)
+        self.assertEqual(categories[0].latest_post, recent.published_at)
+
+
+class PublicationDateTests(EmptyCacheMixin, TestCase):
+    def publish(self, post):
+        post.is_published = True
+        post.save()
+        return post
+
+    def test_drafts_have_none(self):
+        draft = create_post('Draft', is_published=False)
+
+        self.assertIsNone(draft.published_at)
+
+    def test_publishing_a_draft_dates_it(self):
+        draft = create_post('Draft', days_ago=30, is_published=False)
+        before = timezone.now()
+
+        self.publish(draft)
+
+        draft.refresh_from_db()
+        self.assertGreaterEqual(draft.published_at, before)
+        self.assertLess(draft.created, before)
+
+    def test_posts_created_published_are_dated_at_once(self):
+        post = create_post('Straight out')
+
+        self.assertEqual(post.published_at, Post.objects.get(pk=post.pk).published_at)
+        self.assertIsNotNone(post.published_at)
+
+    def test_saving_only_some_fields_still_dates_it(self):
+        draft = create_post('Draft', is_published=False)
+        draft.is_published = True
+
+        draft.save(update_fields=['is_published'])
+
+        self.assertIsNotNone(Post.objects.get(pk=draft.pk).published_at)
+
+    def test_edits_and_unpublishing_keep_the_first_date(self):
+        post = create_post('Fixed later', days_ago=3)
+        first_published = post.published_at
+
+        post.body_en = 'Corrected body'
+        post.save()
+        post.is_published = False
+        post.save()
+        self.publish(post)
+
+        post.refresh_from_db()
+        self.assertEqual(post.published_at, first_published)
+
+    def test_lists_put_the_latest_published_first(self):
+        category = create_category()
+        create_post('Published last week', days_ago=7, category=category)
+        self.publish(create_post('Drafted a month ago', days_ago=30, is_published=False, category=category))
+        expected = ['Drafted a month ago', 'Published last week']
+
+        home = self.client.get(reverse_in('en', 'main:index'))
+        category_page = self.client.get(category.get_absolute_url())
+        api = self.client.get(reverse('api:post-list'))
+
+        self.assertEqual([post.title_en for post in home.context['object_list']], expected)
+        self.assertEqual([post.title_en for post in category_page.context['object_list']], expected)
+        self.assertEqual([post['title'] for post in api.json()['results']], expected)
 
 
 class CategoryAPITests(EmptyCacheMixin, TestCase):

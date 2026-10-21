@@ -58,7 +58,7 @@
                 <div class="post-featured-meta">
                     <h3 class="post-featured-title"><a
                             href="{% url 'blog:post-detail' fpost.slug %}">{{ fpost.title }}</a></h3>
-                    <time class="post-featured-date" datetime="{{ fpost.created|iso8601 }}">{{  fpost.created|localized_date }}</time>
+                    <time class="post-featured-date" datetime="{{ fpost.published_at|iso8601 }}">{{  fpost.published_at|localized_date }}</time>
                 </div>
             </div>
         {% endfor %}

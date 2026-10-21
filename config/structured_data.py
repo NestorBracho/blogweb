@@ -50,8 +50,7 @@ def blog_posting(request, post):
         'url': request.build_absolute_uri(post.get_absolute_url()),
         'mainEntityOfPage': request.build_absolute_uri(post.get_absolute_url()),
         'inLanguage': translation.get_language(),
-        # Posts have no publication date of their own: the page and the feed show when they were created
-        'datePublished': post.created.isoformat(),
+        'datePublished': post.published_at.isoformat(),
         'dateModified': post.updated.isoformat(),
         'author': {'@type': 'Person', '@id': author['@id'], 'name': author['name'], 'url': author['url']},
     }

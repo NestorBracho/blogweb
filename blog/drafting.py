@@ -4,10 +4,13 @@ import base64
 
 from django.conf import settings
 from django.core.files.base import ContentFile
+from django.db.models import CharField
 from django.utils.text import Truncator
-from pydantic import BaseModel, Field
+from openai import OpenAI
+from openai.types.responses import ParsedResponse
+from pydantic import BaseModel, Field, ValidationError
 
-from .models import Post
+from .models import Category, Post
 
 SYSTEM_PROMPT = (
     'You write drafts for a personal technical blog published in English and Spanish. '
@@ -36,30 +39,41 @@ class DraftingError(Exception):
     pass
 
 
-def write_article(client, topic):
-    completion = client.beta.chat.completions.parse(
-        model=settings.OPENAI_MODEL,
-        messages=[
-            {'role': 'system', 'content': SYSTEM_PROMPT},
-            {'role': 'user', 'content': ARTICLE_PROMPT.format(topic=topic)},
-        ],
-        response_format=ArticleDraft,
-    )
-    message = completion.choices[0].message
-    if message.parsed is None:
-        raise DraftingError(message.refusal or 'the model returned no article')
-    return message.parsed
+def write_article(client: OpenAI, topic: str) -> ArticleDraft:
+    try:
+        response = client.responses.parse(
+            model=settings.OPENAI_MODEL,
+            instructions=SYSTEM_PROMPT,
+            input=ARTICLE_PROMPT.format(topic=topic),
+            text_format=ArticleDraft,
+            # The draft is kept here, in the database; the Responses API would also keep a copy at OpenAI by default
+            store=False,
+        )
+    except ValidationError as error:
+        # The SDK parses the answer into ArticleDraft itself; one cut short (by a length limit or a filter) fails
+        raise DraftingError('the model returned an incomplete article') from error
+    draft = response.output_parsed
+    if draft is None:
+        raise DraftingError(refusal(response) or 'the model returned no article')
+    return draft
 
 
-def save_draft(draft, category):
-    # The limits are in the schema descriptions, but the model can still overshoot the database columns
-    title_length = Post._meta.get_field('title_en').max_length
-    description_length = Post._meta.get_field('description_en').max_length
+def refusal(response: ParsedResponse[ArticleDraft]) -> str | None:
+    """The model's reason for declining to write the article, which it gives instead of the structured answer."""
+    for item in response.output:
+        if item.type == 'message':
+            for content in item.content:
+                if content.type == 'refusal':
+                    return content.refusal
+    return None
+
+
+def save_draft(draft: ArticleDraft, category: Category) -> Post:
     return Post.objects.create(
-        title_en=Truncator(draft.title_en).chars(title_length),
-        title_es=Truncator(draft.title_es).chars(title_length),
-        description_en=Truncator(draft.description_en).chars(description_length),
-        description_es=Truncator(draft.description_es).chars(description_length),
+        title_en=fit_column(draft.title_en, 'title_en'),
+        title_es=fit_column(draft.title_es, 'title_es'),
+        description_en=fit_column(draft.description_en, 'description_en'),
+        description_es=fit_column(draft.description_es, 'description_es'),
         body_en=draft.body_en,
         body_es=draft.body_es,
         category=category,
@@ -67,15 +81,23 @@ def save_draft(draft, category):
     )
 
 
-def generate_cover(client, post):
+def fit_column(text: str, field_name: str) -> str:
+    # The limits are in the schema descriptions, but the model can still overshoot the database columns
+    field = Post._meta.get_field(field_name)
+    return Truncator(text).chars(field.max_length) if isinstance(field, CharField) and field.max_length else text
+
+
+def generate_cover(client: OpenAI, post: Post) -> None:
     image = client.images.generate(
-        model='dall-e-3',
+        model=settings.OPENAI_IMAGE_MODEL,
         prompt=(
             f'Editorial illustration for a technology blog post titled "{post.title_en}": {post.description_en}. '
             'Modern and clean, without any text.'
         ),
-        quality='hd',
-        size='1024x1024',
-        response_format='b64_json',
+        quality='high',
+        # Landscape: covers fill 4:3 boxes and link previews are wider still, so less is cropped than from a square
+        size='1536x1024',
     )
+    if not image.data or not image.data[0].b64_json:
+        raise DraftingError('the model returned no image')
     post.cover.save(f'{post.slug}.png', ContentFile(base64.b64decode(image.data[0].b64_json)))

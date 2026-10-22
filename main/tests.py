@@ -1,3 +1,4 @@
+import datetime
 import html
 import json
 import posixpath
@@ -18,6 +19,8 @@ from django.urls import resolve, reverse
 from django.utils import translation
 from django.views.defaults import server_error
 
+from blog.covers import SOCIAL_SIZE
+from config.context_processors import years_of_experience
 from config.middleware import ContentSecurityPolicyMiddleware
 from config.testing import EmptyCacheMixin, create_category, create_post, reverse_in, structured_data
 from config.throttling import FormThrottle
@@ -83,6 +86,22 @@ class HomeTests(TestCase):
         self.assertIn('Staff Engineer', inner_html(home, 'hero__subtitle'))
         self.assertIn('Staff Engineer', inner_html(cv, 'cv__headline'))
         self.assertIn('Staff Engineer', meta(cv, 'description'))
+        self.assertIn('Staff Engineer', page_title(cv))
+
+    @override_settings(OWNER_CAREER_START_YEAR=2000)
+    def test_the_years_of_experience_are_set_in_one_place(self):
+        years = years_of_experience()
+        self.assertEqual(years, datetime.date.today().year - 2000)
+
+        for language, phrase in [('en', f'more than {years} years'), ('es', f'más de {years} años')]:
+            with self.subTest(language=language):
+                home = self.get_home(language)
+                cv = self.client.get(reverse_in(language, 'main:cv'))
+
+                self.assertIn(phrase, inner_html(home, 'hero__description'))
+                self.assertIn(phrase, meta(home, 'description'))
+                self.assertIn(phrase, meta(cv, 'description'))
+                self.assertContains(cv, f'{years}')
 
     def test_points_from_the_role_to_the_personal_blog(self):
         for language in ['en', 'es']:
@@ -105,6 +124,16 @@ class HomeTests(TestCase):
 
         self.assertContains(response, f'href="{reverse("main:cv")}" class="button button--primary"')
         self.assertContains(response, f'href="{reverse("main:contact")}" class="button button--secondary"')
+
+    def test_buttons_follow_the_role_on_phones(self):
+        # On phones the intro pushed the CV button below the fold: the stacked layout moves the buttons up with CSS
+        # (main/static/main/index/styles.css), so the HTML keeps them after the intro, as desktop shows them
+        styles = Path(finders.find('main/index/styles.css')).read_text()
+        phones = styles[styles.index('@media (max-width: 1024px)') :]
+
+        self.assertRegex(phones, r'\.hero__right \{\s*display: flex;\s*flex-direction: column;')
+        self.assertRegex(phones, r'\.hero__actions \{\s*order: 1;')
+        self.assertRegex(phones, r'\.hero__description \{\s*order: 2;')
 
 
 class HomePostsTests(TestCase):
@@ -228,6 +257,16 @@ class HackersHavenTests(TestCase):
         self.assertContains(response, 'Hacker’s Haven')
         self.assertNotContains(response, 'avoiding-common-javascript-mistakes')
 
+    def test_posts_without_a_cover_leave_no_empty_images(self):
+        # Every list of posts on the home: cards, Hacker's Haven, the sidebar's latest posts and the footer's
+        for number in range(HOME_PAGE_SIZE + 1):
+            create_post(f'Post {number}', category=create_category(f'topic-{number}'))
+
+        response = self.client.get(reverse_in('en', 'main:index'))
+
+        self.assertContains(response, 'Hacker’s Haven')
+        self.assertNotContains(response, 'src=""')
+
 
 class FewPostsTests(TestCase):
     """While every post fits on the home's first page, the lists that would only repeat them wait for more."""
@@ -345,7 +384,17 @@ class PageAccessibilityTests(TestCase):
         response = self.client.get(reverse_in('es', 'main:index'))
 
         self.assertContains(response, '<main', count=1)
-        self.assertContains(response, '<main class="content">')
+        self.assertContains(response, '<main class="content" id="content" tabindex="-1">')
+
+    def test_a_skip_link_leads_past_the_header_in_each_language(self):
+        for language, name in [('en', 'Skip to content'), ('es', 'Saltar al contenido')]:
+            with self.subTest(language=language):
+                response = self.client.get(reverse_in(language, 'main:index'))
+                body = response.content.decode().split('<body>', 1)[1]
+
+                # The first link in the page, so the first thing the keyboard reaches
+                first_link = re.search(r'<a [^>]*>[^<]*</a>', body).group(0)
+                self.assertEqual(first_link, f'<a class="skip-link" href="#content">{name}</a>')
 
 
 class LanguageInTheURLTests(TestCase):
@@ -500,18 +549,36 @@ class FaviconTests(TestCase):
 
 
 class SocialImageTests(TestCase):
-    def test_pages_without_their_own_image_use_the_brand_one(self):
-        response = self.client.get(reverse('main:cv'))
+    def test_pages_recruiters_land_on_show_the_name_and_role(self):
+        image_url = f'http://testserver{static("images/og-profile.png")}'
 
+        for name in ['main:index', 'main:cv']:
+            for language in ['en', 'es']:
+                with self.subTest(page=name, language=language):
+                    response = self.client.get(reverse_in(language, name))
+
+                    self.assertEqual(meta(response, 'og:image'), image_url)
+                    self.assertEqual(meta(response, 'twitter:image'), image_url)
+                    self.assertEqual(meta(response, 'og:image:width'), '1200')
+                    self.assertEqual(meta(response, 'og:image:height'), '630')
+
+    def test_the_profile_image_is_a_file_of_the_site_in_the_preview_size(self):
+        image = Path(finders.find('images/og-profile.png')).read_bytes()
+
+        # A PNG's width and height are the first two numbers of its IHDR chunk
+        self.assertEqual((int.from_bytes(image[16:20]), int.from_bytes(image[20:24])), SOCIAL_SIZE)
+
+    def test_the_other_pages_use_the_brand_one(self):
         image_url = f'http://testserver{static("images/og-default.png")}'
-        self.assertContains(response, f'<meta property="og:image" content="{image_url}">')
-        self.assertContains(response, f'<meta property="twitter:image:src" content="{image_url}">')
 
-    def test_pages_with_their_own_image_keep_it(self):
-        response = self.client.get(reverse('main:contact'))
+        # The contact page doesn't extend base.html, so it gets its own check
+        for name in ['main:about', 'main:privacy', 'main:contact']:
+            with self.subTest(page=name):
+                response = self.client.get(reverse_in('en', name))
 
-        image_url = f'http://testserver{static("images/40.jpg")}'
-        self.assertContains(response, f'<meta property="og:image" content="{image_url}">')
+                self.assertEqual(meta(response, 'og:image'), image_url)
+                self.assertEqual(meta(response, 'twitter:image'), image_url)
+                self.assertNotContains(response, 'twitter:image:src')
 
 
 class ErrorPageTests(TestCase):
@@ -532,6 +599,7 @@ class ErrorPageTests(TestCase):
 
                 self.assertContains(response, '<title>Page not found - Nestor Bracho</title>', status_code=404)
                 self.assertContains(response, 'Back to homepage', status_code=404)
+                self.assertContains(response, '<h1 class="error__title">404', status_code=404)
                 self.assertNotContains(response, 'rel="canonical"', status_code=404)
                 self.assertNotContains(response, 'hreflang', status_code=404)
                 self.assertNotContains(response, 'og:url', status_code=404)
@@ -569,11 +637,6 @@ class SearchAndLinkPreviewTests(TestCase):
         self.assertContains(response, '<meta property="og:type" content="website">')
         self.assertContains(response, '<meta property="og:image:width" content="1200">')
         self.assertContains(response, '<meta property="og:image:height" content="630">')
-
-    def test_pages_with_their_own_image_leave_its_size_to_the_preview(self):
-        response = self.client.get(reverse_in('en', 'main:contact'))
-
-        self.assertNotContains(response, 'og:image:width')
 
     def test_only_pages_in_a_language_have_other_versions(self):
         # Django renders the 500 page without a request, and the API lives outside the language prefixes
@@ -625,6 +688,7 @@ class PrivacyViewTests(TestCase):
 
         self.assertContains(response, 'href="mailto:nestor@example.com"')
 
+    @override_settings(NEWSLETTER_ENABLED=True)
     def test_is_linked_from_every_form_and_the_sitemap(self):
         privacy_link = f'href="{reverse("main:privacy")}"'
 
@@ -632,6 +696,47 @@ class PrivacyViewTests(TestCase):
         # The home page has the newsletter form and the footer
         self.assertContains(self.client.get(reverse('main:index')), privacy_link, count=2)
         self.assertContains(self.client.get(reverse('sitemap')), f'http://testserver{reverse("main:privacy")}')
+
+    @override_settings(OWNER_EMAIL='nestor@example.com')
+    def test_keeps_the_email_readable_without_javascript(self):
+        # Cloudflare's Email Obfuscation leaves alone what is between these comments
+        for language in ['en', 'es']:
+            with self.subTest(language=language):
+                response = self.client.get(reverse_in(language, 'main:privacy'))
+
+                self.assertContains(
+                    response,
+                    '<!--email_off--><a href="mailto:nestor@example.com">nestor@example.com</a><!--/email_off-->',
+                )
+
+
+class NewsletterTests(TestCase):
+    """Nothing sends the newsletter yet: until NEWSLETTER_ENABLED, the site neither offers it nor promises it."""
+
+    @override_settings(NEWSLETTER_ENABLED=False)
+    def test_is_neither_offered_nor_in_the_privacy_policy_while_off(self):
+        for language in ['en', 'es']:
+            with self.subTest(language=language):
+                home = self.client.get(reverse_in(language, 'main:index'))
+                privacy = self.client.get(reverse_in(language, 'main:privacy'))
+
+                self.assertNotContains(home, 'widget-subscribe')
+                self.assertNotContains(home, reverse('usermanager:newsletter-subscriber'))
+                self.assertNotContains(privacy, 'widget-subscribe')
+                self.assertNotContains(privacy, 'newsletter')
+
+    @override_settings(NEWSLETTER_ENABLED=True)
+    def test_is_offered_and_explained_while_on(self):
+        for language in ['en', 'es']:
+            with self.subTest(language=language):
+                home = self.client.get(reverse_in(language, 'main:index'))
+                privacy = self.client.get(reverse_in(language, 'main:privacy'))
+
+                self.assertContains(home, f'action="{reverse("usermanager:newsletter-subscriber")}')
+                self.assertContains(privacy, '<strong>Newsletter:</strong>')
+
+    def test_is_off_unless_the_environment_turns_it_on(self):
+        self.assertFalse(settings.NEWSLETTER_ENABLED)
 
 
 class RobotsTxtTests(TestCase):
@@ -650,6 +755,22 @@ class AboutViewTests(TestCase):
         self.assertContains(response, '<title>About Me - Nestor Bracho</title>')
         self.assertContains(response, '<meta property="og:image" content="http://testserver/static/')
 
+    def test_describes_the_page_in_a_search_result_with_the_role(self):
+        for language in ['en', 'es']:
+            with self.subTest(language=language):
+                description = meta(self.client.get(reverse_in(language, 'main:about')), 'description')
+
+                # Search engines cut descriptions at about 160 characters
+                self.assertLessEqual(len(description), 160)
+                self.assertIn(settings.OWNER_ROLE, description)
+
+    def test_the_largest_image_is_not_lazy_loaded(self):
+        response = self.client.get(reverse_in('en', 'main:about'))
+
+        image = re.search(r'<img [^>]*images/02\.jpg[^>]*>', response.content.decode()).group(0)
+        self.assertIn('fetchpriority="high"', image)
+        self.assertNotIn('lazy', image)
+
     def test_spanish_title_is_spelled_right(self):
         response = self.client.get(reverse_in('es', 'main:about'))
 
@@ -665,7 +786,15 @@ class CVViewTests(TestCase):
         self.assertContains(spanish, 'Experiencia profesional')
         self.assertNotContains(spanish, 'Professional experience')
         self.assertContains(english, 'Professional experience')
-        self.assertContains(english, '<title>CV - Nestor Bracho</title>')
+
+    def test_title_leads_with_the_name_and_role(self):
+        for language in ['en', 'es']:
+            with self.subTest(language=language):
+                response = self.client.get(reverse_in(language, 'main:cv'))
+
+                self.assertEqual(page_title(response), f'CV · Nestor Bracho, {settings.OWNER_ROLE}')
+                self.assertEqual(meta(response, 'og:title'), page_title(response))
+                self.assertEqual(meta(response, 'twitter:title'), page_title(response))
 
     def test_explains_the_jobs_that_overlap(self):
         # Freelance work ran alongside other jobs: each one says so next to its dates, or they read like a mistake
@@ -729,12 +858,25 @@ class CVViewTests(TestCase):
 
         self.assertNotContains(response, 'Download PDF')
 
-    @override_settings(OWNER_EMAIL='nestor@example.com', OWNER_LOCATION='Madrid, Spain')
+    @override_settings(
+        OWNER_EMAIL='nestor@example.com', OWNER_LOCATIONS={'en': 'Madrid, Spain', 'es': 'Madrid, España'}
+    )
     def test_gives_the_contact_details_when_configured(self):
+        english = self.client.get(reverse_in('en', 'main:cv'))
+        spanish = self.client.get(reverse_in('es', 'main:cv'))
+
+        self.assertContains(english, 'href="mailto:nestor@example.com"')
+        self.assertContains(english, '<li>Madrid, Spain</li>')
+        self.assertContains(spanish, '<li>Madrid, España</li>')
+
+    @override_settings(OWNER_EMAIL='nestor@example.com')
+    def test_keeps_the_email_readable_for_cv_parsers(self):
+        # Cloudflare's Email Obfuscation would swap it for a link to a script; it leaves alone what is between these
         response = self.client.get(reverse_in('en', 'main:cv'))
 
-        self.assertContains(response, 'href="mailto:nestor@example.com"')
-        self.assertContains(response, 'Madrid, Spain')
+        self.assertContains(
+            response, '<!--email_off--><a href="mailto:nestor@example.com">nestor@example.com</a><!--/email_off-->'
+        )
 
     def test_is_linked_from_the_menu_and_the_sitemap(self):
         home = self.client.get(reverse_in('en', 'main:index'))

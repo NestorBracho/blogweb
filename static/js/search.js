@@ -22,8 +22,13 @@ $(document).ready(function () {
     function renderPost(post) {
         let post_template = $($('#search-result-post-template')[0].content).clone();
 
-        post_template.find('.article__image').attr('href', post.url);
-        post_template.find('.article__image__link').attr('src', post.cover_urls.card).attr('alt', post.title);
+        // Posts without a cover have no image to show (its URLs are empty), like their cards on the server
+        if (post.cover_urls.card) {
+            post_template.find('.article__image').attr('href', post.url);
+            post_template.find('.article__image__link').attr('src', post.cover_urls.card).attr('alt', post.title);
+        } else {
+            post_template.find('.article__head').remove();
+        }
         if (post.category) {
             post_template.find('.article__tag').attr('href', post.category.url).text(post.category.name);
         } else {

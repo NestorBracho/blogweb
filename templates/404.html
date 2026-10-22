@@ -11,7 +11,7 @@
     <div class="row">
         <div class="col col-12">
             <div class="error">
-                <h2 class="error__title">404</h2>
+                <h1 class="error__title">404<span class="screen-reader-text"> {% translate 'Page not found' %}</span></h1>
                 <p class="error__text">{% translate "Well, this is embarrassing..." %}</p>
                 <p class="error__text">{% translate "The page you're looking for doesn't exist, never existed, or just rage quit." %}</p>
                 <a class="button button--primary" href="{% url 'main:index' %}">{% translate 'Back to homepage' %}</a>

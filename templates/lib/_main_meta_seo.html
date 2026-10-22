@@ -7,11 +7,12 @@
 
 {# What search results and link previews (LinkedIn, Slack...) show for pages without their own title or description #}
 {% blocktranslate asvar site_title with role=owner.role %}Nestor Bracho, {{ role }}{% endblocktranslate %}
-{% blocktranslate asvar site_description with role=owner.role trimmed %}
-    {{ role }} with more than 12 years building web platforms with Python and Django, currently for the World Bank Group.
+{% blocktranslate asvar site_description with role=owner.role years=owner.years trimmed %}
+    {{ role }} with more than {{ years }} years building web platforms with Python and Django, currently for the World
+    Bank Group.
 {% endblocktranslate %}
 {% firstof meta_description site_description as description %}
-{% if page_title %}{% firstof page_title|add:" - Nestor Bracho" as title %}{% else %}{% firstof site_title as title %}{% endif %}
+{% if full_title %}{% firstof full_title as title %}{% elif page_title %}{% firstof page_title|add:" - Nestor Bracho" as title %}{% else %}{% firstof site_title as title %}{% endif %}
 
 <title>{{ title }}</title>
 <link rel="alternate" type="application/rss+xml" title="Nestor Bracho" href="{% url 'blog:feed' %}">
@@ -35,9 +36,9 @@
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta property="twitter:title" content="{{ title }}">
-<meta property="twitter:description" content="{{ description }}">
-<meta property="twitter:image:src" content="{{ social_image }}">
+<meta name="twitter:title" content="{{ title }}">
+<meta name="twitter:description" content="{{ description }}">
+<meta name="twitter:image" content="{{ social_image }}">
 
 <!-- OpenGraph (Facebook, LinkedIn, etc.) -->
 <meta property="og:site_name" content="Nestor Bracho">
@@ -45,10 +46,13 @@
 <meta property="og:title" content="{{ title }}">
 <meta property="og:description" content="{{ description }}">
 <meta property="og:image" content="{{ social_image }}">
+{# The image's size, so previews can lay it out before downloading it: the brand image's, or the page's when known #}
 {% if not social_image_url %}
-{# The brand image's size, so previews can lay it out before downloading it. Post covers can be smaller. #}
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+{% elif social_image_size %}
+<meta property="og:image:width" content="{{ social_image_size.0 }}">
+<meta property="og:image:height" content="{{ social_image_size.1 }}">
 {% endif %}
 {% if urls %}
 <meta property="og:url" content="{{ urls.canonical }}">

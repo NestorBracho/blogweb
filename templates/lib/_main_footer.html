@@ -25,12 +25,14 @@
                     {% for rpost in latest_posts %}
                         <div class="footer__recent-content">
 
+                        {% if rpost.cover %}
                         <a href="{% url 'blog:post-detail' rpost.slug  %}"
                            class="footer__recent-image">
 
                             <img class="lazy" data-src="{{ rpost.cover_urls.thumb }}"
                                  alt="{{ rpost.title }}">
                         </a>
+                        {% endif %}
 
                         <div class="footer__recent-meta">
                             <h3 class="footer__recent-title"><a

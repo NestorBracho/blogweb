@@ -81,3 +81,70 @@
 .dark-mode .toggle-theme-button {
     color: #97a6ba;
 }
+
+/* The search button's "Search..." in the header (desktop): the theme's greys gave 4.1:1 in light mode and 4.2:1 in
+   dark mode. A little darker or lighter: 4.7:1 both. */
+.nav-button .search-button {
+    color: #5f6b7b;
+}
+
+.dark-mode .nav-button .search-button {
+    color: #a6a6a6;
+}
+
+/*
+ * Code blocks: the highlighter's colours (css/pygments.css, Monokai) are made for a dark background, so code blocks
+ * keep the dark mode's one in light mode too; in light mode the near-white names and punctuation were unreadable
+ * (1.0:1). On it, the theme's own colours for tags, attributes, strings... gave 1.6 to 4.2:1: the same hues, lighter,
+ * give at least 4.6:1.
+ */
+.highlight {
+    --syntax-highlighting-background: #1e293b;
+}
+
+.highlight pre,
+.highlight code {
+    color: #f0f0f0;
+}
+
+.highlight .nt { color: #7a8ce5 }                                 /* tags: was #4d65dc, 2.9:1 */
+.highlight .na, .highlight .no, .highlight .nv,
+.highlight .vc, .highlight .vg, .highlight .vi { color: #00a1a1 } /* attributes and variables: was #008080, 3.1:1 */
+.highlight .s, .highlight .sb, .highlight .sc, .highlight .sd,
+.highlight .s2, .highlight .se, .highlight .sh, .highlight .si,
+.highlight .sx, .highlight .s1 { color: #f15e82 }                 /* strings: was #ec2355, 3.4:1 */
+.highlight .kt, .highlight .nc { color: #7a8fcb }                 /* types and classes: was #5d76bf, 3.4:1 */
+.highlight .m, .highlight .mf, .highlight .mh, .highlight .mi,
+.highlight .mo, .highlight .il { color: #00a1a1 }                 /* numbers: was #099, 4.2:1 */
+.highlight .nb { color: #009dd2 }                                 /* built-ins: was #0086b3, 3.5:1 */
+.highlight .sr { color: #00a82a }                                 /* regular expressions: was #009926, 3.9:1 */
+.highlight .ss { color: #f472b6 }                                 /* symbols: was #990073, 1.8:1 */
+.highlight .ni { color: #e879f9 }                                 /* entities: was #800080, 1.6:1 */
+.highlight .ne, .highlight .nf,
+.highlight .gr, .highlight .gt { color: #f87171 }                 /* exceptions, functions, errors: was #900, 1.6:1 */
+.highlight .nn, .highlight .gp, .highlight .go { color: #94a3b8 } /* namespaces, prompts, output: was #555, 2.0:1 */
+
+/* "Skip to content" (templates/base.html): hidden until the keyboard reaches it, then over the header's top left */
+.skip-link {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 10000;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    color: var(--white);
+    background: var(--dark-blue);
+    transform: translateY(-200%);
+}
+
+.skip-link:focus {
+    transform: none;
+    outline: 2px solid #ae00ee;
+    outline-offset: 2px;
+}
+
+/* The skip link focuses <main> so the next Tab starts there; it isn't a control, so no focus ring */
+.content:focus {
+    outline: none;
+}

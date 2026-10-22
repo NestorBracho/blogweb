@@ -58,23 +58,26 @@
                 </article>
 
                 {% absolute_uri object.get_absolute_url as post_url %}
+                {% blocktranslate asvar share_on_linkedin with network='LinkedIn' %}Share on {{ network }}{% endblocktranslate %}
+                {% blocktranslate asvar share_on_x with network='X' %}Share on {{ network }}{% endblocktranslate %}
+                {% blocktranslate asvar share_on_facebook with network='Facebook' %}Share on {{ network }}{% endblocktranslate %}
                 <div class="share">
                     <div class="share__title">{% translate 'Share this' %}:</div>
                     <ul class="share__list list-reset">
                         <li class="share__item">
                             <a class="share__link share__linkedin"
                                href="https://www.linkedin.com/sharing/share-offsite/?url={{ post_url|urlencode:'' }}"
-                               target="_blank" rel="noopener nofollow" title="Share on LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+                               target="_blank" rel="noopener nofollow" title="{{ share_on_linkedin }}" aria-label="{{ share_on_linkedin }}"><i aria-hidden="true" class="fa-brands fa-linkedin-in"></i></a>
                         </li>
                         <li class="share__item">
                             <a class="share__link share__twitter"
                                href="https://twitter.com/intent/tweet?text={{ object.title|urlencode:'' }}&amp;url={{ post_url|urlencode:'' }}"
-                               target="_blank" rel="noopener nofollow" title="Share on X"><i class="fa-brands fa-x-twitter"></i></a>
+                               target="_blank" rel="noopener nofollow" title="{{ share_on_x }}" aria-label="{{ share_on_x }}"><i aria-hidden="true" class="fa-brands fa-x-twitter"></i></a>
                         </li>
                         <li class="share__item">
                             <a class="share__link share__facebook"
                                href="https://www.facebook.com/sharer/sharer.php?u={{ post_url|urlencode:'' }}"
-                               target="_blank" rel="noopener nofollow" title="Share on Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                               target="_blank" rel="noopener nofollow" title="{{ share_on_facebook }}" aria-label="{{ share_on_facebook }}"><i aria-hidden="true" class="fa-brands fa-facebook-f"></i></a>
                         </li>
                     </ul>
                 </div>
@@ -83,9 +86,11 @@
                     <div class="post__navigation">
                         {% if previous_post %}
                             <div class="post__prev">
+                                {% if previous_post.cover %}
                                 <a href="{{ previous_post.get_absolute_url }}" class="prev__image">
                                     <img class="lazy" data-src="{{ previous_post.cover_urls.thumb }}" alt="{{ previous_post.title }}">
                                 </a>
+                                {% endif %}
                                 <div class="prev__box">
                                     <span class="post__nav__prev">{% translate 'Older post' %}</span>
                                     <h2 class="post__nav__title"><a href="{{ previous_post.get_absolute_url }}">{{ previous_post.title }}</a></h2>
@@ -98,9 +103,11 @@
                                     <span class="post__nav__next">{% translate 'Newer post' %}</span>
                                     <h2 class="post__nav__title"><a href="{{ next_post.get_absolute_url }}">{{ next_post.title }}</a></h2>
                                 </div>
+                                {% if next_post.cover %}
                                 <a href="{{ next_post.get_absolute_url }}" class="next__image">
                                     <img class="lazy" data-src="{{ next_post.cover_urls.thumb }}" alt="{{ next_post.title }}">
                                 </a>
+                                {% endif %}
                             </div>
                         {% endif %}
                     </div>

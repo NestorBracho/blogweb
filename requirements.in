@@ -3,7 +3,7 @@
 #   pip-compile --upgrade-package NAME requirements.in
 
 # Stay on the 5.2 LTS release; a new major version is a decision, not an update
-Django>=5.2,<6
+Django>=5.2.19,<6
 djangorestframework
 django-environ
 whitenoise

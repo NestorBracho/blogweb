@@ -16,11 +16,13 @@ from django.utils.functional import lazy
 from django.views.generic import RedirectView, TemplateView
 from django.views.i18n import set_language
 
-from blog.sitemaps import CategorySitemap, PostSitemap
-from main.sitemaps import StaticViewSitemap
+from blog.sitemaps import BlogSitemap, CategorySitemap, PostSitemap
+from main.sitemaps import CaseSitemap, StaticViewSitemap
 
 sitemaps = {
     'pages': StaticViewSitemap,
+    'cases': CaseSitemap,
+    'blog': BlogSitemap,
     'posts': PostSitemap,
     'categories': CategorySitemap,
 }

@@ -2,7 +2,8 @@
 line-length = 120
 target-version = "py312"
 # brand/ is the brand kit as exported from Claude Design, including the script that generated it
-extend-exclude = ["*/migrations/*", "static", "brand"]
+# _bmad/ and .claude/ are the BMAD Method's own files, as its installer writes them
+extend-exclude = ["*/migrations/*", "static", "brand", "_bmad", ".claude"]
 # Also skip excluded paths when a tool passes them by name, as pre-commit does
 force-exclude = true
 

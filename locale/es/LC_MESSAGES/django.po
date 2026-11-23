@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-21 22:01+0000\n"
+"POT-Creation-Date: 2026-11-23 17:26+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,17 +19,25 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? "
 "1 : 2;\n"
 
-#: blog/feeds.py:11
+#: .\blog\feeds.py:11
 msgid "Science, storytelling & software, by Nestor Bracho."
 msgstr "Ciencia, historias y software, por Nestor Bracho."
 
-#: blog/templates/blog/_lib/_article_card.html:25
-#: blog/templates/blog/post.html:44
-#: templates/lib/_search_result_template.html:17
+#: .\blog\templates\blog\_lib\_article_card.html:25
+#: .\blog\templates\blog\post.html:44
+#: .\templates\lib\_search_result_template.html:17
 msgid "min read"
 msgstr "min de lectura"
 
-#: blog/templates/blog/category.html:16
+#: .\blog\templates\blog\_lib\_load_more.html:12
+msgid "Load More"
+msgstr "Cargar más"
+
+#: .\blog\templates\blog\_lib\_load_more.html:13
+msgid "The posts couldn't be loaded. Please try again."
+msgstr "No se pudieron cargar las publicaciones. Inténtalo de nuevo."
+
+#: .\blog\templates\blog\category.html:16
 #, python-format
 msgid "A collection of <span>%(counter)s post</span>"
 msgid_plural "A collection of <span>%(counter)s posts</span>"
@@ -37,59 +45,77 @@ msgstr[0] "Una colección de <span>%(counter)s publicación</span>"
 msgstr[1] "Una colección de <span>%(counter)s publicaciones</span>"
 msgstr[2] "Una colección de <span>%(counter)s publicaciones</span>"
 
-#: blog/templates/blog/category.html:31
+#: .\blog\templates\blog\category.html:31
 msgid "More posts"
 msgstr "Más publicaciones"
 
-#: blog/templates/blog/category.html:33
+#: .\blog\templates\blog\category.html:33
 msgid "Newer posts"
 msgstr "Publicaciones más recientes"
 
-#: blog/templates/blog/category.html:36
+#: .\blog\templates\blog\category.html:36
 msgid "Older posts"
 msgstr "Publicaciones anteriores"
 
-#: blog/templates/blog/post.html:61 blog/templates/blog/post.html:62
-#: blog/templates/blog/post.html:63
+#: .\blog\templates\blog\post.html:61 .\blog\templates\blog\post.html:62
+#: .\blog\templates\blog\post.html:63
 #, python-format
 msgid "Share on %(network)s"
 msgstr "Compartir en %(network)s"
 
-#: blog/templates/blog/post.html:65
+#: .\blog\templates\blog\post.html:65
 msgid "Share this"
 msgstr "Compartir"
 
-#: blog/templates/blog/post.html:93
+#: .\blog\templates\blog\post.html:95
 msgid "Older post"
 msgstr "Publicación anterior"
 
-#: blog/templates/blog/post.html:101
+#: .\blog\templates\blog\post.html:103
 msgid "Newer post"
 msgstr "Publicación siguiente"
 
-#: blog/templates/blog/post.html:116
+#: .\blog\templates\blog\post.html:120
 msgid "Related"
 msgstr "Relacionados"
 
-#: blog/views.py:58
+#: .\blog\templates\blog\post_list.html:17
+msgid "The Binary Journal"
+msgstr "La Terminal"
+
+#: .\blog\views.py:24 .\templates\lib\_main_footer.html:59
+#: .\templates\lib\_main_navbar.html:26
+msgid "Blog"
+msgstr "Blog"
+
+#: .\blog\views.py:26
+msgid ""
+"Posts by Nestor Bracho about science, storytelling and software, in English "
+"and Spanish."
+msgstr ""
+"Artículos de Nestor Bracho sobre ciencia, historias y software, en inglés y "
+"español."
+
+#: .\blog\views.py:93
 #, python-format
 msgid "Posts about %(category)s by Nestor Bracho."
 msgstr "Publicaciones sobre %(category)s de Nestor Bracho."
 
-#: main/templates/main/_lib/_bj_load_more.html:12
-msgid "Load More"
-msgstr "Cargar más"
+#: .\main\templates\main\_lib\_case_field.html:7
+msgid "Pending: not written yet"
+msgstr "Pendiente: sin redactar"
 
-#: main/templates/main/_lib/_bj_load_more.html:13
-msgid "The posts couldn't be loaded. Please try again."
-msgstr "No se pudieron cargar las publicaciones. Inténtalo de nuevo."
+#: .\main\templates\main\_lib\_case_field.html:10
+#: .\main\templates\main\case.html:41
+msgid "Draft: to be confirmed"
+msgstr "Borrador: por confirmar"
 
-#: main/templates/main/about.html:15 main/templates/main/about.html:21
-#: main/views.py:70
+#: .\main\templates\main\about.html:15 .\main\templates\main\about.html:21
+#: .\main\views.py:76
 msgid "About Me"
 msgstr "Sobre mí"
 
-#: main/templates/main/about.html:30
+#: .\main\templates\main\about.html:30
 msgid ""
 "Hey, I’m Nestor, a fullstack developer by trade, a problem-solver by "
 "instinct, and someone who’s been obsessed with the future since I was a kid."
@@ -98,11 +124,11 @@ msgstr ""
 "problemas por naturaleza, y alguien que lleva soñando con el futuro desde "
 "que era niño."
 
-#: main/templates/main/about.html:35
+#: .\main\templates\main\about.html:35
 msgid "Where It All Started"
 msgstr "Cómo empezó todo"
 
-#: main/templates/main/about.html:38
+#: .\main\templates\main\about.html:38
 msgid ""
 "I still remember walking into a robotics expo as a child and being "
 "completely blown away. The\n"
@@ -119,7 +145,7 @@ msgstr ""
 "Desde entonces me atrapó la ciencia ficción, el ciberpunk y todo lo que "
 "parece sacado de un mañana que ya llegó."
 
-#: main/templates/main/about.html:45
+#: .\main\templates\main\about.html:45
 msgid ""
 "Before I even finished high school, I was already building rudimentary "
 "programs, full of bugs and\n"
@@ -130,11 +156,11 @@ msgstr ""
 "haciendo programas básicos, simples, pero emocionantes. Pensaba: <em>“Podría "
 "hacer esto el resto de mi vida”</em>. Y así fue."
 
-#: main/templates/main/about.html:51
+#: .\main\templates\main\about.html:51
 msgid "What I Do (and Love Doing)"
 msgstr "Lo que hago (y lo que más disfruto)"
 
-#: main/templates/main/about.html:54
+#: .\main\templates\main\about.html:54
 msgid ""
 "I build complex backend systems. It’s where I feel most at home; "
 "architecting infrastructure,\n"
@@ -150,7 +176,7 @@ msgstr ""
 "plataformas digitales, desde soluciones para proyectos sociales hasta "
 "sistemas logísticos robustos."
 
-#: main/templates/main/about.html:61
+#: .\main\templates\main\about.html:61
 msgid ""
 "My main stack today centers around <strong>Python</strong> (which I love for "
 "its clarity and\n"
@@ -164,7 +190,7 @@ msgstr ""
 "levantar instancias EC2, montar arquitecturas escalables y automatizar "
 "despliegues se ha vuelto parte de mi día a día."
 
-#: main/templates/main/about.html:67
+#: .\main\templates\main\about.html:67
 msgid ""
 "Over the years, I’ve also become really fast, and really good, at shipping "
 "web applications and\n"
@@ -176,11 +202,11 @@ msgstr ""
 "servicios web desde cero, de forma rápida y sólida. Trabajar en startups me "
 "enseñó que la adaptabilidad no es solo una ventaja, es una forma de vida."
 
-#: main/templates/main/about.html:74
+#: .\main\templates\main\about.html:74
 msgid "Code With Purpose"
 msgstr "Código con propósito"
 
-#: main/templates/main/about.html:77
+#: .\main\templates\main\about.html:77
 msgid ""
 "Problem-solving has always been my engine. But more recently, it’s become "
 "about more than just\n"
@@ -202,11 +228,11 @@ msgstr ""
 "para recolectar datos en zonas remotas de Venezuela, facilitando "
 "investigaciones sociales de campo."
 
-#: main/templates/main/about.html:85
+#: .\main\templates\main\about.html:85
 msgid "For me, the real reward is seeing tech solve human problems."
 msgstr "Para mí, lo más valioso es ver cómo la tecnología puede mejorar vidas."
 
-#: main/templates/main/about.html:89
+#: .\main\templates\main\about.html:89
 msgid ""
 "Coding is a language I use to shape visions into reality. But the vision "
 "matters."
@@ -214,15 +240,15 @@ msgstr ""
 "Programar es el lenguaje que uso para convertir ideas en realidad. Pero lo "
 "importante es tener una buena idea."
 
-#: main/templates/main/about.html:94
+#: .\main\templates\main\about.html:94
 msgid "My Developer DNA"
 msgstr "Mi ADN como desarrollador"
 
-#: main/templates/main/about.html:102
+#: .\main\templates\main\about.html:102
 msgid "Linux since forever, my EC2 shell is my second home"
 msgstr "Linux desde siempre, mi consola en EC2 es como mi segundo hogar"
 
-#: main/templates/main/about.html:108
+#: .\main\templates\main\about.html:108
 msgid ""
 "Working on AI-related projects recently has been particularly fun, a good "
 "reminder that the\n"
@@ -231,11 +257,11 @@ msgstr ""
 "Últimamente me he divertido mucho trabajando en proyectos con inteligencia "
 "artificial. Me recuerdan que el futuro sigue llegando."
 
-#: main/templates/main/about.html:114
+#: .\main\templates\main\about.html:114
 msgid "I Share What I Know"
 msgstr "Compartir también es crear"
 
-#: main/templates/main/about.html:117
+#: .\main\templates\main\about.html:117
 msgid ""
 "I’ve spent a good portion of my career mentoring junior developers, teaching "
 "Django, setting up\n"
@@ -250,11 +276,11 @@ msgstr ""
 "importante de mi día a día fue acompañar a desarrolladores más jóvenes en su "
 "crecimiento profesional."
 
-#: main/templates/main/about.html:124
+#: .\main\templates\main\about.html:124
 msgid "Stay Curious"
 msgstr "Mantente curioso"
 
-#: main/templates/main/about.html:127
+#: .\main\templates\main\about.html:127
 msgid ""
 "This site isn’t just a portfolio, it’s a reflection of what drives me. "
 "Programming is just one\n"
@@ -266,21 +292,65 @@ msgstr ""
 "programación es una de mis herramientas favoritas, pero el mundo es mucho "
 "más grande."
 
-#: main/templates/main/about.html:133
+#: .\main\templates\main\about.html:133
 msgid "Stay curious. Stay human. Keep building things that matter."
 msgstr ""
 "No dejes de aprender. No pierdas la curiosidad. Y construye cosas que de "
 "verdad importen."
 
-#: main/templates/main/contact.html:26 main/templates/main/contact.html:36
+#: .\main\templates\main\case.html:12
+msgid ""
+"Development only: this case has drafts or pending fields and is not "
+"published."
+msgstr ""
+"Solo en desarrollo: este caso tiene borradores o campos pendientes y no está "
+"publicado."
+
+#: .\main\templates\main\case.html:18
+msgid "Client"
+msgstr "Cliente"
+
+#: .\main\templates\main\case.html:20
+msgid "Period"
+msgstr "Periodo"
+
+#: .\main\templates\main\case.html:22
+msgid "Role"
+msgstr "Rol"
+
+#: .\main\templates\main\case.html:24
+msgid "Stack"
+msgstr "Stack"
+
+#: .\main\templates\main\case.html:28
+msgid "The problem"
+msgstr "El problema"
+
+#: .\main\templates\main\case.html:31
+msgid "What I built"
+msgstr "Qué construí"
+
+#: .\main\templates\main\case.html:34
+msgid "The result"
+msgstr "El resultado"
+
+#: .\main\templates\main\case.html:43
+msgid "Link"
+msgstr "Enlace"
+
+#: .\main\templates\main\case.html:49 .\main\templates\main\case.html:50
+msgid "Other cases"
+msgstr "Otros casos"
+
+#: .\main\templates\main\contact.html:26 .\main\templates\main\contact.html:36
 msgid "Get In Touch"
 msgstr "Ponte en contacto"
 
-#: main/templates/main/contact.html:33
+#: .\main\templates\main\contact.html:33
 msgid "Back to home"
 msgstr "Vuelve al inicio"
 
-#: main/templates/main/contact.html:39
+#: .\main\templates\main\contact.html:39
 msgid ""
 "Plug into the grid, whether you’re building\n"
 "                    something bold or need a sharp mind in the system, this "
@@ -290,48 +360,48 @@ msgstr ""
 "¿Buscas un dev que hable en código y entienda el sistema? Transmite por "
 "aquí. <br><i>Construyamos el futuro juntos.</i>"
 
-#: main/templates/main/contact.html:52
+#: .\main\templates\main\contact.html:52
 msgid "Your Name"
 msgstr "Tu nombre"
 
-#: main/templates/main/contact.html:53
+#: .\main\templates\main\contact.html:53
 msgid "Your name"
 msgstr "Tu nombre"
 
-#: main/templates/main/contact.html:59 main/templates/main/contact.html:60
+#: .\main\templates\main\contact.html:59 .\main\templates\main\contact.html:60
 msgid "Your Email"
 msgstr "Tu correo"
 
-#: main/templates/main/contact.html:66 main/templates/main/contact.html:67
+#: .\main\templates\main\contact.html:66 .\main\templates\main\contact.html:67
 msgid "Your Message"
 msgstr "Tu mensaje"
 
-#: main/templates/main/contact.html:73
+#: .\main\templates\main\contact.html:73
 msgid "I will only use your details to reply to you."
 msgstr "Solo usaré tus datos para responderte."
 
-#: main/templates/main/contact.html:74 main/templates/main/privacy.html:12
-#: main/views.py:100 templates/lib/_main_right_sidebar.html:29
+#: .\main\templates\main\contact.html:74 .\main\templates\main\privacy.html:12
+#: .\main\views.py:107 .\templates\lib\_main_right_sidebar.html:29
 msgid "Privacy policy"
 msgstr "Política de privacidad"
 
-#: main/templates/main/contact.html:77
+#: .\main\templates\main\contact.html:77
 msgid "Send Now"
 msgstr "Enviar ahora"
 
-#: main/templates/main/cv.html:27
+#: .\main\templates\main\cv.html:27
 msgid "Download PDF"
 msgstr "Descargar PDF"
 
-#: main/templates/main/index.html:18
+#: .\main\templates\main\index.html:18
 msgid "office's Picture"
 msgstr "imagen de oficina"
 
-#: main/templates/main/index.html:23
+#: .\main\templates\main\index.html:23
 msgid "My creative space, where masterpieces are born"
 msgstr "Mi espacio creativo, donde nacen obras maestras"
 
-#: main/templates/main/index.html:46
+#: .\main\templates\main\index.html:46
 #, python-format
 msgid ""
 "I have spent more than %(years)s years building web platforms with Python "
@@ -346,15 +416,16 @@ msgstr ""
 "se usan en varios países de África. Antes: la plataforma de pagos de Selia, "
 "el CRM Zina de Nokia y seis años liderando equipos en Turpial."
 
-#: main/templates/main/index.html:55
+#: .\main\templates\main\index.html:56
+#, python-format
 msgid ""
-"Outside work, I <a href=\"#blog\">write here</a> about science, storytelling "
-"and software."
+"Outside work, I <a href=\"%(blog_url)s\">write here</a> about science, "
+"storytelling and software."
 msgstr ""
-"Fuera del trabajo, <a href=\"#blog\">escribo aquí</a> sobre ciencia, "
+"Fuera del trabajo, <a href=\"%(blog_url)s\">escribo aquí</a> sobre ciencia, "
 "historias y software."
 
-#: main/templates/main/index.html:61
+#: .\main\templates\main\index.html:62
 #, python-format
 msgid ""
 "You can also find me on <a href=\"%(linkedin_url)s\" target=\"_blank\" "
@@ -365,27 +436,23 @@ msgstr ""
 "rel=\"noopener\">LinkedIn</a> y <a href=\"%(github_url)s\" target=\"_blank\" "
 "rel=\"noopener\">GitHub</a>."
 
-#: main/templates/main/index.html:71
+#: .\main\templates\main\index.html:72
 msgid "See my CV"
 msgstr "Ver mi CV"
 
-#: main/templates/main/index.html:72
+#: .\main\templates\main\index.html:73
 msgid "Let’s Work Together"
 msgstr "Trabajemos juntos"
 
-#: main/templates/main/index.html:94
-msgid "The Binary Journal"
-msgstr "La Terminal"
-
-#: main/templates/main/index.html:141
+#: .\main\templates\main\index.html:96
 msgid "Hacker’s Haven"
 msgstr "Paraíso del Hacker"
 
-#: main/templates/main/index.html:166
+#: .\main\templates\main\index.html:121
 msgid "Nerd Stuff"
 msgstr "Cosas Nerd"
 
-#: main/views.py:72
+#: .\main\views.py:78
 #, python-format
 msgid ""
 "Get to know Nestor Bracho, %(role)s: backend systems, Python and technology "
@@ -394,12 +461,12 @@ msgstr ""
 "Conoce a Nestor Bracho, %(role)s: sistemas backend, Python y tecnología con "
 "impacto social. Su trayectoria, habilidades y lo que le mueve."
 
-#: main/views.py:84
+#: .\main\views.py:90
 #, python-format
 msgid "CV · Nestor Bracho, %(role)s"
 msgstr "CV · Nestor Bracho, %(role)s"
 
-#: main/views.py:86
+#: .\main\views.py:92
 #, python-format
 msgid ""
 "CV of Nestor Bracho, %(role)s with more than %(years)s years building web "
@@ -408,18 +475,18 @@ msgstr ""
 "CV de Nestor Bracho, %(role)s con más de %(years)s años construyendo "
 "plataformas web con Python y Django."
 
-#: main/views.py:101
+#: .\main\views.py:108
 msgid ""
 "What personal data this site collects, why, and how to exercise your rights."
 msgstr ""
 "Qué datos personales recoge este sitio, para qué y cómo ejercer tus derechos."
 
-#: main/views.py:113 templates/lib/_main_footer.html:78
-#: templates/lib/_main_navbar.html:32
+#: .\main\views.py:120 .\templates\lib\_main_footer.html:80
+#: .\templates\lib\_main_navbar.html:35
 msgid "Contact"
 msgstr "Contacto"
 
-#: main/views.py:115
+#: .\main\views.py:122
 msgid ""
 "Plug into the grid, whether you’re building something bold or need a sharp "
 "mind in the system, this is your uplink to start working together."
@@ -427,7 +494,7 @@ msgstr ""
 "¿Buscas un dev que hable en código y entienda el sistema? Transmite por "
 "aquí. <br><i>Construyamos el futuro juntos.</i>"
 
-#: main/views.py:126
+#: .\main\views.py:133
 msgid ""
 "You've sent several messages in a short time. Please try again later: your "
 "message is still here."
@@ -435,7 +502,7 @@ msgstr ""
 "Has enviado varios mensajes en poco tiempo. Inténtalo de nuevo más tarde: tu "
 "mensaje sigue aquí."
 
-#: main/views.py:133
+#: .\main\views.py:140
 msgid ""
 "Your contact request has been successfully submitted. I'll get in touch as "
 "soon as possible!"
@@ -443,76 +510,76 @@ msgstr ""
 "Solicitud de contacto enviada con éxito. ¡Me pondré en contacto contigo lo "
 "antes posible!"
 
-#: main/views.py:140
+#: .\main\views.py:147
 msgid "Something went wrong. Try again later."
 msgstr "Algo salió mal. Intenta de nuevo más tarde."
 
-#: templates/404.html:5 templates/404.html:14
+#: .\templates\404.html:5 .\templates\404.html:14
 msgid "Page not found"
 msgstr "Página no encontrada"
 
-#: templates/404.html:15
+#: .\templates\404.html:15
 msgid "Well, this is embarrassing..."
 msgstr "Bueno, esto es vergonzoso..."
 
-#: templates/404.html:16
+#: .\templates\404.html:16
 msgid ""
 "The page you're looking for doesn't exist, never existed, or just rage quit."
 msgstr "La página que buscas no existe, nunca existió, o abandonó el sitio."
 
-#: templates/404.html:17 templates/500.html:18
+#: .\templates\404.html:17 .\templates\500.html:18
 msgid "Back to homepage"
 msgstr "Vuelve al inicio"
 
-#: templates/500.html:5 templates/500.html:14
+#: .\templates\500.html:5 .\templates\500.html:14
 msgid "Server Malfunction"
 msgstr "Mal funcionamiento del servidor"
 
-#: templates/500.html:15
+#: .\templates\500.html:15
 msgid "Well, this is awkward... Something went wrong on my end."
 msgstr "Bueno, esto es incómodo... Algo salió mal por aquí."
 
-#: templates/500.html:16
+#: .\templates\500.html:16
 msgid "We poked the server and it's thinking about what it did."
 msgstr "El servidor está castigado y está pensando en lo que hizo."
 
-#: templates/500.html:17
+#: .\templates\500.html:17
 msgid "Try refreshing, or come back after a coffee"
 msgstr "Trata de refrescar, o vuelve después de un café"
 
-#: templates/base.html:26
+#: .\templates\base.html:26
 msgid "Skip to content"
 msgstr "Saltar al contenido"
 
-#: templates/base.html:43
+#: .\templates\base.html:43
 msgid "Close search"
 msgstr "Cerrar búsqueda"
 
-#: templates/base.html:46
+#: .\templates\base.html:46
 msgid "Search posts"
 msgstr "Buscar publicaciones"
 
-#: templates/base.html:48
+#: .\templates\base.html:48
 msgid "Type to search..."
 msgstr "Escribe para buscar..."
 
-#: templates/base.html:96
+#: .\templates\base.html:96
 msgid "Back to top"
 msgstr "Volver arriba"
 
-#: templates/base.html:102
+#: .\templates\base.html:102
 msgid "Enlarged image"
 msgstr "Imagen ampliada"
 
-#: templates/base.html:103
+#: .\templates\base.html:103
 msgid "Enlarge image"
 msgstr "Ampliar imagen"
 
-#: templates/lib/_honeypot_field.html:6
+#: .\templates\lib\_honeypot_field.html:6
 msgid "Leave this field empty"
 msgstr "Deja este campo vacío"
 
-#: templates/lib/_main_footer.html:9
+#: .\templates\lib\_main_footer.html:9
 msgid ""
 "Science, storytelling &amp; software. This is the personal site of Nestor "
 "Bracho, a software engineer who likes to understand how things work."
@@ -520,101 +587,101 @@ msgstr ""
 "Ciencia, historias y software. Esta es la web personal de Nestor Bracho, un "
 "ingeniero de software al que le gusta entender cómo funcionan las cosas."
 
-#: templates/lib/_main_footer.html:22
+#: .\templates\lib\_main_footer.html:22
 msgid "Recent Posts"
 msgstr "Publicaciones recientes"
 
-#: templates/lib/_main_footer.html:53 templates/lib/_main_navbar.html:13
+#: .\templates\lib\_main_footer.html:53 .\templates\lib\_main_navbar.html:13
 msgid "Menu"
 msgstr "Menú"
 
-#: templates/lib/_main_footer.html:57 templates/lib/_main_navbar.html:23
+#: .\templates\lib\_main_footer.html:57 .\templates\lib\_main_navbar.html:23
 msgid "Home"
 msgstr "Inicio"
 
-#: templates/lib/_main_footer.html:71
+#: .\templates\lib\_main_footer.html:73
 msgid "Pages"
 msgstr "Páginas"
 
-#: templates/lib/_main_footer.html:74 templates/lib/_main_navbar.html:26
+#: .\templates\lib\_main_footer.html:76 .\templates\lib\_main_navbar.html:29
 msgid "About"
 msgstr "Sobre mí"
 
-#: templates/lib/_main_footer.html:76 templates/lib/_main_navbar.html:29
+#: .\templates\lib\_main_footer.html:78 .\templates\lib\_main_navbar.html:32
 msgid "CV"
 msgstr "CV"
 
-#: templates/lib/_main_footer.html:80
+#: .\templates\lib\_main_footer.html:82
 msgid "Privacy"
 msgstr "Privacidad"
 
-#: templates/lib/_main_footer.html:97
+#: .\templates\lib\_main_footer.html:99
 msgid "Crafted by"
 msgstr "Hecho por"
 
-#: templates/lib/_main_footer.html:97
+#: .\templates\lib\_main_footer.html:99
 msgid "Designed by"
 msgstr "Diseñado por"
 
-#: templates/lib/_main_meta_seo.html:9
+#: .\templates\lib\_main_meta_seo.html:9
 #, python-format
 msgid "Nestor Bracho, %(role)s"
 msgstr "Nestor Bracho, %(role)s"
 
-#: templates/lib/_main_meta_seo.html:10
+#: .\templates\lib\_main_meta_seo.html:10
 #, python-format
 msgid ""
 "%(role)s with more than %(years)s years building web platforms with Python "
 "and Django, currently for the World Bank Group."
 msgstr ""
-"%(role)s con más de %(years)s años construyendo plataformas web con Python "
-"y Django; actualmente, para el Grupo Banco Mundial."
+"%(role)s con más de %(years)s años construyendo plataformas web con Python y "
+"Django; actualmente, para el Grupo Banco Mundial."
 
-#: templates/lib/_main_navbar.html:9
+#: .\templates\lib\_main_navbar.html:9
 msgid "Bracho, home"
 msgstr "Bracho, inicio"
 
-#: templates/lib/_main_navbar.html:17
+#: .\templates\lib\_main_navbar.html:17
 msgid "Main menu"
 msgstr "Menú principal"
 
-#: templates/lib/_main_navbar.html:42
+#: .\templates\lib\_main_navbar.html:45
 msgid "Dark mode"
 msgstr "Modo oscuro"
 
-#: templates/lib/_main_navbar.html:43
+#: .\templates\lib\_main_navbar.html:46
 msgid "Enable dark mode"
 msgstr "Activar modo oscuro"
 
-#: templates/lib/_main_navbar.html:50
+#: .\templates\lib\_main_navbar.html:53
 msgid "Enable light mode"
 msgstr "Activar modo claro"
 
-#: templates/lib/_main_navbar.html:65
+#: .\templates\lib\_main_navbar.html:68
 msgid "Language options"
 msgstr "Opciones de idioma"
 
-#: templates/lib/_main_navbar.html:67
+#: .\templates\lib\_main_navbar.html:70
 msgid "Language"
 msgstr "Idioma"
 
-#: templates/lib/_main_navbar.html:78
+#: .\templates\lib\_main_navbar.html:81
 msgid "Spanish"
 msgstr "Español"
 
-#: templates/lib/_main_navbar.html:82
+#: .\templates\lib\_main_navbar.html:85
 msgid "English"
 msgstr "Inglés"
 
-#: templates/lib/_main_navbar.html:94
+#: .\templates\lib\_main_navbar.html:97
 msgid "Search posts..."
 msgstr "Buscar publicación"
 
-#: templates/lib/_main_right_sidebar.html:9
+#: .\templates\lib\_main_right_sidebar.html:9
 msgid "Stay inspired weekly"
 msgstr "Mantente inspirado semanalmente"
 
-#: templates/lib/_main_right_sidebar.html:12
+#: .\templates\lib\_main_right_sidebar.html:12
 msgid ""
 "Every Sunday, I deliver actionable tips for\n"
 "                enhancing productivity, practical life advice, and top-notch "
@@ -625,39 +692,39 @@ msgstr ""
 "prácticos de vida, e información de vanguardia de distintas fuentes, directo "
 "en tu bandeja de entrada."
 
-#: templates/lib/_main_right_sidebar.html:21
+#: .\templates\lib\_main_right_sidebar.html:21
 msgid "Email address"
 msgstr "Dirección de correo"
 
-#: templates/lib/_main_right_sidebar.html:23
+#: .\templates\lib\_main_right_sidebar.html:23
 msgid "Your email address..."
 msgstr "Tu correo aquí..."
 
-#: templates/lib/_main_right_sidebar.html:25
+#: .\templates\lib\_main_right_sidebar.html:25
 msgid "Join Now"
 msgstr "Únete ahora"
 
-#: templates/lib/_main_right_sidebar.html:28
+#: .\templates\lib\_main_right_sidebar.html:28
 msgid "You will receive an email to confirm your subscription."
 msgstr "Recibirás un correo para confirmar tu suscripción."
 
-#: templates/lib/_main_right_sidebar.html:44
+#: .\templates\lib\_main_right_sidebar.html:44
 msgid "Latest posts"
 msgstr "Últimas publicaciones"
 
-#: templates/lib/_main_right_sidebar.html:72
+#: .\templates\lib\_main_right_sidebar.html:72
 msgid "Topics"
 msgstr "Temas"
 
-#: templates/lib/_search_result_template.html:24
+#: .\templates\lib\_search_result_template.html:24
 msgid "No posts match your search."
 msgstr "Ninguna publicación coincide con tu búsqueda."
 
-#: templates/lib/_search_result_template.html:27
+#: .\templates\lib\_search_result_template.html:27
 msgid "The search isn't working right now. Please try again later."
 msgstr "La búsqueda no funciona en este momento. Inténtalo de nuevo más tarde."
 
-#: usermanager/templates/usermanager/email/confirm_subscription.txt:1
+#: .\usermanager\templates\usermanager\email\confirm_subscription.txt:1
 #, python-format
 msgid ""
 "Hi!\n"
@@ -671,7 +738,7 @@ msgstr ""
 "newsletter de Bracho. Para confirmarlo, abre este enlace en los próximos "
 "%(days)s días:"
 
-#: usermanager/templates/usermanager/email/confirm_subscription.txt:7
+#: .\usermanager\templates\usermanager\email\confirm_subscription.txt:7
 msgid ""
 "If it wasn't you, just ignore this email: unconfirmed addresses never "
 "receive the newsletter."
@@ -679,7 +746,7 @@ msgstr ""
 "Si no fuiste tú, ignora este correo: las direcciones sin confirmar nunca "
 "reciben la newsletter."
 
-#: usermanager/views.py:36
+#: .\usermanager\views.py:36
 msgid ""
 "You've tried to subscribe several times in a short time. Please try again "
 "later."
@@ -687,21 +754,21 @@ msgstr ""
 "Has intentado suscribirte varias veces en poco tiempo. Inténtalo de nuevo "
 "más tarde."
 
-#: usermanager/views.py:48
+#: .\usermanager\views.py:48
 msgid "We couldn't send you the confirmation email. Please try again later."
 msgstr ""
 "No pudimos enviarte el correo de confirmación. Inténtalo de nuevo más tarde."
 
-#: usermanager/views.py:52
+#: .\usermanager\views.py:52
 msgid "Almost there! Check your inbox and confirm your subscription."
 msgstr "¡Ya casi está! Revisa tu correo y confirma tu suscripción."
 
-#: usermanager/views.py:56
+#: .\usermanager\views.py:56
 msgid ""
 "We were unable to subscribe you to your newsletter. Something went wrong."
 msgstr "No pude suscribirte a tu boletín informativo. Algo salió mal."
 
-#: usermanager/views.py:77
+#: .\usermanager\views.py:77
 msgid ""
 "This confirmation link is invalid or has expired. Subscribe again to get a "
 "new one."
@@ -709,10 +776,10 @@ msgstr ""
 "Este enlace de confirmación no es válido o ha caducado. Suscríbete de nuevo "
 "para recibir otro."
 
-#: usermanager/views.py:81
+#: .\usermanager\views.py:81
 msgid "Your subscription is confirmed. Thank you!"
 msgstr "Tu suscripción está confirmada. ¡Gracias!"
 
-#: usermanager/views.py:94
+#: .\usermanager\views.py:94
 msgid "Confirm your subscription to Bracho"
 msgstr "Confirma tu suscripción a Bracho"

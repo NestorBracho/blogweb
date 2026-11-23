@@ -40,6 +40,27 @@ def profile_page(request):
     }
 
 
+def case_study(request, case):
+    """A case study (main/cases.py) in the page's language, by the person the site is about."""
+    author = person(request)
+    url = request.build_absolute_uri(case.url)
+    data = {
+        '@context': 'https://schema.org',
+        '@type': 'CreativeWork',
+        'name': case.title.text,
+        'url': url,
+        'mainEntityOfPage': url,
+        'inLanguage': translation.get_language(),
+        'author': {'@type': 'Person', '@id': author['@id'], 'name': author['name'], 'url': author['url']},
+    }
+    # Only what is written: drafts with pending fields exist in development alone
+    if case.problem.text:
+        data['description'] = case.problem.text
+    if case.stack.text:
+        data['keywords'] = case.stack.text
+    return data
+
+
 def blog_posting(request, post):
     author = person(request)
     data = {

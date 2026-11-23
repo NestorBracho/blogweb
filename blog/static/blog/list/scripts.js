@@ -1,4 +1,4 @@
-// "Load more" in The Binary Journal (main/_lib/_bj_load_more.html). The posts come rendered from the server and htmx
+// "Load more" on the blog's list of posts (blog/_lib/_load_more.html). The posts come rendered from the server and htmx
 // adds each next page; this shows that they are on their way, says so when they can't be loaded and takes the
 // focus to the first new post, since the button it was on is replaced.
 
@@ -8,8 +8,8 @@ htmx.config.allowEval = false;
 // A request that hangs fails like any other, instead of leaving the button loading forever
 htmx.config.timeout = 10000;
 
-const bj_posts = document.getElementById('bj-results-container');
-let bj_firstNewPost = null;
+const posts = document.getElementById('posts-container');
+let firstNewPost = null;
 
 function isLoadMore(event) {
     return event.detail.elt.classList.contains('load-more-posts');
@@ -22,7 +22,7 @@ document.body.addEventListener('htmx:beforeRequest', function (event) {
     const button = event.detail.elt;
     button.classList.add('button--loading');
     button.parentElement.querySelector('.load-more-error').hidden = true;
-    bj_firstNewPost = bj_posts.children.length;
+    firstNewPost = posts.children.length;
 });
 
 document.body.addEventListener('htmx:afterRequest', function (event) {
@@ -35,8 +35,8 @@ document.body.addEventListener('htmx:afterRequest', function (event) {
     button.parentElement.querySelector('.load-more-error').hidden = false;
 });
 
-bj_posts.addEventListener('htmx:afterSettle', function () {
-    const post = bj_posts.children[bj_firstNewPost];
+posts.addEventListener('htmx:afterSettle', function () {
+    const post = posts.children[firstNewPost];
     if (post) {
         post.querySelector('.article__title a').focus();
     }

@@ -1,0 +1,11 @@
+{% load i18n %}
+{% comment %}
+    One field of a case (main/cases.py). Drafts and pending fields only exist in development: in production a case
+    is shown only once every field is confirmed, so neither mark ever reaches a visitor.
+{% endcomment %}
+{% if field.state == 'pending' %}
+    <mark class="case-pending">{% translate 'Pending: not written yet' %}</mark>
+{% else %}
+    {{ field.text }}
+    {% if field.state == 'draft' %}<mark class="case-draft">{% translate 'Draft: to be confirmed' %}</mark>{% endif %}
+{% endif %}

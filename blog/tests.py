@@ -1,6 +1,7 @@
 import base64
 import json
 import logging
+import re
 import time
 from datetime import datetime
 from io import BytesIO, StringIO
@@ -9,13 +10,16 @@ from unittest import mock
 from urllib.parse import quote
 
 import httpx2
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.staticfiles import finders
 from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import CommandError, call_command
 from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
+from django.templatetags.static import static
 from django.test import SimpleTestCase, TestCase, TransactionTestCase, override_settings
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -276,6 +280,126 @@ class CategoryDetailViewTests(TestCase):
         self.assertEqual(self.client.get(category.get_absolute_url()).status_code, 200)
 
 
+class PostListTests(TestCase):
+    """The blog's list of posts: the newest come with the page, and "Load more" adds the older ones."""
+
+    def create_posts(self, count):
+        # 'Post 0' is the newest
+        for number in range(count):
+            create_post(f'Post {number}', days_ago=number)
+
+    def titles(self, response):
+        return [post.title_en for post in response.context['post_list']]
+
+    def post_link(self, language, number):
+        return f'href="{reverse_in(language, "blog:post-detail", slug=f"post-{number}")}"'
+
+    def test_has_its_own_address_in_each_language(self):
+        self.assertEqual(reverse_in('en', 'blog:post-list'), '/en/blog/')
+        self.assertEqual(reverse_in('es', 'blog:post-list'), '/es/blog/')
+
+    def test_the_newest_posts_come_with_the_page(self):
+        self.create_posts(5)
+        create_post('Draft', is_published=False)
+
+        response = self.client.get(reverse_in('es', 'blog:post-list'))
+
+        self.assertEqual(self.titles(response), ['Post 0', 'Post 1', 'Post 2', 'Post 3'])
+        self.assertContains(response, 'grid__post', count=4)
+        self.assertContains(response, self.post_link('es', 3))
+        self.assertNotContains(response, self.post_link('es', 4))
+        self.assertNotContains(response, 'href="/es/post/draft"')
+        # With the sidebar that used to be on the home
+        self.assertContains(response, '<aside class="sidebar">')
+
+    def test_is_a_page_of_its_own_in_each_language(self):
+        spanish = self.client.get(reverse_in('es', 'blog:post-list'))
+        english = self.client.get(reverse_in('en', 'blog:post-list'))
+
+        self.assertContains(spanish, '<h1 class="section__title">')
+        self.assertContains(spanish, '<title>Blog - Nestor Bracho</title>')
+        self.assertContains(english, '<title>Blog - Nestor Bracho</title>')
+        self.assertContains(spanish, '<link rel="canonical" href="http://testserver/es/blog/">')
+        self.assertContains(spanish, '<link rel="alternate" hreflang="en" href="http://testserver/en/blog/">')
+        self.assertContains(spanish, '<meta property="og:url" content="http://testserver/es/blog/">')
+        self.assertContains(spanish, '<meta name="description" content="Artículos de Nestor Bracho')
+        self.assertContains(english, '<meta name="description" content="Posts by Nestor Bracho')
+
+    def test_load_more_leads_to_the_next_page_without_javascript(self):
+        self.create_posts(9)
+
+        first = self.client.get(reverse_in('en', 'blog:post-list'))
+        second = self.client.get(reverse_in('en', 'blog:post-list'), {'page': 2})
+        last = self.client.get(reverse_in('en', 'blog:post-list'), {'page': 3})
+
+        self.assertContains(first, 'href="/en/blog/?page=2"')
+        self.assertEqual(self.titles(second), ['Post 4', 'Post 5', 'Post 6', 'Post 7'])
+        self.assertContains(second, 'href="/en/blog/?page=3"')
+        self.assertEqual(self.titles(last), ['Post 8'])
+        self.assertNotContains(last, 'load-more-posts')
+        # Each page has its own address for search engines
+        self.assertContains(second, '<link rel="canonical" href="http://testserver/en/blog/?page=2">')
+
+    def test_pages_past_the_last_are_not_found(self):
+        self.create_posts(1)
+
+        for page in ['2', 'two']:
+            with self.subTest(page=page), self.assertLogs('django.request', 'WARNING'):
+                self.assertEqual(self.client.get(reverse_in('en', 'blog:post-list'), {'page': page}).status_code, 404)
+                self.assertEqual(self.client.get(reverse_in('en', 'blog:more-posts'), {'page': page}).status_code, 404)
+
+    def test_load_more_asks_for_the_next_posts_alone(self):
+        self.create_posts(9)
+
+        blog = self.client.get(reverse_in('es', 'blog:post-list'))
+        more = self.client.get(reverse_in('es', 'blog:more-posts'), {'page': 2})
+        last = self.client.get(reverse_in('es', 'blog:more-posts'), {'page': 3})
+
+        self.assertContains(blog, f'hx-get="{reverse_in("es", "blog:more-posts")}?page=2"')
+        self.assertContains(blog, 'hx-target="#posts-container"')
+        self.assertContains(blog, '<div id="posts-container" class="row grid">')
+        self.assertEqual(self.titles(more), ['Post 4', 'Post 5', 'Post 6', 'Post 7'])
+        self.assertNotContains(more, '<html')
+        # In the language of the page that asked
+        self.assertContains(more, self.post_link('es', 4))
+        # The block with the next link takes the place of the one that asked, and is empty after the last page
+        self.assertContains(more, '<div id="posts-load-more" class="pagination animate" hx-swap-oob="true">')
+        self.assertContains(more, f'hx-get="{reverse_in("es", "blog:more-posts")}?page=3"')
+        self.assertNotContains(last, 'load-more-posts')
+        # A piece of a page: search engines index the list's own pages instead
+        self.assertEqual(more.headers['X-Robots-Tag'], 'noindex')
+
+    def test_load_more_says_when_the_posts_cannot_be_loaded(self):
+        self.create_posts(5)
+
+        spanish = self.client.get(reverse_in('es', 'blog:post-list'))
+        english = self.client.get(reverse_in('en', 'blog:post-list'))
+
+        self.assertContains(spanish, '<p class="load-more-error" role="alert" hidden>No se pudieron cargar')
+        self.assertContains(english, '<p class="load-more-error" role="alert" hidden>The posts couldn\'t be loaded.')
+
+    def test_scripts_are_files_of_the_site(self):
+        response = self.client.get(reverse_in('en', 'blog:post-list'))
+
+        scripts = re.findall(r'<script src="([^"]+)"', response.content.decode())
+        self.assertIn(static('js/htmx-2.0.11.min.js'), scripts)
+        self.assertIn(static('blog/list/scripts.js'), scripts)
+        for script in scripts:
+            with self.subTest(script=script):
+                self.assertIsNotNone(finders.find(script.removeprefix(settings.STATIC_URL)))
+
+    def test_is_linked_from_the_menu_the_footer_and_the_home(self):
+        for language in ['en', 'es']:
+            with self.subTest(language=language):
+                blog = reverse_in(language, 'blog:post-list')
+                home = self.client.get(reverse_in(language, 'main:index'))
+                listing = self.client.get(blog)
+
+                self.assertContains(home, f'<a href="{blog}" class="nav__link">')
+                self.assertContains(home, f'<a class="footer-nav__link" href="{blog}">')
+                self.assertContains(listing, f'<a href="{blog}" class="nav__link active-link">')
+
+
 class SidebarTests(TestCase):
     def test_lists_only_categories_with_published_posts(self):
         published = create_category('published-topic')
@@ -283,13 +407,13 @@ class SidebarTests(TestCase):
         create_post('Draft', category=create_category('drafts-only'), is_published=False)
         create_category('empty-topic')
 
-        response = self.client.get(reverse('main:index'))
+        response = self.client.get(reverse('blog:post-list'))
 
         # The data migrations' categories have no posts here, so only one is left
         self.assertEqual(list(response.context['categories']), [published])
 
     def test_sidebar_and_footer_share_the_latest_posts(self):
-        # More than the home's first page shows, or the sidebar leaves them out
+        # More than the blog's first page shows, or the sidebar leaves them out
         for number in range(5):
             create_post(f'Post {number}', days_ago=number)
         create_post('Draft', is_published=False)
@@ -398,6 +522,7 @@ class SitemapTests(TestCase):
             with self.subTest(language=language):
                 pages = [
                     reverse_in(language, 'main:about'),
+                    reverse_in(language, 'blog:post-list'),
                     reverse_in(language, 'blog:post-detail', slug=published.slug),
                     reverse_in(language, 'blog:category-detail', slug=published.category.slug),
                 ]
@@ -737,14 +862,14 @@ class CoverSizesTests(TemporaryMediaMixin, TestCase):
 
         post_page = self.client.get(post.get_absolute_url())
         category_page = self.client.get(post.category.get_absolute_url())
-        home = self.client.get(reverse('main:index'))
+        blog = self.client.get(reverse('blog:post-list'))
 
         urls = post.cover_urls
         self.assertContains(post_page, f'src="{urls["post"]}"')
         self.assertContains(post_page, f'<meta property="og:image" content="http://testserver{urls["social"]}">')
         self.assertContains(post_page, f'src="{urls["thumb"]}"')  # the sidebar's latest posts
         self.assertContains(category_page, f'<img src="{urls["card"]}"')
-        self.assertContains(home, f'<img src="{urls["card"]}"')
+        self.assertContains(blog, f'<img src="{urls["card"]}"')
 
     def test_link_previews_get_the_size_of_the_social_image(self):
         for size, expected in [((2400, 1600), ('1200', '630')), ((1024, 1024), ('1024', '538'))]:
@@ -1065,11 +1190,11 @@ class PublicationDateTests(EmptyCacheMixin, TestCase):
         self.publish(create_post('Drafted a month ago', days_ago=30, is_published=False, category=category))
         expected = ['Drafted a month ago', 'Published last week']
 
-        home = self.client.get(reverse_in('en', 'main:index'))
+        blog = self.client.get(reverse_in('en', 'blog:post-list'))
         category_page = self.client.get(category.get_absolute_url())
         api = self.client.get(reverse('api:post-list'))
 
-        self.assertEqual([post.title_en for post in home.context['object_list']], expected)
+        self.assertEqual([post.title_en for post in blog.context['object_list']], expected)
         self.assertEqual([post.title_en for post in category_page.context['object_list']], expected)
         self.assertEqual([post['title'] for post in api.json()['results']], expected)
 

@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% comment %}
+    A case study (main/cases.py). Minimal markup and no styles of its own yet: the new design of the main site will
+    replace it.
+{% endcomment %}
+
+{% block content %}
+    <article class="case container">
+        {% if drafts_visible and not case.is_confirmed %}
+            <p class="case-notice" role="note">{% translate 'Development only: this case has drafts or pending fields and is not published.' %}</p>
+        {% endif %}
+
+        <h1>{% include 'main/_lib/_case_field.html' with field=case.title %}</h1>
+
+        <dl class="case__facts">
+            <dt>{% translate 'Client' %}</dt>
+            <dd>{% include 'main/_lib/_case_field.html' with field=case.client %}</dd>
+            <dt>{% translate 'Period' %}</dt>
+            <dd>{% include 'main/_lib/_case_field.html' with field=case.period %}</dd>
+            <dt>{% translate 'Role' %}</dt>
+            <dd>{% include 'main/_lib/_case_field.html' with field=case.role %}</dd>
+            <dt>{% translate 'Stack' %}</dt>
+            <dd>{% include 'main/_lib/_case_field.html' with field=case.stack %}</dd>
+        </dl>
+
+        <h2>{% translate 'The problem' %}</h2>
+        <p>{% include 'main/_lib/_case_field.html' with field=case.problem %}</p>
+
+        <h2>{% translate 'What I built' %}</h2>
+        <p>{% include 'main/_lib/_case_field.html' with field=case.solution %}</p>
+
+        <h2>{% translate 'The result' %}</h2>
+        <p>{% include 'main/_lib/_case_field.html' with field=case.result %}</p>
+
+        {% if case.link %}
+            <p>
+                {% if case.link.text %}
+                    <a href="{{ case.link.text }}" rel="noopener">{{ case.link.text }}</a>
+                    {% if case.link.state == 'draft' %}<mark class="case-draft">{% translate 'Draft: to be confirmed' %}</mark>{% endif %}
+                {% else %}
+                    {% translate 'Link' %}: {% include 'main/_lib/_case_field.html' with field=case.link %}
+                {% endif %}
+            </p>
+        {% endif %}
+
+        {% if other_cases %}
+            <nav aria-label="{% translate 'Other cases' %}">
+                <h2>{% translate 'Other cases' %}</h2>
+                <ul>
+                    {% for other in other_cases %}
+                        <li><a href="{{ other.url }}">{{ other.title.text }}</a></li>
+                    {% endfor %}
+                </ul>
+            </nav>
+        {% endif %}
+    </article>
+{% endblock %}

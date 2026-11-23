@@ -1,0 +1,16 @@
+{% load i18n %}
+{% comment %}
+    A link to the next page of posts, which htmx turns into a request for those posts alone (blog:more-posts): it adds
+    them to the list and puts the response's own copy of this block, with the link after it, in place of this one.
+{% endcomment %}
+<div id="posts-load-more" class="pagination animate"{% if swap_oob %} hx-swap-oob="true"{% endif %}>
+    {% if page_obj.has_next %}
+        <div class="load-more-section">
+            <a class="load-more-posts button button--primary" rel="next"
+               href="{% url 'blog:post-list' %}?page={{ page_obj.next_page_number }}"
+               hx-get="{% url 'blog:more-posts' %}?page={{ page_obj.next_page_number }}"
+               hx-target="#posts-container" hx-swap="beforeend">{% translate 'Load More' %}</a>
+            <p class="load-more-error" role="alert" hidden>{% translate "The posts couldn't be loaded. Please try again." %}</p>
+        </div>
+    {% endif %}
+</div>

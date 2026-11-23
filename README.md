@@ -109,6 +109,7 @@ the database before running migrations. Gunicorn reloads gracefully, so a deploy
 5. [Off-site backups to Google Drive](docs/adr/0005-off-site-backups-to-google-drive.md)
 6. [The language in the URL](docs/adr/0006-language-in-the-url.md)
 7. [Server-rendered lists of posts, with htmx for "Load more"](docs/adr/0007-server-rendered-lists-with-htmx.md)
+8. [Case studies in the repository](docs/adr/0008-case-studies-in-the-repository.md)
 
 ## Tech stack
 

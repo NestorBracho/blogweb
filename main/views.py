@@ -1,20 +1,21 @@
 from django.conf import settings
 from django.contrib import messages
-from django.http import HttpResponseRedirect
+from django.http import Http404, HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.shortcuts import reverse
 from django.templatetags.static import static
 from django.utils.translation import gettext as _
 from django.views import generic
 
 from blog.covers import SOCIAL_SIZE
-from blog.models import Category, Post, content_language
+from blog.models import Category, content_language
 from config import structured_data
 from config.context_processors import years_of_experience
 from config.forms import HONEYPOT_FIELD
 from config.throttling import FormThrottle
 
+from . import cases
 from .forms import ContactForm
-from .home import HACKERS_HAVEN_CATEGORIES, HACKERS_HAVEN_POSTS, HOME_PAGE_SIZE
+from .home import HACKERS_HAVEN_CATEGORIES, HACKERS_HAVEN_POSTS
 from .models import ContactRequest
 
 # Link previews of the pages recruiters land on show his name and role (brand/source/gen.py makes it from OWNER_ROLE);
@@ -22,15 +23,14 @@ from .models import ContactRequest
 PROFILE_SOCIAL_IMAGE = 'images/og-profile.png'
 
 
-class HomePostsMixin:
-    """The home's list of posts, newest first, a page at a time (?page=)."""
-
-    queryset = Post.objects.published().select_related('category').order_by('-published_at')
-    paginate_by = HOME_PAGE_SIZE
-
-
-class IndexView(HomePostsMixin, generic.ListView):
+class IndexView(generic.TemplateView):
     template_name = 'main/index.html'
+
+    def get(self, request, *args, **kwargs):
+        # The home used to list the posts a page at a time; those pages are the blog's now
+        if 'page' in request.GET:
+            return HttpResponsePermanentRedirect(f'{reverse("blog:post-list")}?{request.GET.urlencode()}')
+        return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         kwargs['structured_data'] = structured_data.home_page(self.request)
@@ -46,19 +46,26 @@ class IndexView(HomePostsMixin, generic.ListView):
         return super().get_context_data(**kwargs)
 
 
-class MorePostsView(HomePostsMixin, generic.ListView):
-    """
-    A page of the home's posts and nothing else, for "Load more" to add to the list. Without JavaScript that button
-    is a link to the home's own ?page= instead, so nobody lands here.
-    """
+class CaseDetailView(generic.TemplateView):
+    template_name = 'main/case.html'
 
-    template_name = 'main/more_posts.html'
+    def get_context_data(self, **kwargs):
+        case = cases.get_case(self.kwargs['slug'])
+        if case is None:
+            raise Http404('No such case')
+        localized = case.localized()
 
-    def render_to_response(self, context, **response_kwargs):
-        response = super().render_to_response(context, **response_kwargs)
-        # A fragment, not a page: search engines index the home's pages instead
-        response.headers['X-Robots-Tag'] = 'noindex'
-        return response
+        kwargs['case'] = localized
+        kwargs['other_cases'] = [other.localized() for other in cases.visible_cases() if other.slug != case.slug]
+        kwargs['drafts_visible'] = cases.drafts_visible()
+        kwargs['page_title'] = localized.title.text
+        # The problem says what the case is about; until it's written, the site's own description stands in
+        if localized.problem.text:
+            kwargs['meta_description'] = localized.problem.text
+        kwargs['og_type'] = 'article'
+        kwargs['structured_data'] = structured_data.case_study(self.request, localized)
+
+        return super().get_context_data(**kwargs)
 
 
 class AboutView(generic.TemplateView):

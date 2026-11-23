@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load i18n static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'blog/list/styles.css' %}">
+{% endblock %}
+
+{% block content %}
+    <section class="section section-blog" id="blog">
+
+        <div class="container">
+
+            <div class="row">
+                <div class="col col-12">
+                    <div class="section__head">
+
+                        <h1 class="section__title">{% translate 'The Binary Journal' %}</h1>
+
+                        <div class="blog__view">
+                            <div class="blog__toggle">
+                                <div class="icon">
+                                    <div class="icon-bar"></div>
+                                    <div class="icon-bar"></div>
+                                    <div class="icon-bar"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col col-8 col-d-12">
+                    <div id="posts-container" class="row grid">
+                        {% include 'blog/_lib/_post_grid.html' %}
+                    </div>
+
+                    {% include 'blog/_lib/_load_more.html' %}
+                </div>
+                <div class="col col-4 col-d-12">
+                    {% include 'lib/_main_right_sidebar.html' %}
+                </div>
+            </div>
+        </div>
+
+    </section>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/htmx-2.0.11.min.js' %}"></script>
+    <script src="{% static 'blog/list/scripts.js' %}"></script>
+{% endblock %}

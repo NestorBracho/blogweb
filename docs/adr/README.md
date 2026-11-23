@@ -10,3 +10,4 @@ Michael Nygard's [format](https://cognitect.com/blog/2011/11/15/documenting-arch
 5. [Off-site backups to Google Drive](0005-off-site-backups-to-google-drive.md)
 6. [The language in the URL](0006-language-in-the-url.md)
 7. [Server-rendered lists of posts, with htmx for "Load more"](0007-server-rendered-lists-with-htmx.md)
+8. [Case studies in the repository](0008-case-studies-in-the-repository.md)

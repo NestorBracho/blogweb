@@ -5,7 +5,42 @@ from django.views import generic
 from config import structured_data
 
 from . import covers
+from .listing import POSTS_PAGE_SIZE
 from .models import Category, Post
+
+
+class LatestPostsMixin:
+    """The blog's list of posts, newest first, a page at a time (?page=)."""
+
+    queryset = Post.objects.published().select_related('category').order_by('-published_at')
+    paginate_by = POSTS_PAGE_SIZE
+
+
+class PostListView(LatestPostsMixin, generic.ListView):
+    template_name = 'blog/post_list.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = _('Blog')
+        context['meta_description'] = _(
+            'Posts by Nestor Bracho about science, storytelling and software, in English and Spanish.'
+        )
+        return context
+
+
+class MorePostsView(LatestPostsMixin, generic.ListView):
+    """
+    A page of the blog's posts and nothing else, for "Load more" to add to the list. Without JavaScript that button
+    is a link to the list's own ?page= instead, so nobody lands here.
+    """
+
+    template_name = 'blog/more_posts.html'
+
+    def render_to_response(self, context, **response_kwargs):
+        response = super().render_to_response(context, **response_kwargs)
+        # A fragment, not a page: search engines index the list's pages instead
+        response.headers['X-Robots-Tag'] = 'noindex'
+        return response
 
 
 class PostDetailView(generic.DetailView):

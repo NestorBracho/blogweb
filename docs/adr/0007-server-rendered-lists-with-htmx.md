@@ -45,3 +45,10 @@ Alternatives considered:
 - Dependabot doesn't follow files in `static/`. Updating htmx means reading its changelog, replacing the file and
   its versioned name, and checking "Load more" again.
 - htmx is told not to inject styles or evaluate code from attributes, which the policy would block anyway.
+
+## Note (2026-11-23)
+
+The list of posts with "Load more" is no longer on the home: it moved to the blog's own page, `/{lang}/blog/`
+(`blog:post-list`), and its fragment to `/{lang}/blog/more/` (`blog:more-posts`). The decision above still holds
+there. The home's old pages (`/{lang}/?page=N`) and `/{lang}/more-posts/` redirect permanently to their new
+addresses, and only the blog's list loads htmx now.

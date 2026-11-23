@@ -23,6 +23,9 @@
                             <a href="{% url 'main:index' %}" class="nav__link{% if url_name == 'index' %} active-link{% endif %}">{% translate 'Home' %}</a>
                         </li>
                         <li class="nav__item">
+                            <a href="{% url 'blog:post-list' %}" class="nav__link{% if url_name == 'post-list' %} active-link{% endif %}">{% translate 'Blog' %}</a>
+                        </li>
+                        <li class="nav__item">
                             <a href="{% url 'main:about' %}" class="nav__link{% if url_name == 'about' %} active-link{% endif %}">{% translate 'About' %}</a>
                         </li>
                         <li class="nav__item">

@@ -1,0 +1,8 @@
+/* The blog's list of posts: blog/templates/blog/post_list.html */
+
+/* Shown under "Load more" when the next posts can't be loaded (scripts.js) */
+.load-more-error {
+    margin: 16px 0 0;
+    font-size: 14px;
+    color: var(--text-alt-color);
+}

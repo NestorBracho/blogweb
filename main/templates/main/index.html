@@ -52,8 +52,9 @@
                                 {% endblocktranslate %}</p>
 
                                 {# The role comes first for recruiters; the blog is the personal side #}
+                                {% url 'blog:post-list' as blog_url %}
                                 <p>{% blocktranslate trimmed %}
-                                    Outside work, I <a href="#blog">write here</a> about science, storytelling and
+                                    Outside work, I <a href="{{ blog_url }}">write here</a> about science, storytelling and
                                     software.
                                 {% endblocktranslate %}</p>
 
@@ -80,52 +81,6 @@
         </div>
     </section>
     <!-- end hero -->
-
-
-    <!-- section-blog -->
-    <section class="section section-blog" id="blog">
-
-        <div class="container">
-
-            <div class="row">
-                <div class="col col-12">
-                    <div class="section__head">
-
-                        <h2 class="section__title">{% translate 'The Binary Journal' %}</h2>
-
-                        <div class="blog__view">
-                            <div class="blog__toggle">
-                                <div class="icon">
-                                    <div class="icon-bar"></div>
-                                    <div class="icon-bar"></div>
-                                    <div class="icon-bar"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col col-8 col-d-12">
-                    <div id="bj-results-container" class="row grid">
-                        {% include 'main/_lib/_bj_posts.html' %}
-                    </div>
-
-                    <!-- begin pagination -->
-                    {% include 'main/_lib/_bj_load_more.html' %}
-                    <!-- end pagination -->
-
-
-                </div>
-                <div class="col col-4 col-d-12">
-                    {% include 'lib/_main_right_sidebar.html' %}
-                </div>
-            </div>
-        </div>
-
-    </section>
-    <!-- section-blog -->
 
 
     {% if many_posts %}
@@ -264,7 +219,3 @@
     <!-- end section-gallery -->
 {% endblock %}
 
-{% block extra_js %}
-    <script src="{% static 'js/htmx-2.0.11.min.js' %}"></script>
-    <script src="{% static 'main/index/scripts.js' %}"></script>
-{% endblock %}

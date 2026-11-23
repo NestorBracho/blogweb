@@ -5,11 +5,6 @@
     width: auto;
 }
 
-/* The intro links to #blog; leave room for the sticky header */
-.section-blog {
-    scroll-margin-top: 96px;
-}
-
 .hero__actions {
     display: flex;
     flex-wrap: wrap;
@@ -34,11 +29,4 @@
         order: 2;
         margin-bottom: 0;
     }
-}
-
-/* Shown under "Load more" when the next posts can't be loaded (scripts.js) */
-.load-more-error {
-    margin: 16px 0 0;
-    font-size: 14px;
-    color: var(--text-alt-color);
 }

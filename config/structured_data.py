@@ -8,6 +8,7 @@ from django.conf import settings
 from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import translation
+from django.utils.translation import gettext as _
 
 NAME = 'Nestor Bracho'
 
@@ -26,8 +27,19 @@ def person(request):
     }
 
 
+# The home's profile card's stack (main/_lib/_profile_card.html), with the names written out ("DRF" there). The card
+# has its own copy: change both together.
+KNOWS_ABOUT = ['Python', 'Django', 'Django REST Framework', 'PostgreSQL', 'AWS']
+
+
 def home_page(request):
-    return {'@context': 'https://schema.org', **person(request)}
+    """The home is about the person: what he does, in the page's language, and what he works with."""
+    return {
+        '@context': 'https://schema.org',
+        **person(request),
+        'description': _('I design and build web platforms and their backends, from architecture to deployment.'),
+        'knowsAbout': KNOWS_ABOUT,
+    }
 
 
 def profile_page(request):
@@ -41,23 +53,25 @@ def profile_page(request):
 
 
 def case_study(request, case):
-    """A case study (main/cases.py) in the page's language, by the person the site is about."""
+    """A case study (main/cases.py, localized) in the page's language, by the person the site is about."""
     author = person(request)
     url = request.build_absolute_uri(case.url)
     data = {
         '@context': 'https://schema.org',
         '@type': 'CreativeWork',
-        'name': case.title.text,
+        'name': case.title,
         'url': url,
         'mainEntityOfPage': url,
         'inLanguage': translation.get_language(),
         'author': {'@type': 'Person', '@id': author['@id'], 'name': author['name'], 'url': author['url']},
     }
-    # Only what is written: drafts with pending fields exist in development alone
-    if case.problem.text:
-        data['description'] = case.problem.text
-    if case.stack.text:
-        data['keywords'] = case.stack.text
+    # Only what is written: unpublished cases, with fields still missing, exist in development alone
+    if case.summary:
+        data['description'] = case.summary
+    if case.stack:
+        data['keywords'] = ', '.join(case.stack)
+    if case.screenshot:
+        data['image'] = request.build_absolute_uri(static(case.screenshot['path']))
     return data
 
 

@@ -7,7 +7,7 @@ from django.utils.translation import gettext as _
 from django.views import generic
 
 from blog.covers import SOCIAL_SIZE
-from blog.models import Category, content_language
+from blog.models import content_language
 from config import structured_data
 from config.context_processors import years_of_experience
 from config.forms import HONEYPOT_FIELD
@@ -15,12 +15,14 @@ from config.throttling import FormThrottle
 
 from . import cases
 from .forms import ContactForm
-from .home import HACKERS_HAVEN_CATEGORIES, HACKERS_HAVEN_POSTS
 from .models import ContactRequest
 
 # Link previews of the pages recruiters land on show his name and role (brand/source/gen.py makes it from OWNER_ROLE);
 # the rest keep the brand image
 PROFILE_SOCIAL_IMAGE = 'images/og-profile.png'
+
+# The case the home's "How I work" links to, as a real example of it
+HOW_I_WORK_EXAMPLE = 'mid-term-rental-crm'
 
 
 class IndexView(generic.TemplateView):
@@ -36,12 +38,10 @@ class IndexView(generic.TemplateView):
         kwargs['structured_data'] = structured_data.home_page(self.request)
         kwargs['social_image_url'] = static(PROFILE_SOCIAL_IMAGE)
         kwargs['social_image_size'] = SOCIAL_SIZE
-        # Only queried if the page shows it (many_posts, in config/context_processors.py)
-        kwargs['hackers_haven'] = (
-            Category.objects.with_published_posts()
-            .with_latest_posts(HACKERS_HAVEN_POSTS)
-            .order_by('-latest_post')[:HACKERS_HAVEN_CATEGORIES]
-        )
+        kwargs['case_groups'] = cases.grouped_cases()
+        kwargs['drafts_visible'] = cases.drafts_visible()
+        example = cases.get_case(HOW_I_WORK_EXAMPLE)
+        kwargs['how_i_work_example'] = example.localized() if example else None
 
         return super().get_context_data(**kwargs)
 
@@ -56,16 +56,42 @@ class CaseDetailView(generic.TemplateView):
         localized = case.localized()
 
         kwargs['case'] = localized
-        kwargs['other_cases'] = [other.localized() for other in cases.visible_cases() if other.slug != case.slug]
+        kwargs['blocks'] = case_blocks(localized)
+        kwargs['next_case'] = cases.next_case(case).localized()
         kwargs['drafts_visible'] = cases.drafts_visible()
-        kwargs['page_title'] = localized.title.text
-        # The problem says what the case is about; until it's written, the site's own description stands in
-        if localized.problem.text:
-            kwargs['meta_description'] = localized.problem.text
+        kwargs['page_title'] = localized.title
+        # Until the summary is written (drafts, in development), the site's own description stands in
+        if localized.summary:
+            kwargs['meta_description'] = localized.summary
         kwargs['og_type'] = 'article'
         kwargs['structured_data'] = structured_data.case_study(self.request, localized)
 
         return super().get_context_data(**kwargs)
+
+
+def case_blocks(case):
+    """
+    The blocks of a case's page, in order, leaving out those the case has nothing for. Each labelled block takes the
+    next number, so they run 01, 02... with no gaps; the screenshot has neither label nor number.
+    """
+    candidates = [
+        ('problem', _('The problem'), case.problem),
+        ('solution', _('What I built'), case.solution),
+        ('screenshot', None, case.screenshot),
+        ('how_built', _('How it was built'), case.how_built),
+        ('stack', _('Stack'), case.stack),
+        ('result', _('Result'), case.result),
+        ('links', _('Links'), case.links),
+    ]
+    blocks = []
+    number = 0
+    for kind, label, value in candidates:
+        if not value:
+            continue
+        if label:
+            number += 1
+        blocks.append({'kind': kind, 'label': label, 'number': f'{number:02d}' if label else None})
+    return blocks
 
 
 class AboutView(generic.TemplateView):

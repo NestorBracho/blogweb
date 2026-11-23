@@ -14,7 +14,7 @@ class StaticViewSitemap(TranslatedSitemap):
 
 
 class CaseSitemap(TranslatedSitemap):
-    """The cases the site shows: in production, only those whose every field is confirmed."""
+    """The cases the site shows: in production, only the published ones."""
 
     def items(self):
         return cases.visible_cases()

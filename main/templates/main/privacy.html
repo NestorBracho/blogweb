@@ -1,20 +1,18 @@
-{% extends "base.html" %}
+{% extends 'site.html' %}
 {% load i18n %}
 
 {% block content %}
 {% get_current_language as LANGUAGE_CODE %}
 {% url 'main:contact' as contact_url %}
-<div class="container">
-    <div class="row">
-        <div class="col col-8 col-d-12">
-            <div class="page-head">
-                <div class="page-info">
-                    <h1 class="page-title">{% translate 'Privacy policy' %}</h1>
-                </div>
+<div class="page">
+    <div class="container">
+        <div class="page__inner">
+            <div class="page__head">
+                <h1 class="page__title">{% translate 'Privacy policy' %}</h1>
             </div>
 
-            <article class="page">
-                <div class="page__content">
+            <article>
+                <div class="prose">
                     {% comment %}
                         A legal text reads better whole in each language than split into translation strings.
                         Keep both versions in sync, and update the date when either changes. The newsletter parts only
@@ -181,10 +179,6 @@
                     {% endif %}
                 </div>
             </article>
-        </div>
-
-        <div class="col col-4 col-d-12">
-            {% include 'lib/_main_right_sidebar.html' %}
         </div>
     </div>
 </div>

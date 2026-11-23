@@ -1,0 +1,16 @@
+{% load i18n %}
+{% url 'main:index' as home_url %}
+<footer class="site-footer">
+    <div class="container site-footer__inner">
+        <span class="site-footer__logo">{% include 'lib/_brand_wordmark.html' %}</span>
+        <nav class="site-footer__nav" aria-label="{% translate 'Footer' %}">
+            <a href="{{ home_url }}#cases">{% translate 'Cases' %}</a>
+            <a href="{% url 'blog:post-list' %}">{% translate 'Blog' %}</a>
+            <a href="{% url 'main:cv' %}">{% translate 'CV' %}</a>
+            <a href="{% url 'main:about' %}">{% translate 'About' %}</a>
+            <a href="{% url 'main:privacy' %}">{% translate 'Privacy' %}</a>
+        </nav>
+        <p class="site-footer__copyright">© {% now 'Y' %} Nestor Bracho</p>
+    </div>
+    <div class="site-footer__accent" aria-hidden="true"></div>
+</footer>

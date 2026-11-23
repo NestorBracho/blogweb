@@ -395,9 +395,20 @@ class PostListTests(TestCase):
                 home = self.client.get(reverse_in(language, 'main:index'))
                 listing = self.client.get(blog)
 
-                self.assertContains(home, f'<a href="{blog}" class="nav__link">')
-                self.assertContains(home, f'<a class="footer-nav__link" href="{blog}">')
+                # The main site's header and footer
+                self.assertContains(home, f'<a class="site-nav__link" href="{blog}">')
+                footer = re.search(r'<nav class="site-footer__nav"[^>]*>(.*?)</nav>', home.content.decode(), re.DOTALL)
+                self.assertIn(f'<a href="{blog}">', footer.group(1))
                 self.assertContains(listing, f'<a href="{blog}" class="nav__link active-link">')
+                self.assertContains(listing, f'<a class="footer-nav__link" href="{blog}">')
+
+    def test_the_heading_is_blog(self):
+        for language in ['en', 'es']:
+            with self.subTest(language=language):
+                response = self.client.get(reverse_in(language, 'blog:post-list'))
+
+                self.assertContains(response, '<h1 class="section__title">Blog</h1>')
+                self.assertContains(response, '<h1', count=1)
 
 
 class SidebarTests(TestCase):
@@ -418,8 +429,9 @@ class SidebarTests(TestCase):
             create_post(f'Post {number}', days_ago=number)
         create_post('Draft', is_published=False)
 
-        # A page that lists no other posts
-        response = self.client.get(reverse_in('en', 'main:about'))
+        # A blog page that lists none of them: a category whose only post is older
+        create_post('Old one', days_ago=30, category=create_category('old-topic'))
+        response = self.client.get(reverse_in('en', 'blog:category-detail', slug='old-topic'))
 
         latest = [post.title_en for post in response.context['latest_posts']]
         self.assertEqual(latest, ['Post 0', 'Post 1', 'Post 2'])

@@ -1,0 +1,28 @@
+{% load i18n static %}
+{% comment %}
+    A case's card on the home (main/cases.py, localized as `case`). Wide cards keep room for a screenshot only when
+    the case has one; without it the text takes the whole width. Each part shows only when the case has it.
+{% endcomment %}
+<article class="case-card{% if case.is_wide %} case-card--wide{% endif %}">
+    {% if case.is_wide %}<div class="case-card__body">{% endif %}
+        {% if drafts_visible and not case.is_published %}
+            <p class="dev-mark">{% translate 'Development only: not published' %}</p>
+        {% endif %}
+        {% if case.authorship %}<span class="tag">{{ case.authorship }}</span>{% endif %}
+        {% if case.card_meta %}<p class="meta">{{ case.card_meta }}</p>{% endif %}
+        <h3 class="case-card__title">{{ case.title }}</h3>
+        {% if case.proof_line %}<p class="proof-line">{{ case.proof_line }}</p>{% endif %}
+        {% if case.summary %}<p class="case-card__summary">{{ case.summary }}</p>{% endif %}
+        <div class="links">
+            <a class="text-link" href="{{ case.url }}">{% translate 'View case' %}<span class="screen-reader-text">: {{ case.title }}</span> <span class="arrow" aria-hidden="true">→</span></a>
+            {% for link in case.links %}
+                <a class="text-link" href="{{ link.url }}" rel="noopener">{{ link.label }} <span class="arrow" aria-hidden="true">↗</span></a>
+            {% endfor %}
+        </div>
+    {% if case.is_wide %}</div>{% endif %}
+    {% if case.is_wide and case.screenshot %}
+        <div class="case-card__shot">
+            <img src="{% static case.screenshot.path %}" alt="{{ case.screenshot.alt }}" loading="lazy" decoding="async">
+        </div>
+    {% endif %}
+</article>

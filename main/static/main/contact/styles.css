@@ -1,19 +1,15 @@
-/* Contact page: main/templates/main/contact.html */
+/*
+ * Contact page: main/templates/main/contact.html, on the main site's layout (css/site.css), where the form's fields
+ * and errors are styled. Only what is particular to this page lives here.
+ */
 
-:root {
-    --form-error-color: #c62828;
+.contact-page .page__head {
+    margin-bottom: 32px;
 }
 
-[dark]:root {
-    --form-error-color: #ff6b6b;
-}
-
-.form__input[aria-invalid="true"] {
-    border-color: var(--form-error-color);
-}
-
-.form__error {
-    margin-top: 8px;
-    font-size: 14px;
-    color: var(--form-error-color);
+/* On narrow screens the form comes first and the photo after it */
+@media (max-width: 768px) {
+    .contact__image {
+        order: 2;
+    }
 }

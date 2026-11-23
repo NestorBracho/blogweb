@@ -6,7 +6,8 @@
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-My personal website and bilingual (English/Spanish) blog, live at **[nestorbracho.com](https://nestorbracho.com)**.
+My professional site and bilingual (English/Spanish) blog, live at **[nestorbracho.com](https://nestorbracho.com)**:
+who I am, the work I have done as case studies, my CV and a way to reach me.
 
 It is also a small but complete example of how I build and run web applications: a Django backend with a
 REST API, tests and linting in CI, and a hardened self-hosted deployment that costs nothing to run.
@@ -31,6 +32,8 @@ REST API, tests and linting in CI, and a hardened self-hosted deployment that co
 
 ## Features
 
+- Case studies of my work, each with its own page in both languages, kept in the repository and published only
+  once complete ([ADR 8](docs/adr/0008-case-studies-in-the-repository.md)).
 - Posts written in Markdown in both languages, with syntax highlighting, tables, admonitions and a copy button on
   code blocks. The rendered HTML is sanitized with nh3, so nothing in a post can run a script.
 - Covers made at the size each part of the site shows them (WebP, and a JPEG for link previews) whenever a post's
@@ -55,7 +58,8 @@ REST API, tests and linting in CI, and a hardened self-hosted deployment that co
   other security headers.
 - Fonts and icons served by the site itself, cut down to the characters and icons it uses: pages make no requests
   to Google Fonts or a CDN.
-- Light and dark themes.
+- Light and dark themes, dark by default. The main site has a layout and stylesheet of its own, and the blog keeps
+  the Coderon theme ([ADR 9](docs/adr/0009-own-layout-for-the-main-site.md)).
 - An optional command that drafts posts with OpenAI for me to review (see [AI-assisted drafts](#ai-assisted-drafts)).
 
 ## Architecture
@@ -110,11 +114,13 @@ the database before running migrations. Gunicorn reloads gracefully, so a deploy
 6. [The language in the URL](docs/adr/0006-language-in-the-url.md)
 7. [Server-rendered lists of posts, with htmx for "Load more"](docs/adr/0007-server-rendered-lists-with-htmx.md)
 8. [Case studies in the repository](docs/adr/0008-case-studies-in-the-repository.md)
+9. [An own layout for the main site](docs/adr/0009-own-layout-for-the-main-site.md)
 
 ## Tech stack
 
 - **Backend:** Python 3.12, Django 5.2, Django REST Framework, Markdown, Pygments and nh3
-- **Frontend:** Django templates, htmx, jQuery and Splide, on top of the Coderon theme (see [Credits](#credits))
+- **Frontend:** Django templates and plain CSS for the main site; htmx, jQuery and Splide on top of the Coderon
+  theme for the blog (see [Credits](#credits))
 - **Infrastructure:** Google Cloud, Ubuntu 24.04, nginx, Gunicorn, systemd, Cloudflare, SQLite
 - **Tooling:** GitHub Actions, ruff, coverage, pre-commit, pip-tools, pip-audit, Dependabot
 
@@ -123,9 +129,9 @@ the database before running migrations. Gunicorn reloads gracefully, so a deploy
 ```
 config/        settings, root URLs, context processors and the modules the apps share
 blog/          posts and categories: views, REST API, RSS feed, sitemaps, drafting command
-main/          home, about and contact pages, template tags
+main/          home, case studies, CV, about, contact and privacy pages, template tags
 usermanager/   newsletter subscribers: sign-up and confirmation
-templates/     base layout and shared partials
+templates/     the main site's layout (site.html), the blog's (base.html) and shared partials
 static/        theme assets, images and fonts
 locale/        Spanish translations
 deploy/        nginx, systemd, backup and update scripts, server guide (in Spanish)
@@ -254,7 +260,9 @@ text ([`templates/lib/_brand_wordmark.html`](templates/lib/_brand_wordmark.html)
 
 So that anyone reviewing this repository knows what to judge me on:
 
-- **Design.** The visual design is the Coderon Jekyll theme (see [Credits](#credits)). I ported its markup to Django
+- **Design.** The main site (home, cases, CV, contact, about, privacy) has a design of its own, specified in
+  [`docs/home-design.md`](docs/home-design.md) and built on [`static/css/site.css`](static/css/site.css). The
+  blog's visual design is the Coderon Jekyll theme (see [Credits](#credits)). I ported its markup to Django
   templates. Its stylesheet and scripts are mostly as they came, with fixes where the site needed them: keyboard
   support for the header controls, the back to top button and the image zoom ([#32](https://github.com/NestorBracho/blogweb/pull/32),
   [#53](https://github.com/NestorBracho/blogweb/pull/53)), the icon fonts served from the site itself
@@ -280,7 +288,7 @@ So that anyone reviewing this repository knows what to judge me on:
 
 ## Credits
 
-The visual design (the page markup, [`static/css/main.css`](static/css/main.css) and
+The blog's visual design (its page markup, [`static/css/main.css`](static/css/main.css) and
 [`static/js/common.js`](static/js/common.js)) comes from the Coderon Jekyll theme by
 [Artem Sheludko](https://jekyllthemes.io/developers/artem-sheludko), ported here to Django templates. Those files
 are subject to the theme's own license.

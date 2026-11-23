@@ -1,0 +1,50 @@
+{% load i18n static %}
+{% get_current_language as LANGUAGE_CODE %}
+{% comment %}
+    The main site's layout (home, cases, CV, contact, about, privacy): docs/home-design.md, styled by
+    static/css/site.css. The blog keeps the Coderon theme's layout, templates/base.html. No inline scripts or styles:
+    the Content-Security-Policy only allows the site's own files. Dark is the default theme; static/js/theme.js
+    applies the visitor's choice before the page is drawn.
+{% endcomment %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}" dark="" class="dark-mode">
+<head>
+
+    {% include 'lib/_main_meta_seo.html' %}
+
+    {% include 'lib/_favicons.html' %}
+
+    {% include 'lib/_fonts.html' with poppins='fonts/poppins/poppins-400.woff2' %}
+
+    <script src="{% static 'js/theme.js' %}"></script>
+    <script src="{% static 'js/site.js' %}" defer></script>
+
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body class="site">
+
+{# The first thing the keyboard reaches: jumps over the header #}
+<a class="skip-link" href="#content">{% translate 'Skip to content' %}</a>
+
+{% include 'lib/_site_header.html' %}
+
+{% if messages %}
+    <section class="site-messages" aria-label="{% translate 'Messages' %}">
+        <div class="container">
+            {% for message in messages %}
+                <p class="site-message site-message--{{ message.tags|default:'success' }}" role="{% if 'error' in message.tags %}alert{% else %}status{% endif %}">{{ message }}</p>
+            {% endfor %}
+        </div>
+    </section>
+{% endif %}
+
+<main class="site-main" id="content" tabindex="-1">
+    {% block content %}{% endblock %}
+</main>
+
+{% include 'lib/_site_footer.html' %}
+
+</body>
+</html>

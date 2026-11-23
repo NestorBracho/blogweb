@@ -1,0 +1,26 @@
+{% load i18n %}
+{% comment %}
+    The hero's profile card. Role, location and years come from settings (owner.*, config/context_processors.py);
+    the rest are translatable strings. No availability row until Nestor confirms it.
+{% endcomment %}
+<div class="profile">
+    <p class="profile__head"><span><span aria-hidden="true">~/</span>bracho/{% translate 'profile' %}</span><span class="profile__mark" aria-hidden="true"></span></p>
+    <dl class="profile__list">
+        <dt>{% translate 'role' %}</dt>
+        <dd>{{ owner.role }}</dd>
+        <dt>stack</dt>
+        <dd>Python · Django · DRF · PostgreSQL · AWS</dd>
+        <dt>{% translate 'ai' %}</dt>
+        <dd>Claude Code · BMAD · {% translate 'LLM APIs' %} · Hugging Face</dd>
+        <dt>{% translate 'experience' %}</dt>
+        <dd>{% blocktranslate trimmed with years=owner.years %}More than {{ years }} years{% endblocktranslate %}</dd>
+        {% if owner.location %}
+            <dt>{% translate 'location' %}</dt>
+            <dd>{{ owner.location }}</dd>
+        {% endif %}
+        <dt>{% translate 'mode' %}</dt>
+        <dd>{% translate 'Remote or hybrid' %}</dd>
+        <dt>{% translate 'languages' %}</dt>
+        <dd>{% translate 'Native Spanish · Professional English' %}</dd>
+    </dl>
+</div>

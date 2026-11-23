@@ -1,6 +1,6 @@
-import contextlib
 import datetime
 import html
+import itertools
 import json
 import posixpath
 import re
@@ -43,8 +43,32 @@ def meta(response, name):
 
 def inner_html(response, css_class):
     """What the page's first element with that class holds. It mustn't hold another element of its own tag."""
-    match = re.search(rf'<(\w+) class="{css_class}">(.*?)</\1>', response.content.decode(), re.DOTALL)
+    match = re.search(rf'<(\w+) class="{css_class}"[^>]*>(.*?)</\1>', response.content.decode(), re.DOTALL)
     return match.group(2)
+
+
+def stylesheets(response):
+    return re.findall(r'<link rel="stylesheet" href="([^"]+)"', response.content.decode())
+
+
+def scripts(response):
+    return re.findall(r'<script src="([^"]+)"', response.content.decode())
+
+
+def headings(response):
+    """The levels of the page's headings, in order: [1, 2, 3, 2...]."""
+    return [int(level) for level in re.findall(r'<h([1-6])[\s>]', response.content.decode())]
+
+
+def visible_text(response):
+    """The page's text as visitors read it: no <head>, tags, comments or scripts."""
+    content = response.content.decode().split('<body', 1)[1]
+    content = re.sub(r'<script.*?</script>|<!--.*?-->', '', content, flags=re.DOTALL)
+    return html.unescape(re.sub(r'<[^>]+>', ' ', content))
+
+
+# The main site's pages, on its own layout (templates/site.html)
+MAIN_SITE_PAGES = ['main:index', 'main:about', 'main:cv', 'main:contact', 'main:privacy']
 
 
 # The copy is free to change: these tests check who the page is about, its language and where it leads
@@ -52,18 +76,15 @@ class HomeTests(TestCase):
     def get_home(self, language):
         return self.client.get(reverse_in(language, 'main:index'))
 
-    def test_intro_is_in_the_language_of_the_page(self):
+    def test_headline_is_in_the_language_of_the_page(self):
         spanish = self.get_home('es')
         english = self.get_home('en')
 
         self.assertContains(spanish, '<html lang="es"')
         self.assertContains(english, '<html lang="en"')
-        # Every paragraph, translated
-        spanish_intro = re.findall(r'<p>(.*?)</p>', inner_html(spanish, 'hero__description'), re.DOTALL)
-        english_intro = re.findall(r'<p>(.*?)</p>', inner_html(english, 'hero__description'), re.DOTALL)
-        self.assertEqual(len(spanish_intro), len(english_intro))
-        for spanish_paragraph, english_paragraph in zip(spanish_intro, english_intro, strict=True):
-            self.assertNotEqual(spanish_paragraph, english_paragraph)
+        self.assertContains(spanish, 'Diseño y construyo plataformas web y sus backends')
+        self.assertContains(english, 'I design and build web platforms and their backends')
+        self.assertNotEqual(inner_html(spanish, 'hero__lede'), inner_html(english, 'hero__lede'))
 
     def test_says_who_i_am_in_search_results_and_link_previews(self):
         for language in ['en', 'es']:
@@ -77,6 +98,9 @@ class HomeTests(TestCase):
                 self.assertIn(settings.OWNER_ROLE, meta(response, 'description'))
                 self.assertEqual(meta(response, 'og:description'), meta(response, 'description'))
 
+    def test_the_role_is_senior_software_engineer(self):
+        self.assertEqual(settings.OWNER_ROLE, 'Senior Software Engineer')
+
     @override_settings(OWNER_ROLE='Staff Engineer')
     def test_the_role_is_set_in_one_place(self):
         home = self.client.get(reverse_in('es', 'main:index'))
@@ -84,7 +108,8 @@ class HomeTests(TestCase):
 
         self.assertIn('Staff Engineer', page_title(home))
         self.assertIn('Staff Engineer', meta(home, 'description'))
-        self.assertIn('Staff Engineer', inner_html(home, 'hero__subtitle'))
+        self.assertIn('Staff Engineer', inner_html(home, 'hero__kicker'))
+        self.assertIn('<dd>Staff Engineer</dd>', inner_html(home, 'profile__list'))
         self.assertIn('Staff Engineer', inner_html(cv, 'cv__headline'))
         self.assertIn('Staff Engineer', meta(cv, 'description'))
         self.assertIn('Staff Engineer', page_title(cv))
@@ -99,42 +124,106 @@ class HomeTests(TestCase):
                 home = self.get_home(language)
                 cv = self.client.get(reverse_in(language, 'main:cv'))
 
-                self.assertIn(phrase, inner_html(home, 'hero__description'))
+                self.assertIn(phrase, inner_html(home, 'hero__lede').lower())
+                self.assertIn(phrase, inner_html(home, 'profile__list').lower())
                 self.assertIn(phrase, meta(home, 'description'))
                 self.assertIn(phrase, meta(cv, 'description'))
                 self.assertContains(cv, f'{years}')
 
-    def test_points_from_the_role_to_the_personal_blog(self):
-        for language in ['en', 'es']:
-            with self.subTest(language=language):
-                response = self.get_home(language)
+    @override_settings(OWNER_LOCATIONS={'en': 'Madrid, Spain', 'es': 'Madrid, España'})
+    def test_the_profile_card_takes_the_location_from_the_settings(self):
+        english = inner_html(self.get_home('en'), 'profile__list')
+        spanish = inner_html(self.get_home('es'), 'profile__list')
 
-                blog = reverse_in(language, 'blog:post-list')
-                self.assertIn(f'<a href="{blog}">', inner_html(response, 'hero__description'))
+        self.assertRegex(english, r'<dt>location</dt>\s*<dd>Madrid, Spain</dd>')
+        self.assertRegex(spanish, r'<dt>ubicación</dt>\s*<dd>Madrid, España</dd>')
 
-    def test_footer_says_whose_site_it_is_in_each_language(self):
-        spanish = inner_html(self.get_home('es'), 'footer__info__description')
-        english = inner_html(self.get_home('en'), 'footer__info__description')
+    @override_settings(OWNER_LOCATIONS={'en': '', 'es': ''})
+    def test_the_profile_card_leaves_out_what_is_not_set(self):
+        card = inner_html(self.get_home('en'), 'profile__list')
 
-        self.assertIn('Nestor Bracho', spanish)
-        self.assertIn('Nestor Bracho', english)
-        self.assertNotEqual(spanish, english)
+        # No location without one, and no availability row until Nestor confirms it
+        self.assertEqual(
+            re.findall(r'<dt>([^<]+)</dt>', card), ['role', 'stack', 'ai', 'experience', 'mode', 'languages']
+        )
+
+    def test_names_the_clients_in_text(self):
+        clients = inner_html(self.get_home('en'), 'clients__list')
+
+        self.assertEqual(
+            re.findall(r'<li>([^<]+)</li>', clients), ['World Bank Group', 'Nokia', 'Selia', 'Ekwi-three', 'IUCN']
+        )
+
+    def test_has_the_sections_of_the_brief_in_order(self):
+        create_post('A post')
+        content = self.get_home('en').content.decode()
+
+        positions = [
+            content.index(marker)
+            for marker in [
+                'class="site-header"',
+                'class="hero"',
+                'class="clients"',
+                'id="cases"',
+                'id="how-i-work"',
+                'id="services"',
+                'id="contact"',
+                'id="blog"',
+                'class="site-footer"',
+            ]
+        ]
+        self.assertEqual(positions, sorted(positions))
 
     def test_leads_to_the_cv_and_the_contact_form(self):
         response = self.client.get(reverse('main:index'))
 
-        self.assertContains(response, f'href="{reverse("main:cv")}" class="button button--primary"')
-        self.assertContains(response, f'href="{reverse("main:contact")}" class="button button--secondary"')
+        # The hero's buttons, and again in the contact section
+        self.assertContains(response, f'<a class="button button--primary" href="{reverse("main:contact")}">', count=2)
+        self.assertContains(response, f'<a class="button" href="{reverse("main:cv")}">', count=2)
 
-    def test_buttons_follow_the_role_on_phones(self):
-        # On phones the intro pushed the CV button below the fold: the stacked layout moves the buttons up with CSS
-        # (main/static/main/index/styles.css), so the HTML keeps them after the intro, as desktop shows them
-        styles = Path(finders.find('main/index/styles.css')).read_text()
-        phones = styles[styles.index('@media (max-width: 1024px)') :]
+    def test_how_i_work_links_to_the_crm_case(self):
+        response = self.get_home('es')
 
-        self.assertRegex(phones, r'\.hero__right \{\s*display: flex;\s*flex-direction: column;')
-        self.assertRegex(phones, r'\.hero__actions \{\s*order: 1;')
-        self.assertRegex(phones, r'\.hero__description \{\s*order: 2;')
+        crm = reverse_in('es', 'main:case-detail', slug='mid-term-rental-crm')
+        self.assertContains(response, f'<a class="text-link" href="{crm}">Ver un ejemplo real')
+
+    def test_offers_linkedin_and_github(self):
+        response = self.get_home('en')
+
+        self.assertContains(response, f'href="{settings.OWNER_LINKEDIN_URL}"')
+        self.assertContains(response, f'href="{settings.OWNER_GITHUB_URL}"')
+
+    def test_shows_no_placeholder_text(self):
+        for language in ['en', 'es']:
+            with self.subTest(language=language):
+                text = visible_text(self.get_home(language))
+
+                self.assertNotRegex(text, r'\[[A-ZÁÉÍÓÚÑ ]{4,}')
+                self.assertNotIn('PENDIENTE', text)
+                self.assertNotIn('PENDING', text)
+
+
+class HomeBlogTests(TestCase):
+    """The home's "From the blog": the three latest posts, and nothing at all while there are none."""
+
+    def test_without_posts_the_home_has_no_blog_section(self):
+        create_post('Draft', is_published=False)
+
+        response = self.client.get(reverse_in('en', 'main:index'))
+
+        self.assertNotContains(response, 'id="blog"')
+        self.assertNotContains(response, 'From the blog')
+
+    def test_lists_the_three_latest_posts(self):
+        for number in range(5):
+            create_post(f'Post {number}', days_ago=number)
+
+        response = self.client.get(reverse_in('es', 'main:index'))
+
+        rows = inner_html(response, 'post-rows')
+        self.assertEqual(re.findall(r'<span>([^<]+)</span>', rows), ['Post 0', 'Post 1', 'Post 2'])
+        self.assertIn(f'href="{reverse_in("es", "blog:post-detail", slug="post-0")}"', rows)
+        self.assertContains(response, f'<a class="blog-teaser__all" href="{reverse_in("es", "blog:post-list")}">')
 
 
 class HomeWithoutPostsTests(TestCase):
@@ -169,87 +258,125 @@ class HomeWithoutPostsTests(TestCase):
         )
 
 
-class HackersHavenTests(TestCase):
-    def test_shows_the_categories_with_the_newest_posts_and_their_latest_posts(self):
-        quiet = create_category('quiet-topic', name_en='Quiet')
-        busy = create_category('busy-topic', name_en='Busy')
-        create_post('Old news', days_ago=30, category=quiet)
-        for number in range(6):
-            create_post(f'Busy {number}', days_ago=number, category=busy)
-        create_post('Busy draft', category=busy, is_published=False)
-        for number in range(4):
-            create_post(f'Elsewhere {number}', days_ago=10 + number, category=create_category(f'topic-{number}'))
-
-        response = self.client.get(reverse_in('en', 'main:index'))
-
-        haven = response.context['hackers_haven']
-        # The four with the newest posts, each with its five latest
-        self.assertEqual([category.slug for category in haven], ['busy-topic', 'topic-0', 'topic-1', 'topic-2'])
-        self.assertEqual([post.title_en for post in haven[0].latest_posts], [f'Busy {number}' for number in range(5)])
-        self.assertContains(
-            response,
-            f'<a href="{reverse_in("en", "blog:category-detail", slug="busy-topic")}" class="section-tags__image"',
-        )
-        self.assertContains(response, f'<a href="{reverse_in("en", "blog:post-detail", slug="busy-4")}">Busy 4</a>')
-        self.assertNotContains(response, 'href="/en/post/busy-draft"')
-        self.assertNotContains(response, 'href="/en/post/old-news"')
-
-    def test_has_no_placeholder_links_left_from_the_theme(self):
-        for number in range(POSTS_PAGE_SIZE + 1):
-            create_post(f'Post {number}', category=create_category(f'topic-{number}'))
-
-        response = self.client.get(reverse_in('en', 'main:index'))
-
-        self.assertContains(response, 'Hacker’s Haven')
-        self.assertNotContains(response, 'avoiding-common-javascript-mistakes')
-
-    def test_posts_without_a_cover_leave_no_empty_images(self):
-        # Every list of posts on the home: Hacker's Haven and the footer's
-        for number in range(POSTS_PAGE_SIZE + 1):
-            create_post(f'Post {number}', category=create_category(f'topic-{number}'))
-
-        response = self.client.get(reverse_in('en', 'main:index'))
-
-        self.assertContains(response, 'Hacker’s Haven')
-        self.assertNotContains(response, 'src=""')
-
-
 class FewPostsTests(TestCase):
-    """While every post fits on the blog's first page, the lists that would only repeat them wait for more."""
+    """While every post fits on the blog's first page, the sidebar's list would only repeat them, so it waits."""
 
     def get_pages(self, posts):
         for number in range(posts):
             create_post(f'Post {number}', days_ago=number, category=create_category(f'topic-{number}'))
-        home = self.client.get(reverse_in('en', 'main:index'))
         blog = self.client.get(reverse_in('en', 'blog:post-list'))
         post = self.client.get(reverse_in('en', 'blog:post-detail', slug='post-0'))
-        return home, blog, post
+        return blog, post
 
-    def test_hackers_haven_and_the_sidebars_latest_posts_wait_for_more_posts(self):
-        home, blog, post = self.get_pages(POSTS_PAGE_SIZE)
-
-        self.assertNotContains(home, 'Hacker’s Haven')
-        for page in [blog, post]:
+    def test_the_sidebars_latest_posts_wait_for_more_posts(self):
+        for page in self.get_pages(POSTS_PAGE_SIZE):
             self.assertNotContains(page, 'widget-featured-posts')
-        for page in [home, blog, post]:
             # The footer keeps its own list
             self.assertContains(page, '<h3 class="footer__title">Recent Posts</h3>')
 
     def test_they_show_up_with_one_post_more(self):
-        home, blog, post = self.get_pages(POSTS_PAGE_SIZE + 1)
-
-        self.assertContains(home, 'Hacker’s Haven')
-        for page in [blog, post]:
+        for page in self.get_pages(POSTS_PAGE_SIZE + 1):
             self.assertContains(page, 'widget-featured-posts')
+
+
+class SiteLayoutTests(TestCase):
+    """The main site has its own layout and stylesheet (templates/site.html); the blog keeps the theme's."""
+
+    def test_main_site_pages_load_the_sites_stylesheet_not_the_themes(self):
+        for name in MAIN_SITE_PAGES:
+            with self.subTest(page=name):
+                response = self.client.get(reverse_in('en', name))
+
+                self.assertIn(static('css/site.css'), stylesheets(response))
+                self.assertNotIn(static('css/main.css'), stylesheets(response))
+                self.assertNotIn(static('css/brand.css'), stylesheets(response))
+                # The theme's script needs the theme's markup
+                self.assertNotIn(static('js/common.js'), scripts(response))
+                self.assertIn(static('js/site.js'), scripts(response))
+
+    def test_case_pages_load_the_sites_stylesheet(self):
+        response = self.client.get(reverse_in('en', 'main:case-detail', slug='this-site'))
+
+        self.assertIn(static('css/site.css'), stylesheets(response))
+        self.assertNotIn(static('css/main.css'), stylesheets(response))
+
+    def test_the_blog_keeps_the_themes_stylesheet(self):
+        post = create_post('A post')
+        for url in [reverse_in('en', 'blog:post-list'), reverse_in('en', 'blog:post-detail', slug=post.slug)]:
+            with self.subTest(url=url):
+                response = self.client.get(url)
+
+                self.assertIn(static('css/main.css'), stylesheets(response))
+                self.assertNotIn(static('css/site.css'), stylesheets(response))
+
+    def test_every_stylesheet_and_script_is_a_file_of_the_site(self):
+        for name in MAIN_SITE_PAGES:
+            response = self.client.get(reverse_in('en', name))
+            for url in stylesheets(response) + scripts(response):
+                with self.subTest(page=name, url=url):
+                    self.assertIsNotNone(finders.find(url.removeprefix(settings.STATIC_URL)))
+
+    def test_new_pages_have_no_style_attributes(self):
+        pages = [reverse_in('en', name) for name in MAIN_SITE_PAGES]
+        pages += [reverse_in('es', 'main:case-detail', slug=case.slug) for case in cases.visible_cases()]
+        for url in pages:
+            with self.subTest(url=url):
+                self.assertNotContains(self.client.get(url), 'style=')
+
+    def test_one_h1_and_no_skipped_heading_levels(self):
+        create_post('A post')
+        pages = [reverse_in('en', name) for name in MAIN_SITE_PAGES]
+        pages += [reverse_in('en', 'main:case-detail', slug=case.slug) for case in cases.visible_cases()]
+        for url in pages:
+            with self.subTest(url=url):
+                levels = headings(self.client.get(url))
+
+                self.assertEqual(levels[0], 1)
+                self.assertEqual(levels.count(1), 1)
+                for previous, level in itertools.pairwise(levels):
+                    self.assertLessEqual(level, previous + 1)
+
+    def test_arrows_are_decoration_screen_readers_skip(self):
+        for url in [reverse_in('en', 'main:index'), reverse_in('en', 'main:case-detail', slug='this-site')]:
+            with self.subTest(url=url):
+                content = self.client.get(url).content.decode()
+
+                arrows = content.count('→') + content.count('↗')
+                hidden = len(re.findall(r'<span class="arrow" aria-hidden="true">[→↗]</span>', content))
+                self.assertGreater(arrows, 0)
+                self.assertEqual(arrows, hidden)
+
+    def test_texts_use_no_em_dashes(self):
+        pages = [reverse_in(language, 'main:index') for language in ['en', 'es']]
+        pages += [reverse_in('es', 'main:case-detail', slug=case.slug) for case in cases.visible_cases()]
+        for url in pages:
+            with self.subTest(url=url):
+                self.assertNotIn('—', visible_text(self.client.get(url)))
+
+    def test_dark_is_the_default_theme(self):
+        response = self.client.get(reverse_in('en', 'main:index'))
+
+        self.assertContains(response, '<html lang="en" dark="" class="dark-mode">')
+        self.assertIn(static('js/theme.js'), scripts(response))
+
+    def test_the_tokens_have_a_dark_and_a_light_value(self):
+        styles = Path(finders.find('css/site.css')).read_text(encoding='utf-8')
+        light = re.search(r'^:root \{(.*?)\}', styles, re.MULTILINE | re.DOTALL).group(1)
+        dark = re.search(r'^\[dark\]:root \{(.*?)\}', styles, re.MULTILINE | re.DOTALL).group(1)
+
+        for token in ['--bg', '--bg-alt', '--text', '--text-2', '--muted', '--line', '--btn-bg', '--btn-text']:
+            with self.subTest(token=token):
+                self.assertIn(f'{token}:', light)
+                self.assertIn(f'{token}:', dark)
 
 
 class BrandTests(TestCase):
     wordmark = '<span class="brand-wordmark"><span class="brand-wordmark__prefix" aria-hidden="true">~/</span>bracho'
 
     def test_header_and_footer_show_the_wordmark(self):
-        response = self.client.get(reverse('main:index'))
-
-        self.assertContains(response, self.wordmark, count=2)
+        for url in [reverse('main:index'), reverse('blog:post-list')]:
+            with self.subTest(url=url):
+                self.assertContains(self.client.get(url), self.wordmark, count=2)
 
     def test_logo_link_has_a_name_in_each_language(self):
         spanish = self.client.get(reverse_in('es', 'main:index'))
@@ -258,36 +385,61 @@ class BrandTests(TestCase):
         self.assertContains(spanish, 'aria-label="Bracho, inicio"')
         self.assertContains(english, 'aria-label="Bracho, home"')
 
+    def test_the_footer_ends_with_the_accent_strip(self):
+        response = self.client.get(reverse_in('en', 'main:index'))
 
-class HeaderTests(TestCase):
-    """The header's controls are buttons, so they work with a keyboard and screen readers can name them."""
+        self.assertContains(response, '<div class="site-footer__accent" aria-hidden="true"></div>')
 
-    def get_home(self, language):
-        return self.client.get(reverse_in(language, 'main:index'))
+    def test_the_footer_links_to_the_secondary_pages(self):
+        for language in ['en', 'es']:
+            with self.subTest(language=language):
+                footer = inner_html(self.client.get(reverse_in(language, 'main:index')), 'site-footer__nav')
 
-    def test_controls_are_buttons(self):
-        response = self.get_home('en')
+                for url in [
+                    f'{reverse_in(language, "main:index")}#cases',
+                    reverse_in(language, 'blog:post-list'),
+                    reverse_in(language, 'main:cv'),
+                    reverse_in(language, 'main:about'),
+                    reverse_in(language, 'main:privacy'),
+                ]:
+                    self.assertIn(f'href="{url}"', footer)
 
-        for control in ['hamburger', 'toggle-theme', 'dropdown-toggle', 'search-button', 'search__close']:
-            self.assertContains(response, f'<button type="button" class="{control}"')
 
-    def test_controls_are_named_in_each_language(self):
-        response = self.get_home('es')
+class SiteHeaderTests(TestCase):
+    """The main site's header: its links, the language switch and the theme toggle."""
 
-        self.assertContains(response, 'aria-label="Menú"')
-        self.assertContains(response, 'aria-label="Modo oscuro"')
-        self.assertContains(response, '<span class="screen-reader-text">Idioma:</span>')
-        self.assertContains(response, 'aria-label="Cerrar búsqueda"')
-        self.assertContains(response, 'placeholder="Escribe para buscar..."')
+    def test_links_to_the_cases_how_i_work_the_blog_the_cv_and_contact(self):
+        for language in ['en', 'es']:
+            with self.subTest(language=language):
+                header = inner_html(self.client.get(reverse_in(language, 'main:about')), 'site-nav')
+                home = reverse_in(language, 'main:index')
 
-    def test_language_menu_is_a_form_that_needs_no_javascript(self):
-        page = self.client.get(reverse_in('en', 'main:cv'))
+                for url in [
+                    f'{home}#cases',
+                    f'{home}#how-i-work',
+                    reverse_in(language, 'blog:post-list'),
+                    reverse_in(language, 'main:cv'),
+                    reverse_in(language, 'main:contact'),
+                ]:
+                    self.assertIn(f'href="{url}"', header)
 
-        self.assertContains(page, f'<form action="{reverse_in("en", "set_language")}" method="post"')
-        self.assertContains(page, f'<input type="hidden" name="next" value="{reverse_in("en", "main:cv")}">')
-        self.assertContains(page, '<button type="submit" name="language" value="es"')
+    def test_marks_the_current_page(self):
+        response = self.client.get(reverse_in('en', 'main:cv'))
 
-    def test_language_menu_opens_the_same_page_in_the_other_language(self):
+        self.assertContains(response, f'href="{reverse_in("en", "main:cv")}" aria-current="page"')
+
+    def test_the_language_switch_is_a_form_that_needs_no_javascript(self):
+        for language, other, name in [('en', 'es', 'Switch to Spanish'), ('es', 'en', 'Cambiar a inglés')]:
+            with self.subTest(language=language):
+                page = self.client.get(reverse_in(language, 'main:cv'))
+
+                self.assertContains(page, f'action="{reverse_in(language, "set_language")}" method="post"')
+                self.assertContains(
+                    page, f'<input type="hidden" name="next" value="{reverse_in(language, "main:cv")}">'
+                )
+                self.assertContains(page, f'type="submit" name="language" value="{other}" aria-label="{name}"')
+
+    def test_language_switch_opens_the_same_page_in_the_other_language(self):
         for current, chosen in [('en', 'es'), ('es', 'en')]:
             with self.subTest(chosen=chosen):
                 # Even when the language cookie disagrees with the page: the form is sent from the page's language
@@ -301,14 +453,59 @@ class HeaderTests(TestCase):
                 )
                 self.assertEqual(self.client.cookies[settings.LANGUAGE_COOKIE_NAME].value, chosen)
 
+    def test_the_theme_toggle_is_a_button_hidden_until_its_script_runs(self):
+        response = self.client.get(reverse_in('es', 'main:index'))
+
+        self.assertRegex(
+            response.content.decode(),
+            r'<button class="site-nav__control site-theme" type="button" hidden\s+'
+            r'data-label-light="Tema claro" data-label-dark="Tema oscuro">',
+        )
+        self.assertIn('toggle.hidden = false', Path(finders.find('js/site.js')).read_text(encoding='utf-8'))
+
+
+class BlogHeaderTests(TestCase):
+    """The blog keeps the theme's header: its controls are buttons, so they work with a keyboard."""
+
+    def get_blog(self, language):
+        return self.client.get(reverse_in(language, 'blog:post-list'))
+
+    def test_controls_are_buttons(self):
+        response = self.get_blog('en')
+
+        for control in ['hamburger', 'toggle-theme', 'dropdown-toggle', 'search-button', 'search__close']:
+            self.assertContains(response, f'<button type="button" class="{control}"')
+
+    def test_controls_are_named_in_each_language(self):
+        response = self.get_blog('es')
+
+        self.assertContains(response, 'aria-label="Menú"')
+        self.assertContains(response, 'aria-label="Modo oscuro"')
+        self.assertContains(response, '<span class="screen-reader-text">Idioma:</span>')
+        self.assertContains(response, 'aria-label="Cerrar búsqueda"')
+        self.assertContains(response, 'placeholder="Escribe para buscar..."')
+
+    def test_language_menu_is_a_form_that_needs_no_javascript(self):
+        page = self.get_blog('en')
+
+        self.assertContains(page, f'<form action="{reverse_in("en", "set_language")}" method="post"')
+        self.assertContains(page, '<button type="submit" name="language" value="es"')
+
+    def test_links_to_the_cases(self):
+        for language, name in [('en', 'Cases'), ('es', 'Casos')]:
+            with self.subTest(language=language):
+                cases_url = f'{reverse_in(language, "main:index")}#cases'
+
+                self.assertContains(self.get_blog(language), f'<a href="{cases_url}" class="nav__link">{name}</a>')
+
 
 class PageAccessibilityTests(TestCase):
-    """The rest of base.html works with a keyboard too, and screen readers hear it in the page's language."""
+    """Both layouts work with a keyboard, and screen readers hear them in the page's language."""
 
     def test_back_to_top_is_a_button_named_in_each_language(self):
         for language, name in [('en', 'Back to top'), ('es', 'Volver arriba')]:
             with self.subTest(language=language):
-                response = self.client.get(reverse_in(language, 'main:index'))
+                response = self.client.get(reverse_in(language, 'blog:post-list'))
 
                 self.assertContains(response, f'<button type="button" class="top" aria-label="{name}"')
 
@@ -329,20 +526,24 @@ class PageAccessibilityTests(TestCase):
                 self.assertContains(response, f'tabindex="-1" data-enlarge-label="{button}"')
 
     def test_the_only_main_landmark_needs_no_label(self):
-        response = self.client.get(reverse_in('es', 'main:index'))
+        site = self.client.get(reverse_in('es', 'main:index'))
+        blog = self.client.get(reverse_in('es', 'blog:post-list'))
 
-        self.assertContains(response, '<main', count=1)
-        self.assertContains(response, '<main class="content" id="content" tabindex="-1">')
+        self.assertContains(site, '<main', count=1)
+        self.assertContains(site, '<main class="site-main" id="content" tabindex="-1">')
+        self.assertContains(blog, '<main', count=1)
+        self.assertContains(blog, '<main class="content" id="content" tabindex="-1">')
 
     def test_a_skip_link_leads_past_the_header_in_each_language(self):
         for language, name in [('en', 'Skip to content'), ('es', 'Saltar al contenido')]:
-            with self.subTest(language=language):
-                response = self.client.get(reverse_in(language, 'main:index'))
-                body = response.content.decode().split('<body>', 1)[1]
+            for page in ['main:index', 'blog:post-list']:
+                with self.subTest(language=language, page=page):
+                    response = self.client.get(reverse_in(language, page))
+                    body = re.split(r'<body[^>]*>', response.content.decode(), maxsplit=1)[1]
 
-                # The first link in the page, so the first thing the keyboard reaches
-                first_link = re.search(r'<a [^>]*>[^<]*</a>', body).group(0)
-                self.assertEqual(first_link, f'<a class="skip-link" href="#content">{name}</a>')
+                    # The first link in the page, so the first thing the keyboard reaches
+                    first_link = re.search(r'<a [^>]*>[^<]*</a>', body).group(0)
+                    self.assertEqual(first_link, f'<a class="skip-link" href="#content">{name}</a>')
 
 
 class LanguageInTheURLTests(TestCase):
@@ -439,7 +640,7 @@ class FontTests(TestCase):
         self.assertIn("style-src 'self' 'unsafe-inline';", policy)
 
     def test_every_font_the_stylesheets_declare_is_a_file_of_the_site(self):
-        for stylesheet in ['css/fonts.css', 'css/main.css']:
+        for stylesheet in ['css/fonts.css', 'css/main.css', 'css/site.css']:
             for url in re.findall(r'url\(([^)]+)\)', Path(finders.find(stylesheet)).read_text()):
                 with self.subTest(stylesheet=stylesheet, url=url):
                     self.assertIsNotNone(finders.find(posixpath.normpath(posixpath.join('css', url))))
@@ -447,12 +648,17 @@ class FontTests(TestCase):
     def test_preloaded_fonts_are_ones_the_stylesheet_uses(self):
         fonts_css = Path(finders.find('css/fonts.css')).read_text()
 
-        # The contact page doesn't extend base.html, so it gets its own check
-        for page in ['main:index', 'main:contact']:
+        # Each layout preloads the Poppins weight its first screen uses: the main site's body text, the blog's headings
+        for page, poppins in [
+            ('main:index', 'poppins-400'),
+            ('main:contact', 'poppins-400'),
+            ('blog:post-list', 'poppins-700'),
+        ]:
             response = self.client.get(reverse(page))
             preloads = re.findall(r'<link rel="preload" href="([^"]+)" as="font"', response.content.decode())
 
             self.assertEqual(len(preloads), 2)
+            self.assertIn(poppins, preloads[1])
             for url in preloads:
                 with self.subTest(page=page, url=url):
                     self.assertIn(f'url(../{url.removeprefix(settings.STATIC_URL)})', fonts_css)
@@ -607,6 +813,8 @@ class SearchAndLinkPreviewTests(TestCase):
         self.assertEqual((data['@type'], data['name'], data['jobTitle']), ('Person', 'Nestor Bracho', 'Staff Engineer'))
         self.assertEqual(data['url'], 'http://testserver/en/')
         self.assertIn('https://github.com/NestorBracho', data['sameAs'])
+        self.assertIn('Django', data['knowsAbout'])
+        self.assertTrue(data['description'].startswith('I design and build web platforms'))
         # Contact details stay off the markup
         self.assertNotIn('nestor@example.com', json.dumps(data))
 
@@ -852,7 +1060,7 @@ class SocialLinksTests(TestCase):
         home = self.client.get(reverse('main:index'))
         blog = self.client.get(reverse('blog:post-list'))
 
-        # Footer and the blog's sidebar both render the list; the intro only links the profiles when both are set
+        # The home's hero links each profile that is set; the blog's footer and sidebar both render the list
         self.assertContains(home, 'href="https://github.com/example"', count=1)
         self.assertContains(blog, 'href="https://github.com/example"', count=2)
         self.assertNotContains(home, 'fa-linkedin"')
@@ -863,8 +1071,8 @@ class SocialLinksTests(TestCase):
         home = self.client.get(reverse('main:index'))
         blog = self.client.get(reverse('blog:post-list'))
 
-        # The home's footer and intro; the blog's footer and sidebar
-        self.assertContains(home, 'href="https://www.linkedin.com/in/example"', count=2)
+        # The home's hero; the blog's footer and sidebar
+        self.assertContains(home, 'href="https://www.linkedin.com/in/example"', count=1)
         self.assertContains(blog, 'href="https://www.linkedin.com/in/example"', count=2)
 
 
@@ -889,6 +1097,15 @@ class ContactFormViewTests(EmptyCacheMixin, TestCase):
         self.assertContains(response, 'Enter a valid email address.')
         self.assertFalse(ContactRequest.objects.exists())
         self.assertEqual(mail.outbox, [])
+
+    def test_the_home_confirms_the_request_was_sent(self):
+        response = self.client.post(reverse_in('en', 'main:contact'), self.data, follow=True)
+
+        self.assertContains(
+            response,
+            '<p class="site-message site-message--success" role="status">Your contact request has been successfully '
+            'submitted. I&#x27;ll get in touch as soon as possible!</p>',
+        )
 
     def test_is_marked_with_the_page_language(self):
         response = self.client.get(reverse_in('es', 'main:contact'))
@@ -958,26 +1175,47 @@ class ContactRequestAdminTests(TestCase):
             self.assertEqual(self.client.get(reverse('admin:main_contactrequest_add')).status_code, 403)
 
 
-def make_case(slug, *, confirm=True, **overrides):
-    """A case for the tests, every field confirmed unless `confirm` is False or a field is overridden."""
-    text = cases.confirmed if confirm else cases.draft
+def make_case(slug, **overrides):
+    """A complete, published case for the tests; any field can be overridden."""
     values = {
-        'title': text(f'{slug} title', f'{slug} título'),
-        'client': text('Example Org', 'Organización de ejemplo'),
-        'period': text('2024'),
-        'role': text('Architecture', 'Arquitectura'),
-        'problem': text(f'{slug} problem', f'{slug} problema'),
-        'solution': text('What was built', 'Lo que se construyó'),
-        'stack': text('Python, Django'),
-        'result': text('It works', 'Funciona'),
-        'link': None,
+        'group': cases.OTHER,
+        'layout': cases.NORMAL,
+        'published': True,
+        'title': cases.Text(f'{slug} title', f'{slug} título'),
+        'summary': cases.Text(f'{slug} summary', f'{slug} resumen'),
+        'proof_line': cases.Text('Django · 10 tests'),
+        'authorship': cases.Text('Sole author', 'Autor único'),
+        'card_meta': cases.Text('Example Org · 2024', 'Organización de ejemplo · 2024'),
+        'client': cases.Text('Example Org', 'Organización de ejemplo'),
+        'period': cases.Text('2024'),
+        'role': cases.Text('Architecture', 'Arquitectura'),
+        'problem': cases.Text(f'{slug} problem', f'{slug} problema'),
+        'solution': (cases.Text('First point', 'Primer punto'), cases.Text('Second point', 'Segundo punto')),
+        'how_built': cases.Text('With agents', 'Con agentes'),
+        'result': cases.Text('It works', 'Funciona'),
+        'stack': ('Python', 'Django'),
+        'links': (cases.Link('GitHub', 'https://github.com/example/case'),),
+        'screenshot': None,
         **overrides,
     }
     return cases.Case(slug=slug, **values)
 
 
+def case_labels(response):
+    """The labels of a case page's blocks, as "01 / The problem"."""
+    return re.findall(r'<h2 class="case-block__label">.*?</span>([^<]+)</h2>', response.content.decode())
+
+
+def card_titles(response):
+    return re.findall(r'<h3 class="case-card__title">([^<]+)</h3>', response.content.decode())
+
+
+# The real cases' slugs that are still drafts (docs/home-cases.md): their problem or their content is pending
+DRAFT_SLUGS = ['payments-and-b2b', 'warehouse-management-system']
+
+
 class CaseContentTests(SimpleTestCase):
-    """The cases in main/cases.py, as written."""
+    """The cases in main/cases.py, as written from docs/home-cases.md."""
 
     def test_slugs_are_unique_and_valid(self):
         slugs = [case.slug for case in cases.CASES]
@@ -986,184 +1224,145 @@ class CaseContentTests(SimpleTestCase):
         for slug in slugs:
             self.assertRegex(slug, r'^[a-z0-9]+(-[a-z0-9]+)*$')
 
-    def test_every_case_has_a_title(self):
+    def test_the_seven_cases_in_their_groups_and_order(self):
+        self.assertEqual(
+            [(case.slug, case.group, case.layout) for case in cases.CASES],
+            [
+                ('local-development-portal', cases.WORLD_BANK, cases.WIDE),
+                ('participatory-monitoring-app', cases.WORLD_BANK, cases.NORMAL),
+                ('e3-django-dynamic-forms', cases.WORLD_BANK, cases.NORMAL),
+                ('mid-term-rental-crm', cases.OTHER, cases.WIDE),
+                ('payments-and-b2b', cases.OTHER, cases.NORMAL),
+                ('warehouse-management-system', cases.OTHER, cases.NORMAL),
+                ('this-site', cases.OTHER, cases.NORMAL),
+            ],
+        )
+
+    def test_five_are_published_and_the_drafts_are_not(self):
+        published = [case.slug for case in cases.CASES if case.is_published()]
+
+        self.assertEqual(len(published), 5)
+        for slug in DRAFT_SLUGS:
+            self.assertNotIn(slug, published)
+
+    def test_a_case_is_published_only_when_marked_and_complete(self):
+        self.assertTrue(make_case('done').is_published())
+        self.assertFalse(make_case('not-marked', published=False).is_published())
+        for field, empty in [('summary', None), ('problem', None), ('solution', ())]:
+            with self.subTest(missing=field):
+                self.assertFalse(make_case('incomplete', **{field: empty}).is_published())
+        # The optional ones
+        self.assertTrue(make_case('bare', how_built=None, result=None, links=(), authorship=None).is_published())
+
+    def test_no_pending_marker_is_loaded(self):
         for case in cases.CASES:
-            with self.subTest(case=case.slug):
-                self.assertIsInstance(case.title, cases.Text)
+            for name, value in case.texts():
+                with self.subTest(case=case.slug, field=name):
+                    for text in [value.en, value.es or '']:
+                        self.assertNotIn('PENDIENTE', text)
+                        self.assertNotIn('PENDING', text)
+                        self.assertNotIn('[', text)
 
     def test_texts_use_no_em_dashes(self):
         for case in cases.CASES:
-            for name, value in case.content_fields():
-                if isinstance(value, cases.Text):
-                    with self.subTest(case=case.slug, field=name):
-                        self.assertNotIn('—', value.en)
-                        self.assertNotIn('—', value.es or '')
+            for name, value in case.texts():
+                with self.subTest(case=case.slug, field=name):
+                    self.assertNotIn('—', value.en)
+                    self.assertNotIn('—', value.es or '')
 
     def test_prose_is_written_in_both_languages(self):
         # Without its Spanish, a text would show in English on the Spanish page without anyone noticing. Names,
-        # stacks, periods and links may be written once.
+        # periods, stacks, proof lines and links may be written once.
+        prose = {'summary', 'role', 'problem', 'solution', 'how_built', 'result', 'authorship'}
         for case in cases.CASES:
-            for name in ['title', 'role', 'problem', 'solution', 'result']:
-                value = getattr(case, name)
-                if isinstance(value, cases.Text):
+            for name, value in case.texts():
+                if name in prose:
                     with self.subTest(case=case.slug, field=name):
                         self.assertTrue(value.es)
 
-    def test_a_case_is_confirmed_only_when_every_field_is(self):
-        self.assertTrue(make_case('done').is_confirmed())
-        self.assertTrue(make_case('no-link', link=None).is_confirmed())
-        self.assertFalse(make_case('drafted', confirm=False).is_confirmed())
-        self.assertFalse(make_case('one-draft', result=cases.draft('Maybe')).is_confirmed())
-        self.assertFalse(make_case('one-pending', period=cases.PENDING).is_confirmed())
-        self.assertFalse(make_case('link-pending', link=cases.PENDING).is_confirmed())
+    def test_links_are_absolute_https_addresses(self):
+        for case in cases.CASES:
+            for link in case.links:
+                with self.subTest(case=case.slug, link=link.label):
+                    self.assertTrue(link.url.startswith('https://'))
 
-    def test_texts_the_same_in_both_languages_are_written_once(self):
-        stack = cases.confirmed('Python, Django')
-
-        self.assertEqual(stack.in_language('en'), 'Python, Django')
-        self.assertEqual(stack.in_language('es'), 'Python, Django')
-
-
-@mock.patch('main.cases.CASES', [make_case('published-case'), make_case('drafted-case', confirm=False)])
-class CaseDetailTests(TestCase):
-    def get_case(self, language, slug='published-case'):
-        return self.client.get(reverse_in(language, 'main:case-detail', slug=slug))
-
-    def test_has_its_own_address_in_each_language(self):
-        self.assertEqual(reverse_in('en', 'main:case-detail', slug='published-case'), '/en/cases/published-case/')
-        self.assertEqual(reverse_in('es', 'main:case-detail', slug='published-case'), '/es/cases/published-case/')
-
-    def test_shows_the_case_in_the_language_of_the_page(self):
-        english = self.get_case('en')
-        spanish = self.get_case('es')
-
-        self.assertContains(english, 'published-case title')
-        self.assertContains(english, 'published-case problem')
-        self.assertContains(spanish, 'published-case título')
-        self.assertContains(spanish, 'published-case problema')
-        self.assertContains(spanish, 'Organización de ejemplo')
-        self.assertContains(spanish, '<dt>Cliente</dt>')
-
-    def test_a_confirmed_case_carries_no_draft_marks(self):
-        response = self.get_case('en')
-
-        self.assertNotContains(response, 'case-draft')
-        self.assertNotContains(response, 'case-pending')
-        self.assertNotContains(response, 'case-notice')
-
-    def test_drafts_are_not_published(self):
-        with self.assertLogs('django.request', 'WARNING'):
-            response = self.get_case('en', 'drafted-case')
-
-        self.assertEqual(response.status_code, 404)
-        self.assertNotContains(self.get_case('en'), 'drafted-case title', status_code=200)
-
-    def test_unknown_cases_are_not_found(self):
-        with self.assertLogs('django.request', 'WARNING'):
-            self.assertEqual(self.get_case('en', 'no-such-case').status_code, 404)
-
-    def test_says_what_the_case_is_in_search_results_and_link_previews(self):
-        for language, title, problem in [
-            ('en', 'published-case title', 'published-case problem'),
-            ('es', 'published-case título', 'published-case problema'),
-        ]:
-            with self.subTest(language=language):
-                response = self.get_case(language)
-                url = f'http://testserver{reverse_in(language, "main:case-detail", slug="published-case")}'
-
-                self.assertEqual(page_title(response), f'{title} - Nestor Bracho')
-                self.assertEqual(meta(response, 'description'), problem)
-                self.assertEqual(meta(response, 'og:title'), page_title(response))
-                self.assertEqual(meta(response, 'og:description'), problem)
-                self.assertEqual(meta(response, 'og:type'), 'article')
-                self.assertEqual(meta(response, 'og:url'), url)
-                self.assertContains(response, f'<link rel="canonical" href="{url}">')
-                for other in ['en', 'es']:
-                    other_url = reverse_in(other, 'main:case-detail', slug='published-case')
-                    self.assertContains(
-                        response, f'<link rel="alternate" hreflang="{other}" href="http://testserver{other_url}">'
-                    )
-                self.assertContains(
-                    response,
-                    '<link rel="alternate" hreflang="x-default" href="http://testserver/cases/published-case/">',
-                )
-
-    def test_is_a_work_by_the_person_the_site_is_about(self):
-        response = self.get_case('es')
-
-        data = structured_data(response)
-        self.assertEqual(data['@type'], 'CreativeWork')
-        self.assertEqual(data['name'], 'published-case título')
-        self.assertEqual(data['description'], 'published-case problema')
-        self.assertEqual(data['keywords'], 'Python, Django')
-        self.assertEqual(data['inLanguage'], 'es')
-        self.assertEqual(data['url'], f'http://testserver{reverse_in("es", "main:case-detail", slug="published-case")}')
-        self.assertEqual(data['author']['@id'], 'http://testserver/#person')
-
-    def test_the_sitemap_lists_published_cases_only(self):
-        response = self.client.get(reverse('sitemap'))
-
-        for language in ['en', 'es']:
-            published = reverse_in(language, 'main:case-detail', slug='published-case')
-            self.assertContains(response, f'<loc>http://testserver{published}</loc>')
-        self.assertNotContains(response, 'drafted-case')
-
-
-@override_settings(DEBUG=True)
-@mock.patch(
-    'main.cases.CASES',
-    [
-        make_case('published-case'),
-        make_case('drafted-case', confirm=False, result=cases.PENDING, link=cases.draft('https://example.com/case')),
-    ],
-)
-class CaseDraftsInDevelopmentTests(TestCase):
-    """In development drafts are shown, each marked, so Nestor can review them before confirming."""
-
-    def test_drafts_and_pending_fields_are_shown_and_marked(self):
-        response = self.client.get(reverse_in('en', 'main:case-detail', slug='drafted-case'))
-
-        self.assertContains(response, 'drafted-case title')
-        self.assertContains(response, '<mark class="case-draft">Draft: to be confirmed</mark>')
-        self.assertContains(response, '<mark class="case-pending">Pending: not written yet</mark>', count=1)
-        self.assertContains(response, 'class="case-notice"')
-        self.assertContains(response, 'href="https://example.com/case"')
-
-    def test_the_marks_are_translated(self):
-        response = self.client.get(reverse_in('es', 'main:case-detail', slug='drafted-case'))
-
-        self.assertContains(response, '<mark class="case-draft">Borrador: por confirmar</mark>')
-        self.assertContains(response, '<mark class="case-pending">Pendiente: sin redactar</mark>')
-
-    def test_lead_to_the_other_cases(self):
-        response = self.client.get(reverse_in('en', 'main:case-detail', slug='drafted-case'))
-
-        published = reverse_in('en', 'main:case-detail', slug='published-case')
-        self.assertContains(response, f'<li><a href="{published}">published-case title</a></li>')
-
-    def test_the_sitemap_lists_them_too(self):
-        response = self.client.get(reverse('sitemap'))
-
-        self.assertContains(response, reverse_in('en', 'main:case-detail', slug='drafted-case'))
-
-    def test_without_a_problem_the_site_description_stands_in(self):
-        with mock.patch('main.cases.CASES', [make_case('no-problem', confirm=False, problem=cases.PENDING)]):
-            response = self.client.get(reverse_in('en', 'main:case-detail', slug='no-problem'))
-
-        self.assertIn(settings.OWNER_ROLE, meta(response, 'description'))
-        self.assertNotIn('description', structured_data(response))
-
-
-class RealCasesInProductionTests(TestCase):
-    """The cases in main/cases.py: until Nestor confirms them, production shows none of them."""
-
-    def test_only_confirmed_cases_are_shown(self):
+    def test_every_case_has_a_known_group_and_layout(self):
+        # A typo would drop the case from the home, or show a wide case as a normal card
         for case in cases.CASES:
             with self.subTest(case=case.slug):
-                status = 200 if case.is_confirmed() else 404
-                with self.assertLogs('django.request', 'WARNING') if status == 404 else contextlib.nullcontext():
-                    response = self.client.get(reverse_in('en', 'main:case-detail', slug=case.slug))
-                self.assertEqual(response.status_code, status)
+                self.assertIn(case.group, cases.GROUPS)
+                self.assertIn(case.layout, [cases.WIDE, cases.NORMAL])
+
+    def test_texts_the_same_in_both_languages_are_written_once(self):
+        name = cases.Text('Selia')
+
+        self.assertEqual(name.in_language('en'), 'Selia')
+        self.assertEqual(name.in_language('es'), 'Selia')
+
+
+class RealCasesTests(TestCase):
+    """The cases in main/cases.py, as production and development show them."""
+
+    def test_production_home_shows_the_five_published_cards_in_two_groups_wide_first(self):
+        response = self.client.get(reverse_in('en', 'main:index'))
+
+        self.assertEqual(
+            card_titles(response),
+            [
+                'Local development portal for community-driven programs',
+                'Offline-first mobile app for participatory monitoring',
+                'e3-django-dynamic-forms',
+                'CRM for mid-term rentals, from spec to production',
+                'This site',
+            ],
+        )
+        self.assertEqual(
+            re.findall(r'<p class="group-label">([^<]+)</p>', response.content.decode()),
+            ['World Bank Group · 2023 to present', 'Other clients and projects'],
+        )
+        self.assertContains(response, 'class="case-card case-card--wide"', count=2)
+        self.assertNotContains(response, 'dev-mark')
+
+    @override_settings(DEBUG=True)
+    def test_development_home_shows_all_seven_and_marks_the_drafts(self):
+        response = self.client.get(reverse_in('es', 'main:index'))
+
+        self.assertEqual(len(card_titles(response)), 7)
+        self.assertContains(response, '<p class="dev-mark">Solo en desarrollo: no publicado</p>', count=2)
+
+    def test_draft_cases_are_not_found_and_not_in_the_sitemap(self):
+        sitemap = self.client.get(reverse('sitemap'))
+
+        for slug in DRAFT_SLUGS:
+            with self.subTest(slug=slug):
+                with self.assertLogs('django.request', 'WARNING'):
+                    response = self.client.get(reverse_in('en', 'main:case-detail', slug=slug))
+
+                self.assertEqual(response.status_code, 404)
+                self.assertNotContains(sitemap, slug)
+
+    def test_published_cases_are_in_the_sitemap_in_both_languages(self):
+        sitemap = self.client.get(reverse('sitemap'))
+
+        for case in cases.CASES:
+            if case.is_published():
+                for language in ['en', 'es']:
+                    with self.subTest(case=case.slug, language=language):
+                        url = reverse_in(language, 'main:case-detail', slug=case.slug)
+                        self.assertContains(sitemap, f'<loc>http://testserver{url}</loc>')
+
+    def test_every_published_case_renders_in_both_languages_without_placeholders(self):
+        for case in cases.CASES:
+            if case.is_published():
+                for language in ['en', 'es']:
+                    with self.subTest(case=case.slug, language=language):
+                        response = self.client.get(reverse_in(language, 'main:case-detail', slug=case.slug))
+                        text = visible_text(response)
+
+                        self.assertContains(response, f'<html lang="{language}"')
+                        self.assertNotIn('PENDIENTE', text)
+                        self.assertNotIn('PENDING', text)
+                        self.assertNotRegex(text, r'\[[A-ZÁÉÍÓÚÑ ]{4,}')
 
     @override_settings(DEBUG=True)
     def test_every_case_renders_in_development_in_both_languages(self):
@@ -1171,5 +1370,235 @@ class RealCasesInProductionTests(TestCase):
             for language in ['en', 'es']:
                 with self.subTest(case=case.slug, language=language):
                     response = self.client.get(reverse_in(language, 'main:case-detail', slug=case.slug))
+
                     self.assertEqual(response.status_code, 200)
                     self.assertContains(response, f'<html lang="{language}"')
+
+    def test_the_portal_page_matches_the_reference(self):
+        response = self.client.get(reverse_in('es', 'main:case-detail', slug='local-development-portal'))
+
+        self.assertContains(response, '<span aria-current="page">local-development-portal</span>')
+        self.assertContains(response, '<h1 class="case-hero__title" id="case-title">Portal de desarrollo local')
+        self.assertEqual(
+            case_labels(response), ['01 / El problema', '02 / Lo que construí', '03 / Stack', '04 / Resultado']
+        )
+        self.assertContains(response, '<dt>cliente</dt><dd>Grupo Banco Mundial</dd>')
+        self.assertContains(response, '<dt>autoría</dt><dd>Equipo</dd>')
+
+
+@mock.patch(
+    'main.cases.CASES',
+    [
+        make_case('first-case', layout=cases.WIDE),
+        make_case('bare-case', how_built=None, result=None, links=(), authorship=None, card_meta=None),
+        make_case('drafted-case', published=False),
+        make_case(
+            'last-case',
+            layout=cases.WIDE,
+            group=cases.WORLD_BANK,
+            screenshot=cases.Screenshot('images/og-default.png', cases.Text('The board', 'El tablero')),
+        ),
+    ],
+)
+class CaseDetailTests(TestCase):
+    def get_case(self, language, slug='first-case'):
+        return self.client.get(reverse_in(language, 'main:case-detail', slug=slug))
+
+    def test_has_its_own_address_in_each_language_with_one_english_slug(self):
+        self.assertEqual(reverse_in('en', 'main:case-detail', slug='first-case'), '/en/cases/first-case/')
+        self.assertEqual(reverse_in('es', 'main:case-detail', slug='first-case'), '/es/cases/first-case/')
+
+    def test_shows_the_case_in_the_language_of_the_page(self):
+        english = self.get_case('en')
+        spanish = self.get_case('es')
+
+        self.assertContains(english, 'first-case title')
+        self.assertContains(english, 'first-case problem')
+        self.assertContains(spanish, 'first-case título')
+        self.assertContains(spanish, 'first-case problema')
+        self.assertContains(spanish, '<dt>cliente</dt><dd>Organización de ejemplo</dd>')
+        self.assertContains(spanish, 'Segundo punto')
+
+    def test_numbers_every_block_the_case_has(self):
+        self.assertEqual(
+            case_labels(self.get_case('en')),
+            [
+                '01 / The problem',
+                '02 / What I built',
+                '03 / How it was built',
+                '04 / Stack',
+                '05 / Result',
+                '06 / Links',
+            ],
+        )
+
+    def test_leaves_out_the_blocks_the_case_lacks_without_gaps_in_the_numbers(self):
+        response = self.get_case('en', 'bare-case')
+
+        self.assertEqual(case_labels(response), ['01 / The problem', '02 / What I built', '03 / Stack'])
+        self.assertNotContains(response, '<dt>authorship</dt>')
+
+    def test_the_solution_is_a_numbered_list(self):
+        response = self.get_case('en')
+
+        self.assertContains(response, '<ol class="case-block__content case-solution">')
+        self.assertContains(
+            response, '<li><span class="case-solution__number" aria-hidden="true">02</span><span>Second point</span>'
+        )
+
+    def test_a_screenshot_shows_on_the_page_and_the_wide_card_without_a_number(self):
+        page = self.get_case('es', 'last-case')
+        home = self.client.get(reverse_in('es', 'main:index'))
+
+        image = f'<img src="{static("images/og-default.png")}" alt="El tablero"'
+        self.assertContains(page, image)
+        self.assertEqual(case_labels(page)[2], '03 / Cómo se construyó')
+        self.assertContains(home, '<div class="case-card__shot">')
+        self.assertContains(home, image, count=1)
+
+    def test_a_wide_card_without_a_screenshot_leaves_no_empty_slot(self):
+        with mock.patch('main.cases.CASES', [make_case('wide-case', layout=cases.WIDE)]):
+            response = self.client.get(reverse_in('en', 'main:index'))
+
+        self.assertContains(response, 'class="case-card case-card--wide"')
+        self.assertNotContains(response, 'case-card__shot')
+
+    def test_home_groups_the_cases_and_puts_wide_cards_first(self):
+        response = self.client.get(reverse_in('en', 'main:index'))
+
+        # The World Bank Group first, whatever the list order; within a group, wide cards first
+        self.assertEqual(card_titles(response), ['last-case title', 'first-case title', 'bare-case title'])
+
+    def test_cards_show_what_the_case_has(self):
+        response = self.client.get(reverse_in('en', 'main:index'))
+        content = response.content.decode()
+        first = content[content.index('first-case title') - 600 : content.index('first-case title')]
+
+        self.assertIn('<span class="tag">Sole author</span>', first)
+        self.assertIn('<p class="meta">Example Org · 2024</p>', first)
+        self.assertContains(response, '<p class="proof-line">Django · 10 tests</p>')
+        self.assertContains(response, 'href="https://github.com/example/case" rel="noopener">GitHub')
+
+    def test_next_case_follows_the_list_and_wraps_to_the_first(self):
+        first = reverse_in('en', 'main:case-detail', slug='first-case')
+        bare = reverse_in('en', 'main:case-detail', slug='bare-case')
+
+        self.assertContains(self.get_case('en'), f'<a class="next-case__link" href="{bare}">')
+        # The draft is skipped in production, and the last case leads back to the first
+        self.assertContains(self.get_case('en', 'bare-case'), 'href="/en/cases/last-case/"')
+        self.assertContains(self.get_case('en', 'last-case'), f'<a class="next-case__link" href="{first}">')
+
+    def test_ends_with_the_contact_call_and_both_buttons(self):
+        response = self.get_case('es')
+
+        self.assertContains(response, '¿Tienes un problema parecido? Hablemos.')
+        self.assertContains(response, f'<a class="button button--primary" href="{reverse_in("es", "main:contact")}">')
+        self.assertContains(response, f'<a class="button" href="{reverse_in("es", "main:cv")}">')
+
+    def test_a_published_case_carries_no_development_mark(self):
+        self.assertNotContains(self.get_case('en'), 'dev-mark')
+
+    def test_drafts_are_not_published(self):
+        with self.assertLogs('django.request', 'WARNING'):
+            response = self.get_case('en', 'drafted-case')
+
+        self.assertEqual(response.status_code, 404)
+        self.assertNotContains(self.client.get(reverse_in('en', 'main:index')), 'drafted-case title')
+
+    def test_unknown_cases_are_not_found(self):
+        with self.assertLogs('django.request', 'WARNING'):
+            self.assertEqual(self.get_case('en', 'no-such-case').status_code, 404)
+
+    def test_says_what_the_case_is_in_search_results_and_link_previews(self):
+        for language, title, summary in [
+            ('en', 'first-case title', 'first-case summary'),
+            ('es', 'first-case título', 'first-case resumen'),
+        ]:
+            with self.subTest(language=language):
+                response = self.get_case(language)
+                url = f'http://testserver{reverse_in(language, "main:case-detail", slug="first-case")}'
+
+                self.assertEqual(page_title(response), f'{title} - Nestor Bracho')
+                self.assertEqual(meta(response, 'description'), summary)
+                self.assertEqual(meta(response, 'og:title'), page_title(response))
+                self.assertEqual(meta(response, 'og:description'), summary)
+                self.assertEqual(meta(response, 'og:type'), 'article')
+                self.assertEqual(meta(response, 'og:url'), url)
+                self.assertContains(response, f'<link rel="canonical" href="{url}">')
+                for other in ['en', 'es']:
+                    other_url = reverse_in(other, 'main:case-detail', slug='first-case')
+                    self.assertContains(
+                        response, f'<link rel="alternate" hreflang="{other}" href="http://testserver{other_url}">'
+                    )
+                self.assertContains(
+                    response,
+                    '<link rel="alternate" hreflang="x-default" href="http://testserver/cases/first-case/">',
+                )
+
+    def test_is_a_work_by_the_person_the_site_is_about(self):
+        data = structured_data(self.get_case('es'))
+
+        self.assertEqual(data['@type'], 'CreativeWork')
+        self.assertEqual(data['name'], 'first-case título')
+        self.assertEqual(data['description'], 'first-case resumen')
+        self.assertEqual(data['keywords'], 'Python, Django')
+        self.assertEqual(data['inLanguage'], 'es')
+        self.assertEqual(data['url'], f'http://testserver{reverse_in("es", "main:case-detail", slug="first-case")}')
+        self.assertEqual(data['author']['@id'], 'http://testserver/#person')
+        self.assertNotIn('image', data)
+
+    def test_the_screenshot_is_the_works_image(self):
+        data = structured_data(self.get_case('en', 'last-case'))
+
+        self.assertEqual(data['image'], f'http://testserver{static("images/og-default.png")}')
+
+    def test_the_sitemap_lists_published_cases_only(self):
+        response = self.client.get(reverse('sitemap'))
+
+        for language in ['en', 'es']:
+            published = reverse_in(language, 'main:case-detail', slug='first-case')
+            self.assertContains(response, f'<loc>http://testserver{published}</loc>')
+        self.assertNotContains(response, 'drafted-case')
+
+
+@override_settings(DEBUG=True)
+@mock.patch(
+    'main.cases.CASES',
+    [make_case('published-case'), make_case('drafted-case', published=False, problem=None, result=None)],
+)
+class CaseDraftsInDevelopmentTests(TestCase):
+    """In development the drafts are shown, marked, so Nestor can review them on the real page."""
+
+    def test_drafts_are_shown_and_marked(self):
+        response = self.client.get(reverse_in('en', 'main:case-detail', slug='drafted-case'))
+
+        self.assertContains(response, 'drafted-case title')
+        self.assertContains(response, '<p class="dev-mark">Development only: not published</p>')
+        # What it lacks is left out, not marked
+        self.assertEqual(
+            case_labels(response), ['01 / What I built', '02 / How it was built', '03 / Stack', '04 / Links']
+        )
+
+    def test_the_home_marks_them_too(self):
+        response = self.client.get(reverse_in('en', 'main:index'))
+
+        self.assertEqual(card_titles(response), ['published-case title', 'drafted-case title'])
+        self.assertContains(response, 'class="dev-mark"', count=1)
+
+    def test_the_sitemap_lists_them_too(self):
+        response = self.client.get(reverse('sitemap'))
+
+        self.assertContains(response, reverse_in('en', 'main:case-detail', slug='drafted-case'))
+
+    def test_without_a_summary_the_site_description_stands_in(self):
+        with mock.patch('main.cases.CASES', [make_case('no-summary', published=False, summary=None)]):
+            response = self.client.get(reverse_in('en', 'main:case-detail', slug='no-summary'))
+
+        self.assertIn(settings.OWNER_ROLE, meta(response, 'description'))
+        self.assertNotIn('description', structured_data(response))
+
+    def test_a_single_case_has_no_next_case(self):
+        with mock.patch('main.cases.CASES', [make_case('only-case')]):
+            response = self.client.get(reverse_in('en', 'main:case-detail', slug='only-case'))
+
+        self.assertNotContains(response, 'next-case')

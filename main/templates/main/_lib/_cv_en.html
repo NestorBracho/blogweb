@@ -1,45 +1,131 @@
 <h2>Summary</h2>
 <p>
-    Senior full stack engineer with {{ owner.years }}+ years building web platforms in Python and Django, focused on backend design,
-    system architecture and bringing AI into real products. Since 2022 I have worked as a consultant for the World Bank
-    Group, building community-driven and climate-focused data platforms used across several African countries. I
-    integrate LLMs and ML models (Hugging Face) into production systems and work AI-first day to day with Claude Code
-    and the BMAD Method.
+    Senior software engineer with more than {{ owner.years }} years building web platforms in Python and Django, focused on
+    backend design, system architecture and bringing AI into real products. For three years I was an architect and
+    developer for the World Bank Group, on community-driven development and climate platforms used across several
+    African countries. I now work as a freelancer and have delivered a CRM and a warehouse management system built with
+    agents from start to finish.
 </p>
+<p>
+    I have integrated generative AI into real products (LLMs through APIs, Hugging Face models in processing pipelines),
+    and agent-driven development is at the center of how I work: Claude Code, agents with defined roles and phased
+    specifications that I review and validate before merging.
+</p>
+
+<h2>Generative AI and agents</h2>
+<ul>
+    <li>
+        <strong>LLMs in production:</strong> model integration through APIs (OpenAI) with prompt engineering and tool
+        calling; Hugging Face models in content processing pipelines.
+    </li>
+    <li>
+        <strong>Agents and multi-agent workflows:</strong> daily work with Claude Code, agents with defined roles (BMAD
+        Method), subagents, custom commands, instruction files and MCP servers.
+    </li>
+    <li>
+        <strong>Spec-driven development:</strong> PRD, architecture, epics and per-story specs that agents implement and
+        that I review before merging.
+    </li>
+    <li>
+        <strong>Validation of agent-generated code:</strong> API contracts locked with OpenAPI, automated tests (pytest,
+        Jest, Maestro) and CI on every change.
+    </li>
+</ul>
 
 <h2>Professional experience</h2>
 
 <section class="cv__job">
+    <h3>Senior Software Engineer, AI-driven development</h3>
+    <p class="cv__job-meta">
+        <strong>Freelance</strong> · Madrid · Jun 2026 – Present<br>
+        <span class="cv__note">Complete systems built with AI agents for my own clients.</span>
+    </p>
+
+    <h4 class="cv__project">
+        <em>Management platform and CRM for a vacation and mid-term rental management company</em>
+        (multi-tenant Django, PostgreSQL, HTMX, AWS Elastic Beanstalk)
+    </h4>
+    <ul>
+        <li>
+            <strong>Generative AI in production:</strong> financial analysis service using an LLM (OpenAI API) that
+            generates insights and recommendations on revenue, occupancy and channels in the dashboards, with
+            per-company context, response caching and graceful degradation when the model is unavailable.
+        </li>
+        <li>
+            <strong>End-to-end CRM built with agents:</strong> wrote the PRD, architecture and epics with BMAD and
+            implemented the module with Claude Code: staged pipeline with drag-and-drop boards, reassignment, KPIs and
+            analysis of closed leads. The first five epics, 19 stories, were implemented in two weeks.
+        </li>
+        <li>
+            <strong>Idealista integration:</strong> listing sync with deduplication and property reconciliation, and
+            automatic conversion of email inquiries into leads.
+        </li>
+        <li>
+            <strong>WhatsApp integration:</strong> configurable templates, sending from the lead's record, inbound
+            replies through webhooks and delivery status.
+        </li>
+        <li>
+            <strong>Quality of agent-generated code:</strong> more than 2,000 automated tests in the module, CI on
+            PostgreSQL in GitHub Actions, one spec per story and review before every merge.
+        </li>
+    </ul>
+
+    <h4 class="cv__project">
+        <em>Warehouse management system for a logistics company</em>
+        (Django, HTMX, PostgreSQL, Celery, AWS, Terraform)
+    </h4>
+    <ul>
+        <li>
+            Sole technical owner for the client. Starting from the functional requirements, I designed the architecture
+            from scratch and built the whole platform with AI agents: goods receiving, per-client stock visibility,
+            self-service delivery requests and monthly pre-settlement.
+        </li>
+        <li>It replaced a day-to-day operation that ran on paper.</li>
+    </ul>
+</section>
+
+<section class="cv__job">
     <h3>Senior Full Stack Engineer &amp; System Architect</h3>
     <p class="cv__job-meta">
-        <strong>World Bank Group</strong> · Contract · Madrid, remote · Jun 2023 – Present<br>
-        <span class="cv__note">In parallel with my role at Selia until Sep 2023 and with Ekwi-three in 2024.</span>
+        <strong>World Bank Group</strong> · Contract · Madrid, remote · Jun 2023 – Jun 2026<br>
+        <span class="cv__note">Alongside my role at Selia until Sep 2023 and Ekwi-three in 2024.</span>
     </p>
     <ul>
         <li>
-            Backend architecture and development of the Community-Driven Development (CDD) platform, which improves
-            communication and resource management between communities and governments in African countries. Led the
-            2024 phase focused on scaling, new data analytics tools and usability.
+            Local development portal for community-driven development programs: initial data model, funder flow
+            (filtered list, selection and submission of investment packages), moderator review with role-based
+            permissions and a geographic layer with Mapbox. Led the 2024 phase, focused on scaling, new data analytics
+            tools and usability.
         </li>
         <li>
-            Built the Climate Vulnerability Portal, a platform that monitors the impact of climate change on
-            socio-political activity in African countries.
+            Climate Vulnerability Portal, a platform that monitors the impact of climate change on socio-political
+            activity in African countries.
         </li>
         <li>
-            Building an offline-first participatory monitoring platform (Django REST + React Native/Expo): JWT
-            authentication, versioned mobile API, batch sync contracts, local SQLite storage and a dynamic form engine.
-            Developed AI-first with Claude Code and the BMAD Method, backed by contract-locked testing (OpenAPI, pytest,
-            Jest, Maestro E2E).
+            Offline-first mobile app for participatory monitoring (React Native/Expo, SQLite): guided field visits with
+            survey, GPS and photo, local storage with sync status, and data access isolated behind a repository layer.
+            Built with AI agents.
+        </li>
+        <li>
+            <code>e3-django-dynamic-forms</code>: a dynamic form engine for Django, solely authored, published on PyPI
+            under the MIT license with 210 automated tests.
+        </li>
+        <li>
+            SMS and email notifications module for a grievance redress system (Twilio, Africa's Talking, SendGrid,
+            Mailchimp), which switches provider through configuration, and an LLM analysis layer in its diagnostics
+            dashboard.
         </li>
     </ul>
-    <p class="cv__stack"><strong>Stack:</strong> Python, Django, Django REST Framework, PostgreSQL, Angular, React Native, AWS</p>
+    <p class="cv__stack">
+        <strong>Stack:</strong> Python, Django, Django REST Framework, PostgreSQL, CouchDB, Celery, HTMX, React Native, AWS
+    </p>
 </section>
 
 <section class="cv__job">
     <h3>Full Stack Developer &amp; System Architect</h3>
     <p class="cv__job-meta">
         <strong>Ekwi-three GmbH</strong> · Freelance · Remote · May 2024 – Dec 2024<br>
-        <span class="cv__note">In parallel with my World Bank Group contract.</span>
+        <span class="cv__note">Alongside my contract with the World Bank Group.</span>
     </p>
     <ul>
         <li>
@@ -55,7 +141,7 @@
     <h3>Senior Full Stack Engineer</h3>
     <p class="cv__job-meta">
         <strong>Selia</strong> · Full-time · Remote · Jan 2022 – Sep 2023<br>
-        <span class="cv__note">From Dec 2022, in parallel with my World Bank Group projects.</span>
+        <span class="cv__note">From Dec 2022, alongside my projects for the World Bank Group.</span>
     </p>
     <ul>
         <li>Designed and built Selia's full payment platform and B2B platform, owning the backend architecture.</li>
@@ -71,12 +157,12 @@
     <h3>Full Stack Developer</h3>
     <p class="cv__job-meta">
         <strong>World Bank Group</strong> · Freelance · Remote · Dec 2022 – Mar 2023<br>
-        <span class="cv__note">In parallel with my full-time role at Selia.</span>
+        <span class="cv__note">Alongside my full-time role at Selia.</span>
     </p>
     <ul>
         <li>
-            Developed a portal supporting the reintegration of 900 women associated with armed groups in Mali, part of
-            the Reintegration of Ex-Combatants Project led by the Government of Mali and administered by the IBRD.
+            Developed a portal supporting the reintegration of 900 women associated with armed groups, part of an
+            ex-combatant reintegration project administered by the IBRD.
         </li>
     </ul>
 </section>
@@ -122,15 +208,15 @@
 <ul>
     <li><strong>Backend:</strong> Python, Django, Django REST Framework, Celery, Redis, REST API design, NestJS</li>
     <li>
-        <strong>AI &amp; ML:</strong> LLM integration, Hugging Face, Generative AI, AI-assisted development (Claude Code,
-        BMAD Method)
+        <strong>AI and agents:</strong> LLM integration (OpenAI API), tool calling, prompt engineering, Hugging Face,
+        Claude Code, MCP, BMAD Method
     </li>
-    <li><strong>Data:</strong> PostgreSQL, MySQL, data modeling, query optimization</li>
+    <li><strong>Data:</strong> PostgreSQL, MySQL, CouchDB, data modeling, query optimization</li>
     <li>
-        <strong>Cloud &amp; DevOps:</strong> AWS (EC2, RDS, Lambda, Elastic Beanstalk, S3, CloudFront, Route 53), Docker,
-        Linux, CI/CD
+        <strong>Cloud and DevOps:</strong> AWS (EC2, ECS, RDS, Lambda, Elastic Beanstalk, S3, SQS, CloudFront, Route 53),
+        Terraform, Docker, Linux, CI/CD with GitHub Actions
     </li>
-    <li><strong>Frontend &amp; Mobile:</strong> Angular, TypeScript, JavaScript, React Native (Expo)</li>
+    <li><strong>Frontend and mobile:</strong> HTMX, Angular, TypeScript, JavaScript, React Native (Expo)</li>
     <li><strong>Testing:</strong> pytest, Jest, Maestro, OpenAPI contract testing</li>
 </ul>
 
@@ -149,4 +235,4 @@
 </ul>
 
 <h2>Languages</h2>
-<p>Spanish (native) · English (C1, full professional proficiency)</p>
+<p>Spanish (native) · English (B2, upper intermediate)</p>

@@ -10,7 +10,9 @@
 <html lang="{{ LANGUAGE_CODE }}" dark="" class="dark-mode">
 <head>
 
+    {% block meta_seo %}
     {% include 'lib/_main_meta_seo.html' %}
+    {% endblock %}
 
     {% include 'lib/_favicons.html' %}
 

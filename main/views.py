@@ -1,8 +1,11 @@
+import datetime
+
 from django.conf import settings
 from django.contrib import messages
 from django.http import Http404, HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.shortcuts import reverse
 from django.templatetags.static import static
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views import generic
 
@@ -24,6 +27,9 @@ PROFILE_SOCIAL_IMAGE = 'images/og-profile.png'
 # The case the home's "How I work" links to, as a real example of it
 HOW_I_WORK_EXAMPLE = 'mid-term-rental-crm'
 
+# The home's "From the blog" waits for a post newer than this: a year-old latest post makes the site look abandoned
+BLOG_FRESHNESS = datetime.timedelta(days=365)
+
 
 class IndexView(generic.TemplateView):
     template_name = 'main/index.html'
@@ -42,8 +48,21 @@ class IndexView(generic.TemplateView):
         kwargs['drafts_visible'] = cases.drafts_visible()
         example = cases.get_case(HOW_I_WORK_EXAMPLE)
         kwargs['how_i_work_example'] = example.localized() if example else None
+        # Compared with the latest post the context processor already fetched (latest_posts): no query of its own
+        kwargs['blog_shown_since'] = timezone.now() - BLOG_FRESHNESS
 
         return super().get_context_data(**kwargs)
+
+
+class CasesView(generic.RedirectView):
+    """
+    There is no cases page: the home's section lists them. Temporary, so browsers don't cache it in case one is made.
+    """
+
+    permanent = False
+
+    def get_redirect_url(self, *args, **kwargs):
+        return f'{reverse("main:index")}#cases'
 
 
 class CaseDetailView(generic.TemplateView):

@@ -128,4 +128,4 @@ Responde solo desde el CV y los casos publicados. Especificación propia antes d
 4. Problema y resultado del caso de Selia.
 5. Estado actual de la app móvil, para su frase de resultado.
 6. Disponibilidad, si quiere mostrarla en la ficha del hero.
-7. Alinear `resume.md` y la página de CV con el CV actual (nivel de inglés y fechas).
+7. Hecho: la página de CV sale de `cv-content.md`, y `resume.md` se borró porque ya no se usaba.

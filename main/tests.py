@@ -2,8 +2,10 @@ import datetime
 import html
 import itertools
 import json
+import os
 import posixpath
 import re
+import runpy
 from pathlib import Path
 from unittest import mock
 
@@ -45,6 +47,11 @@ def inner_html(response, css_class):
     """What the page's first element with that class holds. It mustn't hold another element of its own tag."""
     match = re.search(rf'<(\w+) class="{css_class}"[^>]*>(.*?)</\1>', response.content.decode(), re.DOTALL)
     return match.group(2)
+
+
+def offer_texts(response):
+    """The texts of the home's "What I offer" blocks, in order."""
+    return [html.unescape(text) for text in re.findall(r'<p class="offer__text">(.*?)</p>', response.content.decode())]
 
 
 def stylesheets(response):
@@ -97,6 +104,79 @@ class HomeTests(TestCase):
                 self.assertEqual(meta(response, 'og:title'), title)
                 self.assertIn(settings.OWNER_ROLE, meta(response, 'description'))
                 self.assertEqual(meta(response, 'og:description'), meta(response, 'description'))
+                self.assertEqual(meta(response, 'twitter:description'), meta(response, 'description'))
+                self.assertEqual(structured_data(response)['description'], meta(response, 'description'))
+
+    def test_describes_the_page_as_docs_home_cases_writes_it(self):
+        years = years_of_experience()
+        descriptions = {
+            'en': (
+                f'Senior Software Engineer with more than {years} years building web platforms with Python and '
+                'Django. Three years for the World Bank Group; now freelance, with AI agent-driven development.'
+            ),
+            'es': (
+                f'Senior Software Engineer con más de {years} años construyendo plataformas web con Python y '
+                'Django. Tres años para el Grupo Banco Mundial; hoy, freelance con desarrollo dirigido por agentes '
+                'de IA.'
+            ),
+        }
+        for language, description in descriptions.items():
+            with self.subTest(language=language):
+                self.assertEqual(meta(self.get_home(language), 'description'), description)
+
+    def test_pages_without_a_description_of_their_own_use_the_sites(self):
+        home = self.get_home('es')
+        cases = self.client.get(reverse_in('es', 'main:case-detail', slug='this-site'))
+
+        self.assertIn('hoy, freelance', meta(home, 'description'))
+        # A case's summary stands in for it on its page
+        self.assertNotEqual(meta(cases, 'description'), meta(home, 'description'))
+
+    def test_speaks_of_the_world_bank_in_the_past(self):
+        for language, current in [
+            ('en', ['currently for the World Bank', 'Consultant for the World Bank', '2023 to present']),
+            ('es', ['actualmente, para el Grupo Banco Mundial', 'Consultor para el Grupo', '2023 a hoy']),
+        ]:
+            with self.subTest(language=language):
+                response = self.get_home(language)
+                content = html.unescape(response.content.decode())
+
+                for phrase in current:
+                    self.assertNotIn(phrase, content)
+                self.assertNotIn('World Bank', ' '.join(offer_texts(response)))
+
+    def test_the_lede_says_he_now_works_freelance(self):
+        years = years_of_experience()
+        ledes = {
+            'en': (
+                f'More than {years} years with Python and Django, three of them as an architect and developer for the '
+                'World Bank Group. I now work as a freelancer and build complete systems with AI agents, under '
+                'specification and human review.'
+            ),
+            'es': (
+                f'Más de {years} años con Python y Django, tres de ellos como arquitecto y desarrollador para el Grupo '
+                'Banco Mundial. Hoy trabajo como freelance y construyo sistemas completos con agentes de IA, bajo '
+                'especificación y revisión humana.'
+            ),
+        }
+        for language, lede in ledes.items():
+            with self.subTest(language=language):
+                self.assertEqual(html.unescape(inner_html(self.get_home(language), 'hero__lede')), lede)
+
+    def test_offers_ai_with_the_latest_example(self):
+        for language, example in [
+            ('en', 'Most recently: a financial analysis service that explains the dashboards of a rental management'),
+            ('es', 'Lo más reciente: un servicio de análisis financiero que explica los paneles de una plataforma'),
+        ]:
+            with self.subTest(language=language):
+                self.assertIn(example, offer_texts(self.get_home(language))[2])
+
+    def test_the_profile_card_gives_the_english_level(self):
+        english = inner_html(self.get_home('en'), 'profile__list')
+        spanish = inner_html(self.get_home('es'), 'profile__list')
+
+        self.assertRegex(english, r'<dt>languages</dt>\s*<dd>Native Spanish · English B2</dd>')
+        self.assertRegex(spanish, r'<dt>idiomas</dt>\s*<dd>Español nativo · Inglés B2</dd>')
 
     def test_the_role_is_senior_software_engineer(self):
         self.assertEqual(settings.OWNER_ROLE, 'Senior Software Engineer')
@@ -148,10 +228,14 @@ class HomeTests(TestCase):
         )
 
     def test_names_the_clients_in_text(self):
-        clients = inner_html(self.get_home('en'), 'clients__list')
+        english = inner_html(self.get_home('en'), 'clients__list')
+        spanish = inner_html(self.get_home('es'), 'clients__list')
 
         self.assertEqual(
-            re.findall(r'<li>([^<]+)</li>', clients), ['World Bank Group', 'Nokia', 'Selia', 'Ekwi-three', 'IUCN']
+            re.findall(r'<li>([^<]+)</li>', english), ['World Bank Group', 'Nokia', 'Selia', 'Ekwi-three', 'IUCN']
+        )
+        self.assertEqual(
+            re.findall(r'<li>([^<]+)</li>', spanish), ['Grupo Banco Mundial', 'Nokia', 'Selia', 'Ekwi-three', 'UICN']
         )
 
     def test_has_the_sections_of_the_brief_in_order(self):
@@ -204,7 +288,36 @@ class HomeTests(TestCase):
 
 
 class HomeBlogTests(TestCase):
-    """The home's "From the blog": the three latest posts, and nothing at all while there are none."""
+    """
+    The home's "From the blog": the three latest posts while the latest is less than a year old, and nothing at all
+    while there are none or the blog has gone quiet.
+    """
+
+    def test_a_fresh_blog_is_shown(self):
+        create_post('Recent', days_ago=364)
+
+        response = self.client.get(reverse_in('en', 'main:index'))
+
+        self.assertContains(response, 'id="blog"')
+        self.assertContains(response, 'From the blog')
+
+    def test_a_blog_quiet_for_over_a_year_is_not_shown(self):
+        create_post('A quiet post', days_ago=366)
+        create_post('An older post', days_ago=500)
+
+        response = self.client.get(reverse_in('es', 'main:index'))
+
+        self.assertNotContains(response, 'id="blog"')
+        self.assertNotContains(response, 'Del blog')
+        self.assertNotContains(response, 'A quiet post')
+
+    def test_the_latest_post_decides_and_brings_the_older_ones(self):
+        create_post('New', days_ago=10)
+        create_post('Old', days_ago=800)
+
+        rows = inner_html(self.client.get(reverse_in('en', 'main:index')), 'post-rows')
+
+        self.assertEqual(re.findall(r'<span>([^<]+)</span>', rows), ['New', 'Old'])
 
     def test_without_posts_the_home_has_no_blog_section(self):
         create_post('Draft', is_published=False)
@@ -753,7 +866,12 @@ class ErrorPageTests(TestCase):
 
                 self.assertContains(response, '<title>Page not found - Nestor Bracho</title>', status_code=404)
                 self.assertContains(response, 'Back to homepage', status_code=404)
-                self.assertContains(response, '<h1 class="error__title">404', status_code=404)
+                self.assertContains(response, '<h1 class="page__title">Page not found</h1>', status_code=404)
+                self.assertContains(response, static('css/site.css'), status_code=404)
+                self.assertNotContains(response, static('css/main.css'), status_code=404)
+                self.assertContains(response, 'class="site-header"', status_code=404)
+                self.assertContains(response, 'class="site-footer"', status_code=404)
+                self.assertNotContains(response, 'name="description"', status_code=404)
                 self.assertNotContains(response, 'rel="canonical"', status_code=404)
                 self.assertNotContains(response, 'hreflang', status_code=404)
                 self.assertNotContains(response, 'og:url', status_code=404)
@@ -761,6 +879,52 @@ class ErrorPageTests(TestCase):
         with self.assertLogs('django.request', 'WARNING'):
             spanish = self.client.get('/es/no-such-page/')
         self.assertContains(spanish, '<title>Página no encontrada - Nestor Bracho</title>', status_code=404)
+        self.assertContains(spanish, '<h1 class="page__title">Página no encontrada</h1>', status_code=404)
+        self.assertContains(spanish, 'class="site-header"', status_code=404)
+        self.assertContains(spanish, 'class="site-footer"', status_code=404)
+        self.assertNotContains(spanish, 'rel="canonical"', status_code=404)
+
+
+class CasesIndexTests(TestCase):
+    def test_sends_visitors_to_the_homes_cases(self):
+        for language in ['en', 'es']:
+            with self.subTest(language=language):
+                response = self.client.get(f'/{language}/cases/')
+
+                # Temporary: a cases page may come later, and browsers would remember a permanent one
+                self.assertRedirects(
+                    response,
+                    f'{reverse_in(language, "main:index")}#cases',
+                    status_code=302,
+                    fetch_redirect_response=False,
+                )
+
+    def test_case_pages_are_still_found(self):
+        response = self.client.get(reverse_in('en', 'main:case-detail', slug='this-site'))
+
+        self.assertEqual(response.status_code, 200)
+
+
+class OwnerLocationSettingTests(SimpleTestCase):
+    """OWNER_LOCATION_ES is the Spanish location; without it, the English one."""
+
+    def locations(self, **environment):
+        names = ['OWNER_LOCATION', 'OWNER_LOCATION_ES']
+        kept = {name: value for name, value in os.environ.items() if name not in names}
+        with mock.patch.dict(os.environ, {**kept, **environment}, clear=True):
+            # Without the local .env, which would set them again
+            with mock.patch('environ.Env.read_env'):
+                return runpy.run_path(str(Path(settings.BASE_DIR) / 'config' / 'settings.py'))['OWNER_LOCATIONS']
+
+    def test_the_spanish_one_when_set(self):
+        locations = self.locations(OWNER_LOCATION='Madrid, Spain', OWNER_LOCATION_ES='Madrid, España')
+
+        self.assertEqual(locations, {'en': 'Madrid, Spain', 'es': 'Madrid, España'})
+
+    def test_the_english_one_when_unset(self):
+        locations = self.locations(OWNER_LOCATION='Madrid, Spain')
+
+        self.assertEqual(locations, {'en': 'Madrid, Spain', 'es': 'Madrid, Spain'})
 
 
 class SearchAndLinkPreviewTests(TestCase):
@@ -814,7 +978,8 @@ class SearchAndLinkPreviewTests(TestCase):
         self.assertEqual(data['url'], 'http://testserver/en/')
         self.assertIn('https://github.com/NestorBracho', data['sameAs'])
         self.assertIn('Django', data['knowsAbout'])
-        self.assertTrue(data['description'].startswith('I design and build web platforms'))
+        self.assertTrue(data['description'].startswith('Staff Engineer with more than'))
+        self.assertIn('now freelance', data['description'])
         # Contact details stay off the markup
         self.assertNotIn('nestor@example.com', json.dumps(data))
 
@@ -932,6 +1097,23 @@ class AboutViewTests(TestCase):
 
         self.assertContains(response, '<title>Sobre mí - Nestor Bracho</title>')
 
+    def test_gives_the_current_role(self):
+        english = self.client.get(reverse_in('en', 'main:about'))
+        spanish = self.client.get(reverse_in('es', 'main:about'))
+
+        self.assertContains(english, 'a Senior Software Engineer by trade')
+        self.assertContains(spanish, 'Senior Software Engineer de profesión')
+        self.assertNotContains(english, 'fullstack developer by trade')
+        self.assertNotContains(spanish, 'desarrollador fullstack de profesión')
+
+    def test_headings_have_no_emojis(self):
+        for language in ['en', 'es']:
+            with self.subTest(language=language):
+                content = self.client.get(reverse_in(language, 'main:about')).content.decode()
+
+                for heading in re.findall(r'<h2[^>]*>(.*?)</h2>', content):
+                    self.assertRegex(heading, r'^[\w¿¡]')
+
 
 @override_settings(OWNER_CV_PDF_URLS={'en': '/media/cv/cv-en.pdf', 'es': '/media/cv/cv-es.pdf'})
 class CVViewTests(TestCase):
@@ -942,6 +1124,72 @@ class CVViewTests(TestCase):
         self.assertContains(spanish, 'Experiencia profesional')
         self.assertNotContains(spanish, 'Professional experience')
         self.assertContains(english, 'Professional experience')
+
+    def test_has_every_section_of_docs_cv_content(self):
+        sections = {
+            'en': [
+                'Summary',
+                'Generative AI and agents',
+                'Professional experience',
+                'Technical skills',
+                'Certifications',
+                'Education',
+                'Languages',
+            ],
+            'es': [
+                'Perfil',
+                'IA generativa y agentes',
+                'Experiencia profesional',
+                'Habilidades técnicas',
+                'Certificaciones',
+                'Formación',
+                'Idiomas',
+            ],
+        }
+        for language, titles in sections.items():
+            with self.subTest(language=language):
+                response = self.client.get(reverse_in(language, 'main:cv'))
+
+                self.assertEqual(re.findall(r'<h2>([^<]+)</h2>', response.content.decode()), titles)
+
+    def test_leads_with_the_freelance_work_and_its_projects(self):
+        for language, job, projects in [
+            (
+                'en',
+                '<strong>Freelance</strong> · Madrid · Jun 2026 – Present',
+                ['Management platform and CRM for a vacation', 'Warehouse management system for a logistics company'],
+            ),
+            (
+                'es',
+                '<strong>Freelance</strong> · Madrid · jun 2026 – actualidad',
+                ['Plataforma de gestión y CRM para una gestora', 'Sistema de gestión de almacén para una empresa'],
+            ),
+        ]:
+            with self.subTest(language=language):
+                content = self.client.get(reverse_in(language, 'main:cv')).content.decode()
+                first_job = content.split('<section class="cv__job">')[1]
+
+                self.assertIn(job, first_job)
+                self.assertEqual(len(re.findall(r'<h4 class="cv__project">', first_job)), 2)
+                for project in projects:
+                    self.assertIn(project, first_job)
+
+    def test_headline_adds_ai_agent_driven_development(self):
+        for language, headline in [
+            ('en', f'{settings.OWNER_ROLE} · Python/Django · AI agent-driven development'),
+            ('es', f'{settings.OWNER_ROLE} · Python/Django · Desarrollo con agentes de IA'),
+        ]:
+            with self.subTest(language=language):
+                response = self.client.get(reverse_in(language, 'main:cv'))
+
+                self.assertEqual(html.unescape(inner_html(response, 'cv__headline')), headline)
+
+    def test_gives_the_english_level(self):
+        english = self.client.get(reverse_in('en', 'main:cv'))
+        spanish = self.client.get(reverse_in('es', 'main:cv'))
+
+        self.assertContains(english, 'Spanish (native) · English (B2, upper intermediate)')
+        self.assertContains(spanish, 'Español (nativo) · Inglés (B2, intermedio alto)')
 
     def test_title_leads_with_the_name_and_role(self):
         for language in ['en', 'es']:
@@ -957,25 +1205,25 @@ class CVViewTests(TestCase):
         jobs = {
             'en': [
                 (
-                    '<strong>World Bank Group</strong> · Contract · Madrid, remote · Jun 2023 – Present',
-                    'In parallel with my role at Selia until Sep 2023 and with Ekwi-three in 2024.',
+                    '<strong>World Bank Group</strong> · Contract · Madrid, remote · Jun 2023 – Jun 2026',
+                    'Alongside my role at Selia until Sep 2023 and Ekwi-three in 2024.',
                 ),
                 (
                     '<strong>Ekwi-three GmbH</strong> · Freelance · Remote · May 2024 – Dec 2024',
-                    'In parallel with my World Bank Group contract.',
+                    'Alongside my contract with the World Bank Group.',
                 ),
                 (
                     '<strong>Selia</strong> · Full-time · Remote · Jan 2022 – Sep 2023',
-                    'From Dec 2022, in parallel with my World Bank Group projects.',
+                    'From Dec 2022, alongside my projects for the World Bank Group.',
                 ),
                 (
                     '<strong>World Bank Group</strong> · Freelance · Remote · Dec 2022 – Mar 2023',
-                    'In parallel with my full-time role at Selia.',
+                    'Alongside my full-time role at Selia.',
                 ),
             ],
             'es': [
                 (
-                    '<strong>Grupo Banco Mundial</strong> · Contrato · Madrid, remoto · jun 2023 – actualidad',
+                    '<strong>Grupo Banco Mundial</strong> · Contrato · Madrid, remoto · jun 2023 – jun 2026',
                     'En paralelo con mi puesto en Selia hasta sep 2023 y con Ekwi-three en 2024.',
                 ),
                 (
@@ -1214,6 +1462,11 @@ def card_titles(response):
 DRAFT_SLUGS = ['payments-and-b2b', 'warehouse-management-system']
 
 
+def case_by_slug(slug):
+    """A case as main/cases.py writes it, drafts included."""
+    return next(case for case in cases.CASES if case.slug == slug)
+
+
 class CaseContentTests(SimpleTestCase):
     """The cases in main/cases.py, as written from docs/home-cases.md."""
 
@@ -1237,6 +1490,28 @@ class CaseContentTests(SimpleTestCase):
                 ('this-site', cases.OTHER, cases.NORMAL),
             ],
         )
+
+    def test_the_mobile_apps_period(self):
+        case = case_by_slug('participatory-monitoring-app')
+
+        self.assertEqual(case.period, cases.Text('2026'))
+
+    def test_the_crm_names_the_llm_service_and_its_api(self):
+        case = case_by_slug('mid-term-rental-crm')
+
+        self.assertEqual(len(case.solution), 8)
+        self.assertTrue(case.solution[7].en.startswith('On the same platform, before the CRM, I built a financial'))
+        self.assertTrue(case.solution[7].es.startswith('En la misma plataforma, antes del CRM, construí un servicio'))
+        self.assertEqual(case.stack.index('OpenAI API') + 1, case.stack.index('GitHub Actions'))
+
+    def test_the_warehouse_case_holds_what_is_written_and_stays_a_draft(self):
+        case = case_by_slug('warehouse-management-system')
+
+        self.assertEqual(case.card_meta, cases.Text('Logistics company · 2026', 'Empresa de logística · 2026'))
+        self.assertEqual(len(case.solution), 1)
+        self.assertEqual(case.stack, ('Python', 'Django', 'HTMX', 'PostgreSQL', 'Celery', 'AWS', 'Terraform'))
+        self.assertFalse(case.published)
+        self.assertFalse(case.is_published())
 
     def test_five_are_published_and_the_drafts_are_not(self):
         published = [case.slug for case in cases.CASES if case.is_published()]
@@ -1318,7 +1593,7 @@ class RealCasesTests(TestCase):
         )
         self.assertEqual(
             re.findall(r'<p class="group-label">([^<]+)</p>', response.content.decode()),
-            ['World Bank Group · 2023 to present', 'Other clients and projects'],
+            ['World Bank Group · 2023 to 2026', 'Other clients and projects'],
         )
         self.assertContains(response, 'class="case-card case-card--wide"', count=2)
         self.assertNotContains(response, 'dev-mark')

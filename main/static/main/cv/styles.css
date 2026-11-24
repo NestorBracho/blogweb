@@ -58,3 +58,16 @@
 .cv__stack strong {
     color: var(--text-2);
 }
+
+.cv__project {
+    margin-top: 20px;
+    margin-bottom: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--text-2);
+}
+
+.cv__project em {
+    color: var(--text);
+}

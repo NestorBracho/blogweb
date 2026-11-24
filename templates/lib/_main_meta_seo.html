@@ -5,13 +5,9 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-{# What search results and link previews (LinkedIn, Slack...) show for pages without their own title or description #}
+{# What search results and link previews (LinkedIn, Slack...) show for pages without their own title or description: the description is config/context_processors.py's #}
 {% blocktranslate asvar site_title with role=owner.role %}Nestor Bracho, {{ role }}{% endblocktranslate %}
-{% blocktranslate asvar site_description with role=owner.role years=owner.years trimmed %}
-    {{ role }} with more than {{ years }} years building web platforms with Python and Django, currently for the World
-    Bank Group.
-{% endblocktranslate %}
-{% firstof meta_description site_description as description %}
+{% firstof meta_description owner.description as description %}
 {% if full_title %}{% firstof full_title as title %}{% elif page_title %}{% firstof page_title|add:" - Nestor Bracho" as title %}{% else %}{% firstof site_title as title %}{% endif %}
 
 <title>{{ title }}</title>

@@ -305,7 +305,7 @@ CASES = [
             'sin conexión: cada visita se guarda en el teléfono con sus respuestas, coordenadas y foto.',
         ),
         client=Text('World Bank Group', 'Grupo Banco Mundial'),
-        period=Text('Since March 2026', 'Desde marzo de 2026'),
+        period=Text('2026'),
         role=Text(
             'Architecture design and development of the app, almost entirely solo, using AI agent-assisted development',
             'Diseño de la arquitectura y desarrollo de la app, prácticamente en solitario, con desarrollo asistido '
@@ -526,6 +526,14 @@ CASES = [
                 'GDPR and marketing consent recorded on every lead, and no message goes out without it.',
                 'Consentimiento RGPD y de marketing registrado en cada lead, y ningún mensaje sale sin él.',
             ),
+            Text(
+                'On the same platform, before the CRM, I built a financial analysis service using an LLM that '
+                'generates insights on revenue, occupancy and channels in the dashboards, with response caching and '
+                'graceful degradation when the model is unavailable.',
+                'En la misma plataforma, antes del CRM, construí un servicio de análisis financiero con un LLM que '
+                'genera insights sobre ingresos, ocupación y canales en los paneles, con caché de respuestas y '
+                'degradación controlada si el modelo no está disponible.',
+            ),
         ),
         how_built=Text(
             'The specification lives in the repository next to the code: PRD, architecture, epics and one spec per '
@@ -544,6 +552,7 @@ CASES = [
             'Jinja2',
             'HTMX',
             'WhatsApp Business API',
+            'OpenAI API',
             'GitHub Actions',
             'AWS',
         ),
@@ -588,13 +597,14 @@ CASES = [
         ),
         stack=('Python', 'Django', 'Django REST Framework', 'PostgreSQL', 'AWS', 'Stripe'),
     ),
-    # Unpublished: its period, proof line, problem, solution, stack and result are still pending
+    # Unpublished: its proof line, problem, the rest of its solution and its result are still pending
     Case(
         slug='warehouse-management-system',
         group=OTHER,
         layout=NORMAL,
         published=False,
         authorship=Text('Sole author', 'Autor único'),
+        card_meta=Text('Logistics company · 2026', 'Empresa de logística · 2026'),
         title=Text('Warehouse management system', 'Sistema de gestión de almacén'),
         summary=Text(
             'A warehouse management system for an operation that until then ran on paper. I was given the '
@@ -609,6 +619,17 @@ CASES = [
             'Sole technology owner: architecture, development, testing and deployment',
             'Único responsable de tecnología: arquitectura, desarrollo, pruebas y despliegue',
         ),
+        solution=(
+            Text(
+                'Starting from the functional requirements, I designed the architecture from scratch and built the '
+                'whole platform: goods receiving, per-client stock visibility, self-service delivery requests and '
+                'monthly pre-settlement.',
+                'A partir de los requisitos funcionales diseñé la arquitectura desde cero y construí la plataforma '
+                'completa: recepción de mercancía, stock visible por cliente, solicitudes de entrega en autoservicio y '
+                'preliquidación mensual.',
+            ),
+        ),
+        stack=('Python', 'Django', 'HTMX', 'PostgreSQL', 'Celery', 'AWS', 'Terraform'),
     ),
     Case(
         slug='this-site',

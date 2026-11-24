@@ -1,38 +1,124 @@
 <h2>Perfil</h2>
 <p>
-    Ingeniero full stack senior con más de {{ owner.years }} años construyendo plataformas web con Python y Django, enfocado en el
-    diseño de backend, la arquitectura de sistemas y en llevar la IA a productos reales. Desde 2022 trabajo como
-    consultor para el Grupo Banco Mundial, desarrollando plataformas de datos de desarrollo comunitario y enfocadas en
-    el clima, utilizadas en varios países de África. Integro LLMs y modelos de ML (Hugging Face) en sistemas en
-    producción y trabajo con un enfoque AI-first en el día a día con Claude Code y el BMAD Method.
+    Ingeniero de software senior con más de {{ owner.years }} años construyendo plataformas web con Python y Django,
+    enfocado en el diseño de backend, la arquitectura de sistemas y en llevar la IA a productos reales. Durante tres años
+    fui arquitecto y desarrollador para el Grupo Banco Mundial, en plataformas de desarrollo comunitario y de clima
+    utilizadas en varios países de África. Actualmente trabajo como freelance y he entregado un CRM y un sistema de
+    gestión de almacén construidos con agentes de principio a fin.
 </p>
+<p>
+    He integrado IA generativa en productos reales (LLMs vía API, modelos de Hugging Face en pipelines de procesamiento)
+    y el desarrollo con agentes es el centro de mi forma de trabajar: Claude Code, agentes con roles definidos y
+    especificaciones por fases que reviso y valido antes de integrar.
+</p>
+
+<h2>IA generativa y agentes</h2>
+<ul>
+    <li>
+        <strong>LLMs en producción:</strong> integración de modelos vía API (OpenAI) con prompt engineering y tool
+        calling; modelos de Hugging Face en pipelines de procesamiento de contenido.
+    </li>
+    <li>
+        <strong>Agentes y flujos multiagente:</strong> trabajo diario con Claude Code, agentes con roles definidos (BMAD
+        Method), subagents, custom commands, instruction files y servidores MCP.
+    </li>
+    <li>
+        <strong>Desarrollo guiado por especificaciones:</strong> PRD, arquitectura, épicas y specs por historia que los
+        agentes implementan y que reviso antes de integrar.
+    </li>
+    <li>
+        <strong>Validación de código generado por agentes:</strong> contratos de API fijados con OpenAPI, tests
+        automatizados (pytest, Jest, Maestro) y CI en cada cambio.
+    </li>
+</ul>
 
 <h2>Experiencia profesional</h2>
 
 <section class="cv__job">
+    <h3>Senior Software Engineer, desarrollo con IA</h3>
+    <p class="cv__job-meta">
+        <strong>Freelance</strong> · Madrid · jun 2026 – actualidad<br>
+        <span class="cv__note">Sistemas completos construidos con agentes de IA para clientes propios.</span>
+    </p>
+
+    <h4 class="cv__project">
+        <em>Plataforma de gestión y CRM para una gestora de alquiler vacacional y de media estancia</em>
+        (Django multiempresa, PostgreSQL, HTMX, AWS Elastic Beanstalk)
+    </h4>
+    <ul>
+        <li>
+            <strong>IA generativa en producción:</strong> servicio de análisis financiero con un LLM (API de OpenAI) que
+            genera insights y recomendaciones sobre ingresos, ocupación y canales en los paneles, con contexto por
+            empresa, caché de respuestas y degradación controlada si el modelo no está disponible.
+        </li>
+        <li>
+            <strong>CRM de principio a fin con agentes:</strong> escribí el PRD, la arquitectura y las épicas con BMAD e
+            implementé el módulo con Claude Code: pipeline por etapas con tableros de arrastrar y soltar, reasignación,
+            KPIs y análisis de leads cerrados. Las cinco primeras épicas, 19 historias, se implementaron en dos semanas.
+        </li>
+        <li>
+            <strong>Integración con Idealista:</strong> sincronización de anuncios con deduplicación y conciliación de
+            propiedades, y conversión automática en leads de las consultas recibidas por correo.
+        </li>
+        <li>
+            <strong>Integración con WhatsApp:</strong> plantillas configurables, envío desde la ficha del lead,
+            respuestas entrantes por webhook y estado de entrega.
+        </li>
+        <li>
+            <strong>Calidad del código generado por agentes:</strong> más de 2.000 tests automáticos en el módulo, CI
+            sobre PostgreSQL en GitHub Actions, una spec por historia y revisión antes de cada integración.
+        </li>
+    </ul>
+
+    <h4 class="cv__project">
+        <em>Sistema de gestión de almacén para una empresa de logística</em>
+        (Django, HTMX, PostgreSQL, Celery, AWS, Terraform)
+    </h4>
+    <ul>
+        <li>
+            Único responsable técnico del cliente. A partir de los requisitos funcionales diseñé la arquitectura desde
+            cero y construí la plataforma completa con agentes de IA: recepción de mercancía, stock visible por cliente,
+            solicitudes de entrega en autoservicio y preliquidación mensual.
+        </li>
+        <li>Sustituyó una operativa diaria que se llevaba en papel.</li>
+    </ul>
+</section>
+
+<section class="cv__job">
     <h3>Senior Full Stack Engineer &amp; System Architect</h3>
     <p class="cv__job-meta">
-        <strong>Grupo Banco Mundial</strong> · Contrato · Madrid, remoto · jun 2023 – actualidad<br>
+        <strong>Grupo Banco Mundial</strong> · Contrato · Madrid, remoto · jun 2023 – jun 2026<br>
         <span class="cv__note">En paralelo con mi puesto en Selia hasta sep 2023 y con Ekwi-three en 2024.</span>
     </p>
     <ul>
         <li>
-            Arquitectura backend y desarrollo de la plataforma de Desarrollo Impulsado por la Comunidad (CDD), que
-            mejora la comunicación y la gestión de recursos entre comunidades y gobiernos de países africanos. Lideré la
-            fase de 2024, centrada en escalabilidad, nuevas herramientas de analítica de datos y usabilidad.
+            Portal de desarrollo local para programas de desarrollo impulsado por la comunidad: modelo de datos inicial,
+            flujo del financiador (listado con filtros, selección y envío de paquetes de inversión), revisión por
+            moderador con permisos por rol y capa geográfica con Mapbox. Lideré la fase de 2024, centrada en
+            escalabilidad, nuevas herramientas de analítica de datos y usabilidad.
         </li>
         <li>
-            Desarrollo del Climate Vulnerability Portal, plataforma que monitoriza el impacto del cambio climático en la
-            actividad sociopolítica de países africanos.
+            Climate Vulnerability Portal, plataforma que monitoriza el impacto del cambio climático en la actividad
+            sociopolítica de países africanos.
         </li>
         <li>
-            Desarrollo de una plataforma de monitoreo participativo offline-first (Django REST + React Native/Expo):
-            autenticación JWT, API móvil versionada, contratos de sincronización por lotes, almacenamiento local en
-            SQLite y motor de formularios dinámicos. Construida con un enfoque AI-first con Claude Code y el BMAD
-            Method, respaldada por testing con contratos fijados (OpenAPI, pytest, Jest, Maestro E2E).
+            App móvil offline-first de monitoreo participativo (React Native/Expo, SQLite): visitas de campo guiadas con
+            encuesta, GPS y foto, almacenamiento local con estado de sincronización y acceso a datos aislado tras una
+            capa de repositorios. Desarrollada con agentes de IA.
+        </li>
+        <li>
+            <code>e3-django-dynamic-forms</code>: motor de formularios dinámicos para Django, de autoría única, publicado
+            en PyPI bajo licencia MIT con 210 tests automáticos.
+        </li>
+        <li>
+            Módulo de notificaciones por SMS y email para un sistema de gestión de quejas (Twilio, Africa's Talking,
+            SendGrid, Mailchimp), que cambia de proveedor por configuración, y una capa de análisis con un LLM en su
+            panel de diagnóstico.
         </li>
     </ul>
-    <p class="cv__stack"><strong>Stack:</strong> Python, Django, Django REST Framework, PostgreSQL, Angular, React Native, AWS</p>
+    <p class="cv__stack">
+        <strong>Stack:</strong> Python, Django, Django REST Framework, PostgreSQL, CouchDB, Celery, HTMX, React Native, AWS
+    </p>
 </section>
 
 <section class="cv__job">
@@ -78,9 +164,8 @@
     </p>
     <ul>
         <li>
-            Desarrollo de un portal para apoyar la reintegración de 900 mujeres asociadas a grupos armados en Malí,
-            dentro del Proyecto de Reintegración de Excombatientes liderado por el Gobierno de Malí y administrado por el
-            BIRF.
+            Desarrollo de un portal para apoyar la reintegración de 900 mujeres asociadas a grupos armados, dentro de un
+            proyecto de reintegración de excombatientes administrado por el BIRF.
         </li>
     </ul>
 </section>
@@ -132,15 +217,15 @@
 <ul>
     <li><strong>Backend:</strong> Python, Django, Django REST Framework, Celery, Redis, diseño de APIs REST, NestJS</li>
     <li>
-        <strong>IA y ML:</strong> Integración de LLMs, Hugging Face, IA generativa, desarrollo asistido por IA (Claude
-        Code, BMAD Method)
+        <strong>IA y agentes:</strong> integración de LLMs (API de OpenAI), tool calling, prompt engineering, Hugging
+        Face, Claude Code, MCP, BMAD Method
     </li>
-    <li><strong>Datos:</strong> PostgreSQL, MySQL, modelado de datos, optimización de consultas</li>
+    <li><strong>Datos:</strong> PostgreSQL, MySQL, CouchDB, modelado de datos, optimización de consultas</li>
     <li>
-        <strong>Cloud y DevOps:</strong> AWS (EC2, RDS, Lambda, Elastic Beanstalk, S3, CloudFront, Route 53), Docker,
-        Linux, CI/CD
+        <strong>Cloud y DevOps:</strong> AWS (EC2, ECS, RDS, Lambda, Elastic Beanstalk, S3, SQS, CloudFront, Route 53),
+        Terraform, Docker, Linux, CI/CD con GitHub Actions
     </li>
-    <li><strong>Frontend y móvil:</strong> Angular, TypeScript, JavaScript, React Native (Expo)</li>
+    <li><strong>Frontend y móvil:</strong> HTMX, Angular, TypeScript, JavaScript, React Native (Expo)</li>
     <li><strong>Testing:</strong> pytest, Jest, Maestro, testing con contratos OpenAPI</li>
 </ul>
 
@@ -159,4 +244,4 @@
 </ul>
 
 <h2>Idiomas</h2>
-<p>Español (nativo) · Inglés (C1, competencia profesional completa)</p>
+<p>Español (nativo) · Inglés (B2, intermedio alto)</p>

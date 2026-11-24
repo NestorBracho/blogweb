@@ -8,7 +8,8 @@ from django.conf import settings
 from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import translation
-from django.utils.translation import gettext as _
+
+from config.context_processors import site_description
 
 NAME = 'Nestor Bracho'
 
@@ -37,7 +38,8 @@ def home_page(request):
     return {
         '@context': 'https://schema.org',
         **person(request),
-        'description': _('I design and build web platforms and their backends, from architecture to deployment.'),
+        # The same text as the home's meta and Open Graph descriptions
+        'description': site_description(),
         'knowsAbout': KNOWS_ABOUT,
     }
 

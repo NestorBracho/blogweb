@@ -1,6 +1,6 @@
 # Contenido de los casos
 
-Estado: revisado por Nestor · 23 nov 2026
+Estado: revisado por Nestor · actualizado el 24 nov 2026
 Fuente única del contenido de los casos. Sustituye a los documentos de caso anteriores, que no se guardan en este repositorio.
 
 ## 0. Cómo usar este documento
@@ -29,7 +29,7 @@ Fuente única del contenido de los casos. Sustituye a los documentos de caso ant
 | `publicado` | Falso mientras falte problema o solución |
 
 Rótulos de grupo:
-- `banco-mundial`: "Grupo Banco Mundial · 2023 a hoy" / "World Bank Group · 2023 to present"
+- `banco-mundial`: "Grupo Banco Mundial · 2023 a 2026" / "World Bank Group · 2023 to 2026"
 - `otros`: "Otros clientes y proyectos" / "Other clients and projects"
 
 ## 2. Estado de publicación
@@ -110,7 +110,7 @@ Con cinco casos listos se cumple el mínimo de tres para lanzar.
 - Línea de prueba: `React Native · Expo · SQLite · GPS + foto · EN/FR`
 - Resumen: Los comités de aldea verifican sobre el terreno el estado de las obras de su comunidad. La app funciona sin conexión: cada visita se guarda en el teléfono con sus respuestas, coordenadas y foto.
 - Cliente: Grupo Banco Mundial
-- Periodo: Desde marzo de 2026
+- Periodo: 2026
 - Rol: Diseño de la arquitectura y desarrollo de la app, prácticamente en solitario, con desarrollo asistido por agentes de IA
 - Problema: Quien mejor sabe si una obra funciona es la comunidad que la usa. Pero esas comunidades suelen estar donde la cobertura falla, así que una app que dependa de la red no sirve para recoger esa información.
 - Solución:
@@ -130,7 +130,7 @@ Con cinco casos listos se cumple el mínimo de tres para lanzar.
 - Proof line: `React Native · Expo · SQLite · GPS + photo · EN/FR`
 - Summary: Village committees check the state of their community's infrastructure on site. The app works without a connection: every visit is stored on the phone with its answers, coordinates and photo.
 - Client: World Bank Group
-- Period: Since March 2026
+- Period: 2026
 - Role: Architecture design and development of the app, almost entirely solo, using AI agent-assisted development
 - Problem: Nobody knows whether a piece of infrastructure works better than the community that uses it. But those communities are often where coverage fails, so an app that depends on the network cannot collect that information.
 - Solution:
@@ -222,8 +222,9 @@ El bloque "Cómo trabajo" de la home enlaza a la página de detalle de este caso
   5. Al ganar un lead de media estancia, la reserva se crea en el sistema de gestión. No hay doble captura.
   6. Para la dirección comercial: pipeline del equipo, reasignación, propiedades más solicitadas y análisis de leads perdidos por categoría.
   7. Consentimiento RGPD y de marketing registrado en cada lead, y ningún mensaje sale sin él.
+  8. En la misma plataforma, antes del CRM, construí un servicio de análisis financiero con un LLM que genera insights sobre ingresos, ocupación y canales en los paneles, con caché de respuestas y degradación controlada si el modelo no está disponible.
 - Cómo se construyó: La especificación vive en el repositorio junto al código: PRD, arquitectura, épicas y una especificación por historia, escritas con el método BMAD. Cada historia se implementó con agentes de código a partir de esa especificación y pasó revisión antes de integrarse. Las cinco primeras épicas, 19 historias, se implementaron en dos semanas.
-- Stack: Python, Django, PostgreSQL, Django REST Framework, Jinja2, HTMX, WhatsApp Business API, GitHub Actions, AWS
+- Stack: Python, Django, PostgreSQL, Django REST Framework, Jinja2, HTMX, WhatsApp Business API, OpenAI API, GitHub Actions, AWS
 - Resultado: En producción y en evolución por el resto del equipo. El módulo tiene más de 2.000 tests automáticos.
 - Enlaces: ninguno
 
@@ -246,8 +247,9 @@ El bloque "Cómo trabajo" de la home enlaza a la página de detalle de este caso
   5. When a mid-term lead is won, the reservation is created in the management system. No double entry.
   6. For sales management: team pipeline, reassignment, most requested properties and analysis of lost leads by category.
   7. GDPR and marketing consent recorded on every lead, and no message goes out without it.
+  8. On the same platform, before the CRM, I built a financial analysis service using an LLM that generates insights on revenue, occupancy and channels in the dashboards, with response caching and graceful degradation when the model is unavailable.
 - How it was built: The specification lives in the repository next to the code: PRD, architecture, epics and one spec per story, written with the BMAD method. Each story was implemented with coding agents from that spec and reviewed before merging. The first five epics, 19 stories, were implemented in two weeks.
-- Stack: Python, Django, PostgreSQL, Django REST Framework, Jinja2, HTMX, WhatsApp Business API, GitHub Actions, AWS
+- Stack: Python, Django, PostgreSQL, Django REST Framework, Jinja2, HTMX, WhatsApp Business API, OpenAI API, GitHub Actions, AWS
 - Result: In production and still evolving with the rest of the team. The module has more than 2,000 automated tests.
 - Links: none
 
@@ -302,24 +304,34 @@ El bloque "Cómo trabajo" de la home enlaza a la página de detalle de este caso
 ### ES
 
 - Autoría: Autor único
-- Cliente y periodo (tarjeta): Empresa de logística · [PENDIENTE: periodo]
+- Cliente y periodo (tarjeta): Empresa de logística · 2026
 - Título: Sistema de gestión de almacén
 - Línea de prueba: [PENDIENTE]
 - Resumen: Un sistema de gestión de almacén para una operación que hasta entonces se llevaba en papel. Recibí los requisitos funcionales y levanté todo lo demás como único responsable de tecnología, con desarrollo dirigido por agentes de IA.
 - Cliente: Empresa de logística
 - Rol: Único responsable de tecnología: arquitectura, desarrollo, pruebas y despliegue
-- Problema, solución, stack y resultado: [PENDIENTE]
+- Problema: [PENDIENTE]
+- Solución:
+  1. A partir de los requisitos funcionales diseñé la arquitectura desde cero y construí la plataforma completa: recepción de mercancía, stock visible por cliente, solicitudes de entrega en autoservicio y preliquidación mensual.
+  2. [PENDIENTE: resto de la solución]
+- Stack: Python, Django, HTMX, PostgreSQL, Celery, AWS, Terraform
+- Resultado: [PENDIENTE]
 
 ### EN
 
 - Authorship: Sole author
-- Client and period (card): Logistics company · [PENDING: period]
+- Client and period (card): Logistics company · 2026
 - Title: Warehouse management system
 - Proof line: [PENDING]
 - Summary: A warehouse management system for an operation that until then ran on paper. I was given the functional requirements and built everything else as the only person in technology, using AI agent-driven development.
 - Client: Logistics company
 - Role: Sole technology owner: architecture, development, testing and deployment
-- Problem, solution, stack and result: [PENDING]
+- Problem: [PENDING]
+- Solution:
+  1. Starting from the functional requirements, I designed the architecture from scratch and built the whole platform: goods receiving, per-client stock visibility, self-service delivery requests and monthly pre-settlement.
+  2. [PENDING: rest of the solution]
+- Stack: Python, Django, HTMX, PostgreSQL, Celery, AWS, Terraform
+- Result: [PENDING]
 
 ---
 
@@ -379,14 +391,29 @@ Antes de publicar, comprueba cada punto de la solución contra el propio reposit
 
 ## Textos de la home que no son de casos
 
-Los textos en español están en `design/home.html`. Estos son los equivalentes en inglés.
+Actualizados el 24 nov 2026: Nestor terminó su contrato con el Grupo Banco Mundial en junio de 2026 y trabaja como freelance. Estos textos mandan sobre los de `design/home.html`, que conserva los anteriores.
+
+### ES
+
+- Hero, línea superior: Nestor Bracho · Senior Software Engineer
+- Hero, titular: Diseño y construyo plataformas web y sus backends, de la arquitectura al despliegue.
+- Hero, entradilla: Más de {{ owner.years }} años con Python y Django, tres de ellos como arquitecto y desarrollador para el Grupo Banco Mundial. Hoy trabajo como freelance y construyo sistemas completos con agentes de IA, bajo especificación y revisión humana.
+- Descripción de la página (meta y Open Graph): Senior Software Engineer con más de {{ owner.years }} años construyendo plataformas web con Python y Django. Tres años para el Grupo Banco Mundial; hoy, freelance con desarrollo dirigido por agentes de IA.
+- Ficha, fila idiomas: Español nativo · Inglés B2
+- Ficha, fila ubicación: Madrid, España (hoy muestra "Madrid, Spain" en la versión en español)
+- Franja de clientes: Grupo Banco Mundial · Nokia · Selia · Ekwi-three · UICN
+- Qué ofrezco, IA en productos existentes: Integración de LLMs y modelos de Hugging Face en sistemas que ya están en producción. Lo más reciente: un servicio de análisis financiero que explica los paneles de una plataforma de gestión de alquileres en lenguaje claro.
+- El resto de textos en español no cambia.
+
+### EN
 
 - Hero, línea superior: Nestor Bracho · Senior Software Engineer
 - Hero, titular: I design and build web platforms and their backends, from architecture to deployment.
-- Hero, entradilla: More than {{ owner.years }} years with Python and Django. Consultant for the World Bank Group. I work with AI agents under specification and human review.
+- Hero, entradilla: More than {{ owner.years }} years with Python and Django, three of them as an architect and developer for the World Bank Group. I now work as a freelancer and build complete systems with AI agents, under specification and human review.
+- Page description (meta and Open Graph): Senior Software Engineer with more than {{ owner.years }} years building web platforms with Python and Django. Three years for the World Bank Group; now freelance, with AI agent-driven development.
 - Botones: Let's work together · View CV · Write to me
-- Ficha: role, stack, ai, experience, location, mode, languages. Valores: Senior Software Engineer · Python · Django · DRF · PostgreSQL · AWS · Claude Code · BMAD · LLM APIs · Hugging Face · More than {{ owner.years }} years · Remote or hybrid · Native Spanish · Professional English
-- Franja de clientes: I have worked for
+- Ficha: role, stack, ai, experience, location, mode, languages. Valores: Senior Software Engineer · Python · Django · DRF · PostgreSQL · AWS · Claude Code · BMAD · LLM APIs · Hugging Face · More than {{ owner.years }} years · Madrid, Spain · Remote or hybrid · Native Spanish · English B2
+- Franja de clientes: I have worked for · World Bank Group · Nokia · Selia · Ekwi-three · IUCN
 - Casos, titular: What I have built
 - Cómo trabajo, titular: Agents write the code. The specification and the review are mine.
   1. Specification: Brief, phased scope and acceptance criteria before any code is written.
@@ -397,10 +424,8 @@ Los textos en español están en `design/home.html`. Estos son los equivalentes 
 - Qué ofrezco, titular: How I can help
   - Backend architecture: API design, data modeling and AWS infrastructure for products that need to grow without being rebuilt.
   - End-to-end product: From specification to deployment: backend, frontend, testing and release, with one person accountable.
-  - AI in existing products: Integration of LLMs and Hugging Face models into systems that are already in production. Most recently: a diagnostics dashboard that explains its own charts in plain language, for the World Bank Group.
+  - AI in existing products: Integration of LLMs and Hugging Face models into systems that are already in production. Most recently: a financial analysis service that explains the dashboards of a rental management platform in plain language.
 - Contacto, titular: Have a project or an open role? Let's talk.
 - Contacto, línea: I reply in Spanish or English.
 - Blog: From the blog · View all
 - Detalle de caso: The problem · What I built · How it was built · Stack · Result · Next case · Have a similar problem? Let's talk.
-
-En español, "Más de 12 años" de la referencia se sustituye por `{{ owner.years }}`.

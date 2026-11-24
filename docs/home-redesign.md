@@ -1,6 +1,6 @@
 # Brief: nueva home de nestorbracho.com (v2)
 
-Estado: aprobado por Nestor · 23 nov 2026
+Estado: aprobado por Nestor · actualizado el 24 nov 2026
 Sustituye a la versión anterior de este documento. Se lee junto con `home-design.md` (diseño) y `home-cases.md` (contenido de los casos).
 
 ## 1. Por qué
@@ -38,7 +38,7 @@ En este orden, en una sola página. El detalle visual de cada sección está en 
 
 ## 5. Sección Casos
 
-- **Grupo 1, rótulo "Grupo Banco Mundial · 2023 a hoy":** el portal a ancho completo, y debajo la app móvil y `e3-django-dynamic-forms`.
+- **Grupo 1, rótulo "Grupo Banco Mundial · 2023 a 2026":** el portal a ancho completo, y debajo la app móvil y `e3-django-dynamic-forms`.
 - **Grupo 2, rótulo "Otros clientes y proyectos":** el CRM a ancho completo, y debajo Selia, el sistema de almacén y este sitio.
 - Cada tarjeta muestra, si existen: etiqueta de autoría, cliente y periodo, título, línea de prueba, resumen y enlaces.
 - Las dos tarjetas a ancho completo reservan un hueco para una captura. Sin captura, la tarjeta ocupa todo el ancho con el texto y no deja un hueco vacío.
@@ -78,6 +78,10 @@ En este orden, en una sola página. El detalle visual de cada sección está en 
 7. Titulares en Roboto Mono. Poppins solo para texto corrido.
 8. La página about se mantiene y se enlaza desde el pie, no desde el menú.
 9. El `<link>` del feed se queda como está hasta la fase 2.
+10. Nestor terminó su contrato con el Grupo Banco Mundial en junio de 2026 y trabaja como freelance. El sitio habla del Banco en pasado.
+11. El nombre se escribe "Nestor", sin acento, en los dos idiomas.
+12. Nivel de inglés: B2.
+13. El contenido del CV está en `cv-content.md`.
 
 ## 9. Fases
 
@@ -124,4 +128,4 @@ Responde solo desde el CV y los casos publicados. Especificación propia antes d
 4. Problema y resultado del caso de Selia.
 5. Estado actual de la app móvil, para su frase de resultado.
 6. Disponibilidad, si quiere mostrarla en la ficha del hero.
-7. Alinear `resume.md` y la página de CV con el CV actual (nivel de inglés y fechas).
+7. Hecho: la página de CV sale de `cv-content.md`, y `resume.md` se borró porque ya no se usaba.

@@ -1,5 +1,10 @@
-{% extends "base.html" %}
+{% extends 'site.html' %}
 {% load i18n %}
+
+{% comment %}
+    On the main site's layout, so a mistyped address still shows the site's header and footer. The 500 page keeps the
+    blog's layout (base.html): Django renders it without the request, and site.html's header needs it.
+{% endcomment %}
 
 {% block meta_seo %}
 {% translate 'Page not found' as page_title %}
@@ -7,14 +12,17 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col col-12">
-            <div class="error">
-                <h1 class="error__title">404<span class="screen-reader-text"> {% translate 'Page not found' %}</span></h1>
-                <p class="error__text">{% translate "Well, this is embarrassing..." %}</p>
-                <p class="error__text">{% translate "The page you're looking for doesn't exist, never existed, or just rage quit." %}</p>
-                <a class="button button--primary" href="{% url 'main:index' %}">{% translate 'Back to homepage' %}</a>
+<div class="page error-page">
+    <div class="container">
+        <div class="page__inner">
+            <div class="page__head">
+                <p class="error-page__code" aria-hidden="true">404</p>
+                <h1 class="page__title">{% translate 'Page not found' %}</h1>
+                <p class="error-page__text">{% translate "Well, this is embarrassing..." %}</p>
+                <p class="error-page__text">{% translate "The page you're looking for doesn't exist, never existed, or just rage quit." %}</p>
+                <div class="buttons">
+                    <a class="button button--primary" href="{% url 'main:index' %}">{% translate 'Back to homepage' %} <span class="arrow" aria-hidden="true">→</span></a>
+                </div>
             </div>
         </div>
     </div>

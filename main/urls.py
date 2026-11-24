@@ -1,13 +1,14 @@
 from django.urls import path
 from django.views.generic import RedirectView
 
-from .views import AboutView, CaseDetailView, ContactFormView, CVView, IndexView, PrivacyView
+from .views import AboutView, CaseDetailView, CasesView, ContactFormView, CVView, IndexView, PrivacyView
 
 app_name = 'main'
 urlpatterns = [
     path('', IndexView.as_view(), name='index'),
     # "Load more" asked here while the home listed the posts; a page open since then still does
     path('more-posts/', RedirectView.as_view(pattern_name='blog:more-posts', permanent=True, query_string=True)),
+    path('cases/', CasesView.as_view(), name='cases'),
     path('cases/<slug:slug>/', CaseDetailView.as_view(), name='case-detail'),
     path('about/', AboutView.as_view(), name='about'),
     path('cv/', CVView.as_view(), name='cv'),

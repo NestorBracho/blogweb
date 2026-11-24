@@ -16,8 +16,9 @@
             <p class="hero__kicker">Nestor Bracho · {{ owner.role }}</p>
             <h1 class="hero__title" id="hero-title">{% translate 'I design and build web platforms and their backends, from architecture to deployment.' %}</h1>
             <p class="hero__lede">{% blocktranslate trimmed with years=owner.years %}
-                More than {{ years }} years with Python and Django. Consultant for the World Bank Group. I work with AI
-                agents under specification and human review.
+                More than {{ years }} years with Python and Django, three of them as an architect and developer for the
+                World Bank Group. I now work as a freelancer and build complete systems with AI agents, under
+                specification and human review.
             {% endblocktranslate %}</p>
             <div class="buttons">
                 <a class="button button--primary" href="{{ contact_url }}">{% translate 'Let’s work together' %} <span class="arrow" aria-hidden="true">→</span></a>
@@ -40,11 +41,11 @@
     <div class="container clients__inner">
         <p class="clients__intro">{% translate 'I have worked for' %}</p>
         <ul class="clients__list">
-            <li>World Bank Group</li>
+            <li>{% translate 'World Bank Group' %}</li>
             <li>Nokia</li>
             <li>Selia</li>
             <li>Ekwi-three</li>
-            <li>IUCN</li>
+            <li>{% translate 'IUCN' %}</li>
         </ul>
     </div>
 </section>
@@ -60,7 +61,7 @@
         <div class="case-groups">
             {% for group, wide_cases, normal_cases in case_groups %}
                 <div class="case-group">
-                    <p class="group-label">{% if group == 'world-bank' %}{% translate 'World Bank Group · 2023 to present' %}{% else %}{% translate 'Other clients and projects' %}{% endif %}</p>
+                    <p class="group-label">{% if group == 'world-bank' %}{% translate 'World Bank Group · 2023 to 2026' %}{% else %}{% translate 'Other clients and projects' %}{% endif %}</p>
                     {% for case in wide_cases %}
                         {% include 'main/_lib/_case_card.html' %}
                     {% endfor %}
@@ -130,7 +131,7 @@
             </div>
             <div class="offer">
                 <h3 class="offer__title">{% translate 'AI in existing products' %}</h3>
-                <p class="offer__text">{% translate 'Integration of LLMs and Hugging Face models into systems that are already in production. Most recently: a diagnostics dashboard that explains its own charts in plain language, for the World Bank Group.' %}</p>
+                <p class="offer__text">{% translate 'Integration of LLMs and Hugging Face models into systems that are already in production. Most recently: a financial analysis service that explains the dashboards of a rental management platform in plain language.' %}</p>
             </div>
         </div>
     </div>
@@ -150,8 +151,8 @@
     </div>
 </section>
 
-{# 8. From the blog: only while there is something published #}
-{% if latest_posts %}
+{# 8. From the blog: only while its latest post is less than a year old, so a quiet blog doesn't date the home #}
+{% if latest_posts and latest_posts.0.published_at >= blog_shown_since %}
 <section class="section blog-teaser" id="blog" aria-labelledby="blog-title">
     <div class="container">
         <div class="blog-teaser__head">

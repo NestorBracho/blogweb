@@ -1292,3 +1292,18 @@ a:hover {
     position: absolute;
     left: -10000px;
 }
+
+/* 404 page: templates/404.html, the page head alone */
+
+.error-page__code {
+    font-family: var(--mono);
+    font-size: clamp(56px, 8vw, 96px);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--muted);
+}
+
+.error-page__text {
+    color: var(--text-2);
+}

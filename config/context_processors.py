@@ -35,10 +35,9 @@ def sidebar(request):
     published = Post.objects.published()
     return {
         'categories': Category.objects.with_published_posts().order_by('-latest_post'),
-        # Shown in both the sidebar and the footer: one queryset, so one query per page
+        # Shown in the blog's sidebar and footer, and in the home's "From the blog": one queryset, so one query per page
         'latest_posts': published.order_by('-published_at')[:3],
-        # While every post fits on the blog's first page, the other lists of posts (the sidebar's and the home's
-        # Hacker's Haven) would only repeat the same ones, so they wait until there are more. Lazy: only pages with
-        # those lists count.
+        # While every post fits on the blog's first page, the sidebar's list of posts would only repeat the same ones,
+        # so it waits until there are more. Lazy: only pages with that list count.
         'many_posts': SimpleLazyObject(lambda: published.count() > POSTS_PAGE_SIZE),
     }

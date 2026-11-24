@@ -173,7 +173,7 @@ OWNER_LOCATIONS['es'] = env('OWNER_LOCATION_ES', default=OWNER_LOCATIONS['en'])
 # Job title on the home page, the CV, page titles and link previews. It changes now and then, so it lives here only.
 # The home and CV link preview image has it too: when it changes, run brand/source/gen.py and copy
 # brand/social/og-profile.png to static/images/.
-OWNER_ROLE = 'Senior Full Stack Engineer'
+OWNER_ROLE = 'Senior Software Engineer'
 
 # The year his career started (January), for the "more than N years" on the home page, the CV and link previews
 OWNER_CAREER_START_YEAR = 2013
@@ -279,7 +279,7 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 SECURE_CSP = {
     'default-src': ["'self'"],
     'script-src': ["'self'"],
-    # The theme uses style="" attributes
+    # The blog's theme uses style="" attributes; the main site's own layout (templates/site.html) has none
     'style-src': ["'self'", "'unsafe-inline'"],
     # Posts can show images hosted on other sites
     'img-src': ["'self'", 'https:'],

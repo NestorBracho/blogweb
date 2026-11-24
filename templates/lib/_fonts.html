@@ -1,5 +1,9 @@
 {% load static %}
-{# Body text and headings are on the first screen of every page, so their fonts start downloading right away #}
+{% comment %}
+    Body text and headings are on the first screen of every page, so their fonts start downloading right away.
+    Roboto Mono, then the Poppins weight the first screen uses: `poppins` names its file (the blog's headings are
+    Poppins 700; the main site's layout, templates/site.html, passes the body text's 400).
+{% endcomment %}
 <link rel="preload" href="{% static 'fonts/roboto-mono/roboto-mono.woff2' %}" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="{% static 'fonts/poppins/poppins-700.woff2' %}" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{% static poppins|default:'fonts/poppins/poppins-700.woff2' %}" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="{% static 'css/fonts.css' %}">

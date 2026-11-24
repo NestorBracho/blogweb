@@ -1,32 +1,36 @@
-/* CV page: main/templates/main/cv.html */
-
-.cv__name {
-    margin-bottom: 8px;
-}
+/* CV page: main/templates/main/cv.html, on the main site's layout (css/site.css) */
 
 .cv__headline {
-    margin-bottom: 16px;
-    font-family: "Poppins", Helvetica Neue, Helvetica, Arial, sans-serif;
-    font-size: 20px;
+    font-family: var(--mono);
+    font-size: 18px;
     font-weight: 500;
-    color: var(--text-color);
+    color: var(--text-2);
 }
 
 .cv__contact {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px 20px;
-    margin-bottom: 24px;
+    gap: 0 24px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--muted);
 }
 
-/* Wrapped lines line up with the text, not with the bullet */
-.cv ul {
-    padding-left: 20px;
-    list-style-position: outside;
+.cv__contact li {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
 }
 
-.cv__job {
-    margin-bottom: 32px;
+.cv__contact a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--text);
+    text-decoration: underline;
 }
 
 .cv__job h3 {
@@ -34,12 +38,23 @@
 }
 
 .cv__job-meta {
+    margin-top: 0;
     margin-bottom: 12px;
-    color: var(--text-alt-color);
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--muted);
+}
+
+.cv__job-meta strong {
+    color: var(--text);
 }
 
 .cv__stack,
 .cv__note {
     font-size: 15px;
-    color: var(--text-alt-color);
+    color: var(--muted);
+}
+
+.cv__stack strong {
+    color: var(--text-2);
 }

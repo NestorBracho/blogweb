@@ -11,3 +11,4 @@ Michael Nygard's [format](https://cognitect.com/blog/2011/11/15/documenting-arch
 6. [The language in the URL](0006-language-in-the-url.md)
 7. [Server-rendered lists of posts, with htmx for "Load more"](0007-server-rendered-lists-with-htmx.md)
 8. [Case studies in the repository](0008-case-studies-in-the-repository.md)
+9. [An own layout for the main site](0009-own-layout-for-the-main-site.md)

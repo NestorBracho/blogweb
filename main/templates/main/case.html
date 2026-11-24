@@ -1,59 +1,104 @@
-{% extends 'base.html' %}
-{% load i18n %}
+{% extends 'site.html' %}
+{% load i18n static %}
 
 {% comment %}
-    A case study (main/cases.py). Minimal markup and no styles of its own yet: the new design of the main site will
-    replace it.
+    A case's page (main/cases.py): docs/home-design.md, section 6, and docs/design/case-detail.html. The view lists
+    the blocks the case has (main.views.case_blocks), numbered without gaps.
 {% endcomment %}
 
 {% block content %}
-    <article class="case container">
-        {% if drafts_visible and not case.is_confirmed %}
-            <p class="case-notice" role="note">{% translate 'Development only: this case has drafts or pending fields and is not published.' %}</p>
+{% url 'main:contact' as contact_url %}
+{% url 'main:cv' as cv_url %}
+
+<section class="case-hero" aria-labelledby="case-title">
+    <div class="container case-hero__inner">
+        <nav class="breadcrumb" aria-label="{% translate 'Breadcrumb' %}">
+            <a href="{% url 'main:index' %}#cases"><span aria-hidden="true">~/</span>{% translate 'cases' %}</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">{{ case.slug }}</span>
+        </nav>
+        {% if drafts_visible and not case.is_published %}
+            <p class="dev-mark">{% translate 'Development only: not published' %}</p>
         {% endif %}
+        <h1 class="case-hero__title" id="case-title">{{ case.title }}</h1>
+        {% if case.summary %}<p class="case-hero__lede">{{ case.summary }}</p>{% endif %}
+        {% if case.proof_line %}<p class="proof-line">{{ case.proof_line }}</p>{% endif %}
+    </div>
+</section>
 
-        <h1>{% include 'main/_lib/_case_field.html' with field=case.title %}</h1>
+{% if case.client or case.period or case.role or case.authorship %}
+<section class="case-facts" aria-label="{% translate 'Case facts' %}">
+    <dl class="container case-facts__list">
+        {% if case.client %}<div class="case-facts__item"><dt>{% translate 'client' %}</dt><dd>{{ case.client }}</dd></div>{% endif %}
+        {% if case.period %}<div class="case-facts__item"><dt>{% translate 'period' %}</dt><dd>{{ case.period }}</dd></div>{% endif %}
+        {% if case.role %}<div class="case-facts__item"><dt>{% translate 'role' %}</dt><dd>{{ case.role }}</dd></div>{% endif %}
+        {% if case.authorship %}<div class="case-facts__item"><dt>{% translate 'authorship' %}</dt><dd>{{ case.authorship }}</dd></div>{% endif %}
+    </dl>
+</section>
+{% endif %}
 
-        <dl class="case__facts">
-            <dt>{% translate 'Client' %}</dt>
-            <dd>{% include 'main/_lib/_case_field.html' with field=case.client %}</dd>
-            <dt>{% translate 'Period' %}</dt>
-            <dd>{% include 'main/_lib/_case_field.html' with field=case.period %}</dd>
-            <dt>{% translate 'Role' %}</dt>
-            <dd>{% include 'main/_lib/_case_field.html' with field=case.role %}</dd>
-            <dt>{% translate 'Stack' %}</dt>
-            <dd>{% include 'main/_lib/_case_field.html' with field=case.stack %}</dd>
-        </dl>
+{% if blocks %}
+<section class="case-body">
+    <div class="container case-body__inner">
+        {% for block in blocks %}
+            {% if block.kind == 'screenshot' %}
+                <figure class="case-shot">
+                    <img src="{% static case.screenshot.path %}" alt="{{ case.screenshot.alt }}" loading="lazy" decoding="async">
+                </figure>
+            {% else %}
+                <div class="case-block">
+                    <h2 class="case-block__label"><span class="section-label__mark" aria-hidden="true"></span>{{ block.number }} / {{ block.label }}</h2>
+                    {% if block.kind == 'solution' %}
+                        <ol class="case-block__content case-solution">
+                            {% for point in case.solution %}
+                                <li><span class="case-solution__number" aria-hidden="true">{{ forloop.counter|stringformat:'02d' }}</span><span>{{ point }}</span></li>
+                            {% endfor %}
+                        </ol>
+                    {% elif block.kind == 'stack' %}
+                        <ul class="case-block__content case-stack">
+                            {% for item in case.stack %}<li>{{ item }}</li>{% endfor %}
+                        </ul>
+                    {% elif block.kind == 'links' %}
+                        <div class="case-block__content links">
+                            {% for link in case.links %}
+                                <a class="text-link" href="{{ link.url }}" rel="noopener">{{ link.label }} <span class="arrow" aria-hidden="true">↗</span></a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="case-block__content">
+                            <p>{% if block.kind == 'problem' %}{{ case.problem }}{% elif block.kind == 'how_built' %}{{ case.how_built }}{% else %}{{ case.result }}{% endif %}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
 
-        <h2>{% translate 'The problem' %}</h2>
-        <p>{% include 'main/_lib/_case_field.html' with field=case.problem %}</p>
+{% if next_case.slug != case.slug %}
+<section class="next-case" aria-label="{% translate 'Next case' %}">
+    <div class="container">
+        <a class="next-case__link" href="{{ next_case.url }}">
+            <span class="next-case__text">
+                <span class="meta">{% translate 'Next case' %}</span>
+                <span class="next-case__title">{{ next_case.title }}</span>
+            </span>
+            <span class="arrow" aria-hidden="true">→</span>
+        </a>
+    </div>
+</section>
+{% endif %}
 
-        <h2>{% translate 'What I built' %}</h2>
-        <p>{% include 'main/_lib/_case_field.html' with field=case.solution %}</p>
-
-        <h2>{% translate 'The result' %}</h2>
-        <p>{% include 'main/_lib/_case_field.html' with field=case.result %}</p>
-
-        {% if case.link %}
-            <p>
-                {% if case.link.text %}
-                    <a href="{{ case.link.text }}" rel="noopener">{{ case.link.text }}</a>
-                    {% if case.link.state == 'draft' %}<mark class="case-draft">{% translate 'Draft: to be confirmed' %}</mark>{% endif %}
-                {% else %}
-                    {% translate 'Link' %}: {% include 'main/_lib/_case_field.html' with field=case.link %}
-                {% endif %}
-            </p>
-        {% endif %}
-
-        {% if other_cases %}
-            <nav aria-label="{% translate 'Other cases' %}">
-                <h2>{% translate 'Other cases' %}</h2>
-                <ul>
-                    {% for other in other_cases %}
-                        <li><a href="{{ other.url }}">{{ other.title.text }}</a></li>
-                    {% endfor %}
-                </ul>
-            </nav>
-        {% endif %}
-    </article>
+<section class="section section--alt cta cta--case" aria-labelledby="contact-title">
+    <div class="container cta__inner">
+        <div class="cta__text">
+            <h2 class="cta__title" id="contact-title">{% translate 'Have a similar problem? Let’s talk.' %}</h2>
+        </div>
+        <div class="buttons">
+            <a class="button button--primary" href="{{ contact_url }}">{% translate 'Write to me' %} <span class="arrow" aria-hidden="true">→</span></a>
+            <a class="button" href="{{ cv_url }}">{% translate 'View CV' %}</a>
+        </div>
+    </div>
+</section>
 {% endblock %}

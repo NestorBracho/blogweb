@@ -148,3 +148,9 @@
 .content:focus {
     outline: none;
 }
+
+/* The forms' hidden field for bots (templates/lib/_honeypot_field.html) */
+.honeypot {
+    position: absolute;
+    left: -10000px;
+}

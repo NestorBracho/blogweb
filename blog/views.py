@@ -23,7 +23,7 @@ class PostListView(LatestPostsMixin, generic.ListView):
         context = super().get_context_data(**kwargs)
         context['page_title'] = _('Blog')
         context['meta_description'] = _(
-            'Posts by Nestor Bracho about science, storytelling and software, in English and Spanish.'
+            'Posts by Nestor Bracho on Django, APIs and AI agent-driven development, in English and Spanish.'
         )
         return context
 
@@ -53,7 +53,9 @@ class PostDetailView(generic.DetailView):
         context['page_title'] = post.title()
         context['meta_description'] = post.description()
         context['og_type'] = 'article'
-        context['structured_data'] = structured_data.blog_posting(self.request, post)
+        context['structured_data'] = structured_data.post_page(self.request, post)
+        if post.noindex:
+            context['robots'] = 'noindex'
         if post.cover:
             context['social_image_url'] = post.cover_urls['social']
             # Without its social size yet (make_cover_sizes), the original stands in and previews size it themselves

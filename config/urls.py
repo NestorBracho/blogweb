@@ -1,8 +1,8 @@
 """Root URLs.
 
 Pages carry their language in the path (/en/…, /es/…); a path without one is redirected to the visitor's language
-by LocaleMiddleware (docs/adr/0006-language-in-the-url.md). The admin, the API, the sitemap, robots.txt and the
-favicon stay at the root.
+by LocaleMiddleware (docs/adr/0006-language-in-the-url.md). The admin, the API, the sitemap, robots.txt, llms.txt
+and the favicon stay at the root.
 """
 
 from django.conf import settings
@@ -18,6 +18,7 @@ from django.views.i18n import set_language
 
 from blog.sitemaps import BlogSitemap, CategorySitemap, PostSitemap
 from main.sitemaps import CaseSitemap, StaticViewSitemap
+from main.views import LlmsTxtView
 
 sitemaps = {
     'pages': StaticViewSitemap,
@@ -33,6 +34,8 @@ urlpatterns = [
     path('api/', include('blog.api.urls')),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),
     path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain'), name='robots'),
+    # A Markdown map of the site for AI systems (llmstxt.org), next to robots.txt
+    path('llms.txt', LlmsTxtView.as_view(), name='llms'),
     # Browsers and crawlers ask for /favicon.ico at the root. The hashed file name is looked up per request (lazy):
     # deploys run migrate, which imports this module, before collectstatic. A temporary redirect, so browsers don't
     # remember one hashed name forever.

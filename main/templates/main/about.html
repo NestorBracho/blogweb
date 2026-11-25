@@ -43,9 +43,9 @@
                     <h2 id="what-i-do">{% translate 'What I Do (and Love Doing)' %}</h2>
 
                     <p>
-                        {% blocktranslate %}I build complex backend systems. It’s where I feel most at home; architecting infrastructure,
+                        {% blocktranslate with years=owner.years %}I build complex backend systems. It’s where I feel most at home; architecting infrastructure,
                         optimizing processes, and spinning up APIs and services that hum with efficiency. I’ve spent
-                        over a decade crafting digital platforms for everything from social good to business
+                        more than {{ years }} years crafting digital platforms for everything from social good to business
                         logistics.{% endblocktranslate %}
                     </p>
 

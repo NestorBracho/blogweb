@@ -8,7 +8,7 @@ from .models import Post
 class LatestPostsFeed(Feed):
     title = 'Nestor Bracho'
     link = reverse_lazy('main:index')
-    description = _('Science, storytelling & software, by Nestor Bracho.')
+    description = _('Django, APIs and AI agent-driven development, by Nestor Bracho.')
 
     def items(self):
         return Post.objects.published().order_by('-published_at')[:20]
@@ -23,4 +23,4 @@ class LatestPostsFeed(Feed):
         return item.published_at
 
     def item_updateddate(self, item):
-        return item.updated
+        return item.content_modified

@@ -2,10 +2,11 @@ import datetime
 
 from django.conf import settings
 from django.contrib import messages
-from django.http import Http404, HttpResponsePermanentRedirect, HttpResponseRedirect
+from django.http import Http404, HttpResponse, HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.shortcuts import reverse
+from django.template.loader import render_to_string
 from django.templatetags.static import static
-from django.utils import timezone
+from django.utils import timezone, translation
 from django.utils.translation import gettext as _
 from django.views import generic
 
@@ -41,7 +42,12 @@ class IndexView(generic.TemplateView):
         return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        kwargs['structured_data'] = structured_data.home_page(self.request)
+        # What clients search for, around the role, which stays as it is (og-profile.png has it too)
+        kwargs['full_title'] = _('Nestor Bracho, %(role)s · Freelance Django & Python, %(city)s') % {
+            'role': settings.OWNER_ROLE,
+            'city': settings.OWNER_CITY,
+        }
+        kwargs['structured_data'] = structured_data.home(self.request)
         kwargs['social_image_url'] = static(PROFILE_SOCIAL_IMAGE)
         kwargs['social_image_size'] = SOCIAL_SIZE
         kwargs['case_groups'] = cases.grouped_cases()
@@ -83,7 +89,7 @@ class CaseDetailView(generic.TemplateView):
         if localized.summary:
             kwargs['meta_description'] = localized.summary
         kwargs['og_type'] = 'article'
-        kwargs['structured_data'] = structured_data.case_study(self.request, localized)
+        kwargs['structured_data'] = structured_data.case_page(self.request, localized)
 
         return super().get_context_data(**kwargs)
 
@@ -143,6 +149,37 @@ class CVView(generic.TemplateView):
         kwargs['structured_data'] = structured_data.profile_page(self.request)
 
         return super().get_context_data(**kwargs)
+
+
+class LlmsTxtView(generic.View):
+    """
+    /llms.txt (llmstxt.org): a Markdown map of the site's key pages for AI systems. At the root, like robots.txt, so
+    always in English, with the Spanish home listed beside the English one.
+    """
+
+    def get(self, request, *args, **kwargs):
+        def url(name):
+            return request.build_absolute_uri(reverse(name))
+
+        with translation.override('en'):
+            context = {
+                'home_url': url('main:index'),
+                'about_url': url('main:about'),
+                'cv_url': url('main:cv'),
+                'blog_url': url('blog:post-list'),
+                'role': settings.OWNER_ROLE,
+                'years': years_of_experience(),
+                'city': settings.OWNER_CITY,
+                # Only the published ones, even in development
+                'cases': [
+                    {'title': case.title, 'summary': case.summary, 'url': request.build_absolute_uri(case.url)}
+                    for case in (published.localized() for published in cases.CASES if published.is_published())
+                ],
+            }
+            with translation.override('es'):
+                context['home_es_url'] = url('main:index')
+            content = render_to_string('llms.txt', context, request)
+        return HttpResponse(content, content_type='text/plain; charset=utf-8')
 
 
 class PrivacyView(generic.TemplateView):

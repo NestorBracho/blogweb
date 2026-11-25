@@ -4,7 +4,7 @@ from babel.dates import format_date
 from django import template
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import translation
-from django.utils.html import format_html
+from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 
 from main import seo
@@ -50,6 +50,14 @@ def open_graph_locale(language):
 
 @register.simple_tag
 def json_ld(data):
-    """Schema.org data as a <script type="application/ld+json"> block. Browsers don't run it, so the CSP allows it."""
+    """
+    Schema.org data as <script type="application/ld+json"> blocks, one per object when given a list. Browsers don't
+    run them, so the CSP allows them.
+    """
+    blocks = data if isinstance(data, list) else [data]
+    return format_html_join('\n', '{}', ((json_ld_block(item),) for item in blocks))
+
+
+def json_ld_block(data):
     content = json.dumps(data, cls=DjangoJSONEncoder).translate(JSON_SCRIPT_ESCAPES)
     return format_html('<script type="application/ld+json">{}</script>', mark_safe(content))

@@ -21,10 +21,23 @@ def reverse_in(language, viewname, *args, **kwargs):
         return reverse(viewname, args=args, kwargs=kwargs)
 
 
+JSON_LD = re.compile(r'<script type="application/ld\+json">(.*?)</script>', re.DOTALL)
+
+
 def structured_data(response):
-    """The page's JSON-LD block, parsed; None if it has none."""
-    match = re.search(r'<script type="application/ld\+json">(.*?)</script>', response.content.decode(), re.DOTALL)
+    """The page's first JSON-LD block, its main entity, parsed; None if it has none."""
+    match = JSON_LD.search(response.content.decode())
     return json.loads(match.group(1)) if match else None
+
+
+def structured_data_blocks(response):
+    """Every JSON-LD block of the page, parsed, in order."""
+    return [json.loads(block) for block in JSON_LD.findall(response.content.decode())]
+
+
+def structured_data_of_type(response, schema_type):
+    """The page's JSON-LD block of that @type; None if it has none."""
+    return next((block for block in structured_data_blocks(response) if block.get('@type') == schema_type), None)
 
 
 # Data migrations already seed real categories, so tests use their own slugs
@@ -45,9 +58,11 @@ def create_post(title, days_ago=0, **kwargs):
         **kwargs,
     }
     post = Post.objects.create(**fields)
-    # `created` is auto_now_add, so it can only be moved after the insert. Published posts came out that same day.
+    # `created` is auto_now_add, so it can only be moved after the insert. Published posts came out that same day, and
+    # their text hasn't changed since.
     when = timezone.now() - timedelta(days=days_ago)
-    Post.objects.filter(pk=post.pk).update(created=when, published_at=when if post.published_at else None)
+    published_at = when if post.published_at else None
+    Post.objects.filter(pk=post.pk).update(created=when, published_at=published_at, content_updated=when)
     post.refresh_from_db()
     return post
 

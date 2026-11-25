@@ -29,6 +29,11 @@ def content_language():
     return 'es' if translation.get_language() == 'es' else 'en'
 
 
+def normalized_text(text):
+    """A text as forms send it back: browsers turn line breaks into CRLF and Django's form fields strip the ends."""
+    return (text or '').replace('\r\n', '\n').strip()
+
+
 class TranslatedFieldsMixin:
     """For models that store each translatable field twice, as `<field>_es` and `<field>_en`."""
 
@@ -127,12 +132,29 @@ class Post(TranslatedFieldsMixin, BaseModel):
         help_text='Set when the post is first published. Change it only to correct the date readers see.',
     )
 
+    # Kept out of search results (a robots noindex, and left out of the sitemap) but still reachable by its address:
+    # for posts off what the site is about. Nullable, so adding it only added a column (blog/migrations/0009); empty
+    # means no. The admin shows it as a checkbox.
+    noindex = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text='Keep this post out of search results. It stays published and reachable by its address.',
+    )
+    # When its title, description or body last changed, in either language: what readers and search engines are told
+    # as its update date. `updated` moves on any save (a category, a cover, publishing), this one only with the text.
+    content_updated = models.DateTimeField(null=True, blank=True, editable=False)
+
     objects = PostQuerySet.as_manager()
+
+    # The fields whose change makes the post "updated"
+    CONTENT_FIELDS = ('title_es', 'title_en', 'description_es', 'description_en', 'body_es', 'body_en')
 
     def __str__(self):
         return self.slug
 
     def save(self, *args, **kwargs):
+        now = timezone.now()
+        update_fields = kwargs.get('update_fields')
         # The only place slugs are made, whether a post comes from the admin, the API or draft_article
         if not self.slug:
             self.slug = self.unique_slug(self.title_en or self.title_es)
@@ -140,9 +162,18 @@ class Post(TranslatedFieldsMixin, BaseModel):
         self.read_time = max(estimate_read_time(self.body_en), estimate_read_time(self.body_es))
         # Likewise the publication date, on the first save that publishes the post
         if self.is_published and self.published_at is None:
-            self.published_at = timezone.now()
-            if kwargs.get('update_fields') is not None:
-                kwargs['update_fields'] = {*kwargs['update_fields'], 'published_at'}
+            self.published_at = now
+            if update_fields is not None:
+                update_fields = kwargs['update_fields'] = {*update_fields, 'published_at'}
+        # Empty means no (the column is nullable only so adding it didn't rebuild the table)
+        if self.noindex is None:
+            self.noindex = False
+            if update_fields is not None:
+                update_fields = kwargs['update_fields'] = {*update_fields, 'noindex'}
+        if self.content_changed(update_fields):
+            self.content_updated = now
+            if update_fields is not None:
+                kwargs['update_fields'] = {*update_fields, 'content_updated'}
 
         super().save(*args, **kwargs)
 
@@ -150,6 +181,33 @@ class Post(TranslatedFieldsMixin, BaseModel):
         # draft_article alike, and does nothing while the cover stays the same.
         if self.cover_sizes.get('source', '') != (self.cover.name or ''):
             self.update_cover_sizes()
+
+    def content_changed(self, update_fields=None):
+        """Whether saving now changes the title, description or body (a new post has them all new)."""
+        if update_fields is not None and not set(update_fields) & set(self.CONTENT_FIELDS):
+            return False
+        if self._state.adding or self.content_updated is None:
+            return True
+        stored = Post.objects.filter(pk=self.pk).values(*self.CONTENT_FIELDS).first()
+        return stored is None or any(
+            normalized_text(stored[field]) != normalized_text(getattr(self, field)) for field in self.CONTENT_FIELDS
+        )
+
+    @property
+    def content_modified(self):
+        """
+        When readers last got new content: the content's last change, but never before the publication, since edits
+        to a draft are part of what was first published.
+        """
+        dates = [date for date in [self.content_updated, self.published_at] if date is not None]
+        return max(dates) if dates else self.updated
+
+    @property
+    def shows_updated_date(self):
+        """Whether the post says it was updated: only when its content changed on a later day than it came out."""
+        if self.published_at is None or self.content_updated is None:
+            return False
+        return timezone.localdate(self.content_updated) > timezone.localdate(self.published_at)
 
     def update_cover_sizes(self):
         """Makes the cover at every size, deletes the sizes of the previous cover and records the new ones."""

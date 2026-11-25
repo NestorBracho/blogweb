@@ -26,7 +26,15 @@ from blog.covers import SOCIAL_SIZE
 from blog.listing import POSTS_PAGE_SIZE
 from config.context_processors import years_of_experience
 from config.middleware import ContentSecurityPolicyMiddleware
-from config.testing import EmptyCacheMixin, create_category, create_post, reverse_in, structured_data
+from config.testing import (
+    EmptyCacheMixin,
+    create_category,
+    create_post,
+    reverse_in,
+    structured_data,
+    structured_data_blocks,
+    structured_data_of_type,
+)
 from config.throttling import FormThrottle
 
 from . import cases, seo
@@ -194,7 +202,19 @@ class HomeTests(TestCase):
         self.assertIn('Staff Engineer', meta(cv, 'description'))
         self.assertIn('Staff Engineer', page_title(cv))
 
-    @override_settings(OWNER_CAREER_START_YEAR=2000)
+    def test_the_years_of_experience_count_whole_years_from_the_start_date(self):
+        start = datetime.date(2013, 1, 14)
+        for today, years in [
+            (datetime.date(2026, 1, 13), 12),
+            (datetime.date(2026, 1, 14), 13),
+            (datetime.date(2026, 11, 25), 13),
+            (datetime.date(2027, 1, 13), 13),
+            (datetime.date(2027, 1, 14), 14),
+        ]:
+            with self.subTest(today=today), override_settings(OWNER_CAREER_START=start):
+                self.assertEqual(years_of_experience(today), years)
+
+    @override_settings(OWNER_CAREER_START=datetime.date(2000, 1, 1))
     def test_the_years_of_experience_are_set_in_one_place(self):
         years = years_of_experience()
         self.assertEqual(years, datetime.date.today().year - 2000)
@@ -1877,3 +1897,214 @@ class CaseDraftsInDevelopmentTests(TestCase):
             response = self.client.get(reverse_in('en', 'main:case-detail', slug='only-case'))
 
         self.assertNotContains(response, 'next-case')
+
+
+class SearchTargetingTests(TestCase):
+    """The home names what clients search for, around the role, which stays as it is."""
+
+    def test_the_title_names_django_python_freelance_work_and_madrid(self):
+        for language in ['en', 'es']:
+            with self.subTest(language=language):
+                response = self.client.get(reverse_in(language, 'main:index'))
+                title = page_title(response)
+
+                for word in ['Nestor Bracho', 'Senior Software Engineer', 'Django', 'Python', 'freelance', 'Madrid']:
+                    self.assertIn(word.lower(), title.lower())
+                self.assertEqual(meta(response, 'og:title'), title)
+
+    def test_the_heading_names_python_and_django_and_the_kicker_keeps_the_role(self):
+        for language, heading in [
+            ('en', 'I design and build web platforms and their backends with Python and Django, from architecture'),
+            ('es', 'Diseño y construyo plataformas web y sus backends con Python y Django, de la arquitectura'),
+        ]:
+            with self.subTest(language=language):
+                response = self.client.get(reverse_in(language, 'main:index'))
+
+                self.assertIn(heading, html.unescape(inner_html(response, 'hero__title')))
+                self.assertIn('Senior Software Engineer', inner_html(response, 'hero__kicker'))
+
+    @override_settings(OWNER_CITY='Valencia')
+    def test_the_city_is_set_in_one_place(self):
+        response = self.client.get(reverse_in('en', 'main:index'))
+
+        self.assertIn('Valencia', page_title(response))
+        self.assertEqual(structured_data(response)['address']['addressLocality'], 'Valencia')
+
+
+class IdentityTests(TestCase):
+    """Every page states the same years, counted from OWNER_CAREER_START, never "a decade"."""
+
+    def test_no_page_speaks_of_a_decade(self):
+        post = create_post('A post')
+        pages = [reverse_in(language, name) for language in ['en', 'es'] for name in MAIN_SITE_PAGES]
+        pages += [reverse_in(language, 'blog:post-detail', slug=post.slug) for language in ['en', 'es']]
+        for page in pages:
+            with self.subTest(page=page):
+                content = html.unescape(self.client.get(page).content.decode()).lower()
+
+                self.assertNotIn('decade', content)
+                self.assertNotIn('década', content)
+
+    @override_settings(OWNER_CAREER_START=datetime.date(2000, 1, 1))
+    def test_about_counts_the_same_years(self):
+        years = years_of_experience()
+        for language, phrase in [('en', f'more than {years} years'), ('es', f'más de {years} años')]:
+            with self.subTest(language=language):
+                response = self.client.get(reverse_in(language, 'main:about'))
+
+                self.assertIn(phrase, ' '.join(visible_text(response).split()))
+
+
+class PersonAndWebsiteTests(TestCase):
+    """What search engines and AI assistants are told about who Nestor is and what the site is."""
+
+    def get_home(self, language):
+        return self.client.get(reverse_in(language, 'main:index'))
+
+    @override_settings(OWNER_EMAIL='nestor@example.com', OWNER_PHONE='+34 600 000 000')
+    def test_the_person_says_where_he_worked_lives_and_which_profiles_are_his(self):
+        for language, world_bank in [('en', 'World Bank Group'), ('es', 'Grupo Banco Mundial')]:
+            with self.subTest(language=language):
+                person = structured_data(self.get_home(language))
+
+                self.assertEqual(person['@type'], 'Person')
+                alumni_of = person['alumniOf']
+                self.assertEqual((alumni_of['@type'], alumni_of['name']), ('Organization', world_bank))
+                self.assertEqual(
+                    person['address'],
+                    {'@type': 'PostalAddress', 'addressLocality': 'Madrid', 'addressCountry': 'ES'},
+                )
+                self.assertEqual(person['knowsLanguage'], ['es', 'en'])
+                self.assertIn('https://pypi.org/project/e3-django-dynamic-forms/', person['sameAs'])
+                self.assertIn('https://github.com/NestorBracho/blogweb', person['sameAs'])
+                self.assertIn(settings.OWNER_LINKEDIN_URL, person['sameAs'])
+                # Contact details stay off the markup
+                for private in ['nestor@example.com', '+34 600 000 000']:
+                    self.assertNotIn(private, json.dumps(person))
+
+    def test_the_home_declares_the_website_in_its_language(self):
+        for language in ['en', 'es']:
+            with self.subTest(language=language):
+                response = self.get_home(language)
+                person = structured_data(response)
+                website = structured_data_of_type(response, 'WebSite')
+
+                self.assertEqual(website['@context'], 'https://schema.org')
+                self.assertEqual(website['name'], 'Nestor Bracho')
+                self.assertEqual(website['url'], f'http://testserver{reverse_in(language, "main:index")}')
+                self.assertEqual(website['inLanguage'], language)
+                self.assertEqual(website['publisher'], {'@id': person['@id']})
+
+    def test_the_person_comes_first_and_each_entity_has_its_own_block(self):
+        response = self.get_home('en')
+
+        self.assertEqual([block['@type'] for block in structured_data_blocks(response)], ['Person', 'WebSite'])
+        self.assertContains(response, '<script type="application/ld+json">', count=2)
+
+    def test_other_pages_keep_a_single_block(self):
+        response = self.client.get(reverse_in('en', 'main:cv'))
+
+        self.assertEqual([block['@type'] for block in structured_data_blocks(response)], ['ProfilePage'])
+
+    def test_a_list_renders_one_block_per_object(self):
+        template = Template('{% load main_tags %}{% json_ld data %}')
+
+        rendered = template.render(Context({'data': [{'a': '<b>'}, {'c': 1}]}))
+
+        self.assertEqual(
+            rendered,
+            '<script type="application/ld+json">{"a": "\\u003Cb\\u003E"}</script>\n'
+            '<script type="application/ld+json">{"c": 1}</script>',
+        )
+
+
+@mock.patch('main.cases.CASES', [make_case('first-case'), make_case('second-case')])
+class CaseBreadcrumbTests(TestCase):
+    def test_a_case_sits_under_the_homes_cases_in_its_language(self):
+        for language, names in [
+            ('en', ['Home', 'Cases', 'first-case title']),
+            ('es', ['Inicio', 'Casos', 'first-case título']),
+        ]:
+            with self.subTest(language=language):
+                response = self.client.get(reverse_in(language, 'main:case-detail', slug='first-case'))
+                crumbs = structured_data_of_type(response, 'BreadcrumbList')['itemListElement']
+
+                home = f'http://testserver{reverse_in(language, "main:index")}'
+                case = f'http://testserver{reverse_in(language, "main:case-detail", slug="first-case")}'
+                self.assertEqual([crumb['name'] for crumb in crumbs], names)
+                self.assertEqual([crumb['position'] for crumb in crumbs], [1, 2, 3])
+                self.assertEqual([crumb['item'] for crumb in crumbs], [home, f'{home}#cases', case])
+                self.assertEqual({crumb['@type'] for crumb in crumbs}, {'ListItem'})
+
+    def test_the_case_is_still_the_main_entity_and_names_the_whole_person(self):
+        data = structured_data(self.client.get(reverse_in('en', 'main:case-detail', slug='first-case')))
+
+        self.assertEqual(data['@type'], 'CreativeWork')
+        self.assertEqual(data['author']['@id'], 'http://testserver/#person')
+        self.assertEqual(data['author']['address']['addressLocality'], 'Madrid')
+        self.assertIn('alumniOf', data['author'])
+
+
+class ThemeCleanupTests(TestCase):
+    """The site no longer looks like the theme it started from."""
+
+    def test_no_page_credits_the_theme(self):
+        post = create_post('A post')
+        pages = [reverse_in('en', name) for name in MAIN_SITE_PAGES]
+        pages += [reverse_in('en', 'blog:post-list'), reverse_in('es', 'blog:post-detail', slug=post.slug)]
+        for page in pages:
+            with self.subTest(page=page):
+                response = self.client.get(page)
+
+                self.assertNotContains(response, 'jekyllthemes')
+                self.assertNotContains(response, 'Artem')
+
+    def test_the_images_the_site_uses_are_still_there(self):
+        for path in ['images/01-1.webp', 'images/02.jpg', 'images/40.jpg', 'images/og-default.png']:
+            with self.subTest(path=path):
+                self.assertIsNotNone(finders.find(path))
+
+
+@override_settings(DEBUG=True)
+@mock.patch('main.cases.CASES', [make_case('published-case'), make_case('drafted-case', published=False)])
+class LlmsTxtTests(TestCase):
+    """/llms.txt: a Markdown map of the site for AI systems, in English wherever the visitor comes from."""
+
+    def get(self):
+        return self.client.get(reverse('llms'), HTTP_ACCEPT_LANGUAGE='es')
+
+    def test_is_plain_text_at_the_root(self):
+        response = self.get()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response['Content-Type'].startswith('text/plain'))
+        self.assertEqual(reverse('llms'), '/llms.txt')
+
+    def test_names_the_site_and_summarizes_it(self):
+        content = self.get().content.decode()
+
+        self.assertTrue(content.startswith('# Nestor Bracho\n'))
+        self.assertIn(f'> {settings.OWNER_ROLE} with more than {years_of_experience()} years', content)
+        self.assertIn('freelance', content)
+        self.assertIn('Madrid', content)
+
+    def test_links_the_key_pages_with_a_description_each(self):
+        content = self.get().content.decode()
+
+        for url in [
+            reverse_in('en', 'main:index'),
+            reverse_in('es', 'main:index'),
+            reverse_in('en', 'main:about'),
+            reverse_in('en', 'main:cv'),
+            reverse_in('en', 'blog:post-list'),
+            reverse_in('en', 'main:case-detail', slug='published-case'),
+        ]:
+            with self.subTest(url=url):
+                self.assertRegex(content, rf'- \[[^\]]+\]\(http://testserver{re.escape(url)}\): \S')
+
+    def test_lists_published_cases_only_in_english(self):
+        content = self.get().content.decode()
+
+        self.assertIn('[published-case title]', content)
+        self.assertIn('published-case summary', content)
+        self.assertNotIn('drafted-case', content)

@@ -3,6 +3,7 @@ Settings for nestorbracho.com. Anything that differs between a laptop and the se
 (the .env file); .env.example lists the production values.
 """
 
+import datetime
 import os
 from pathlib import Path
 
@@ -169,14 +170,20 @@ OWNER_LOCATIONS = {
     'en': env('OWNER_LOCATION', default=''),
 }
 OWNER_LOCATIONS['es'] = env('OWNER_LOCATION_ES', default=OWNER_LOCATIONS['en'])
+# The public part of it, the same in every language: city and country (ISO 3166-1), never a street. The home's title,
+# the structured data and /llms.txt say it; the display text above stays in .env.
+OWNER_CITY = 'Madrid'
+OWNER_COUNTRY = 'ES'
 
 # Job title on the home page, the CV, page titles and link previews. It changes now and then, so it lives here only.
 # The home and CV link preview image has it too: when it changes, run brand/source/gen.py and copy
 # brand/social/og-profile.png to static/images/.
 OWNER_ROLE = 'Senior Software Engineer'
 
-# The year his career started (January), for the "more than N years" on the home page, the CV and link previews
-OWNER_CAREER_START_YEAR = 2013
+# The day he started working professionally with Python and Django: 14 January 2013. The only place it is written;
+# the "more than N years" on the home, the About page, the CV and link previews is counted from it
+# (config/context_processors.years_of_experience), so it never needs updating by hand.
+OWNER_CAREER_START = datetime.date(2013, 1, 14)
 
 # The CV as a PDF in each language, linked from /cv/. They hold the phone number, so they live on the server
 # (e.g. under MEDIA_ROOT/cv/), not in the repo. Leave one empty to hide its download button.

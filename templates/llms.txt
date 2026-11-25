@@ -1,0 +1,18 @@
+{% autoescape off %}# Nestor Bracho
+
+> {{ role }} with more than {{ years }} years building web platforms with Python and Django. Freelance, based in {{ city }}.
+
+Nestor Bracho is a freelance {{ role }} based in {{ city }}, Spain. He designs and builds web platforms and their backends with Python and Django, from architecture to deployment. He spent three years as an architect and developer for the World Bank Group, and now builds complete systems with AI agents, under specification and human review. He works in Spanish and English.
+
+## Pages
+
+- [Home]({{ home_url }}): who he is, the work he has done for clients and how he works, in English.
+- [Inicio]({{ home_es_url }}): the same home page, in Spanish.
+- [About]({{ about_url }}): his story, what he does and what drives him.
+- [CV]({{ cv_url }}): his experience, skills and education.
+- [Blog]({{ blog_url }}): posts on Django, APIs and AI agent-driven development, in English and Spanish.
+
+## Case studies
+{% for case in cases %}
+- [{{ case.title }}]({{ case.url }}): {{ case.summary }}{% endfor %}
+{% endautoescape %}

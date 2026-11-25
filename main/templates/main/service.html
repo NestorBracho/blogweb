@@ -1,0 +1,69 @@
+{% extends 'site.html' %}
+{% load i18n %}
+
+{% comment %}
+    A service's page (main/services.py, from docs/services-content.md), on the case page's components: the view lists
+    the blocks the service has (main.views.numbered_blocks), numbered without gaps. The FAQ keeps one element per
+    question and answer.
+{% endcomment %}
+
+{% block content %}
+<section class="case-hero" aria-labelledby="service-title">
+    <div class="container case-hero__inner">
+        <nav class="breadcrumb" aria-label="{% translate 'Breadcrumb' %}">
+            {% translate 'Home' as home_label %}
+            <a href="{% url 'main:index' %}"><span aria-hidden="true">~/</span>{{ home_label|lower }}</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">{{ service.slug }}</span>
+        </nav>
+        <h1 class="case-hero__title" id="service-title">{{ service.heading }}</h1>
+        <p class="case-hero__lede">{{ service.answer }}</p>
+    </div>
+</section>
+
+<section class="case-body">
+    <div class="container case-body__inner">
+        {% for block in blocks %}
+            <div class="case-block">
+                <h2 class="case-block__label"><span class="section-label__mark" aria-hidden="true"></span>{{ block.number }} / {{ block.label }}</h2>
+                {% if block.kind == 'points' %}
+                    <ol class="case-block__content case-solution">
+                        {% for point in service.points %}
+                            <li><span class="case-solution__number" aria-hidden="true">{{ forloop.counter|stringformat:'02d' }}</span><span>{{ point }}</span></li>
+                        {% endfor %}
+                    </ol>
+                {% elif block.kind == 'examples' %}
+                    <ul class="case-block__content case-solution">
+                        {% for example in service.examples %}<li>{{ example }}</li>{% endfor %}
+                    </ul>
+                {% elif block.kind == 'cases' %}
+                    <div class="case-block__content case-block__content--flow">
+                        {% if service.cases_lead %}<p>{{ service.cases_lead }}</p>{% endif %}
+                        <div class="case-grid">
+                            {% for case in service.cases %}
+                                {% include 'main/_lib/_case_card.html' %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% elif block.kind == 'how_i_work' %}
+                    <div class="case-block__content case-block__content--flow">
+                        <p>{{ service.how_i_work }}</p>
+                        <a class="text-link" href="{% url 'main:how-i-work' %}">{% translate 'See how I work' %} <span class="arrow" aria-hidden="true">→</span></a>
+                    </div>
+                {% elif block.kind == 'faq' %}
+                    <div class="case-block__content faq">
+                        {% for item in service.faq %}
+                            <div class="faq__item">
+                                <h3 class="faq__question">{{ item.question }}</h3>
+                                <p class="faq__answer">{{ item.answer }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+</section>
+
+{% include 'main/_lib/_contact_cta.html' %}
+{% endblock %}

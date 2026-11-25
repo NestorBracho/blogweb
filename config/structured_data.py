@@ -123,6 +123,15 @@ def case_page(request, case):
     return [case_study(request, case), breadcrumbs(request, trail)]
 
 
+def service_page(request, service):
+    """A service's page (main/services.py, localized): where it sits, under the home. There is no services page."""
+    return breadcrumbs(request, [(_('Home'), reverse('main:index')), (service.name, service.url)])
+
+
+def how_i_work_page(request):
+    return breadcrumbs(request, [(_('Home'), reverse('main:index')), (_('How I work'), reverse('main:how-i-work'))])
+
+
 def blog_posting(request, post):
     data = {
         '@context': 'https://schema.org',

@@ -107,9 +107,12 @@
                 <p class="step__text">{% translate 'Tests, locked API contracts and continuous integration. Nothing reaches production without going through them.' %}</p>
             </li>
         </ol>
-        {% if how_i_work_example %}
-            <a class="text-link" href="{{ how_i_work_example.url }}">{% translate 'See a real example: the mid-term rental CRM' %} <span class="arrow" aria-hidden="true">→</span></a>
-        {% endif %}
+        <div class="links">
+            <a class="text-link" href="{% url 'main:how-i-work' %}">{% translate 'See how I work' %} <span class="arrow" aria-hidden="true">→</span></a>
+            {% if how_i_work_example %}
+                <a class="text-link" href="{{ how_i_work_example.url }}">{% translate 'See a real example: the mid-term rental CRM' %} <span class="arrow" aria-hidden="true">→</span></a>
+            {% endif %}
+        </div>
     </div>
 </section>
 
@@ -122,15 +125,15 @@
         </div>
         <div class="offers">
             <div class="offer">
-                <h3 class="offer__title">{% translate 'Backend architecture' %}</h3>
+                <h3 class="offer__title"><a href="{% url 'main:service-detail' slug='django-backend' %}">{% translate 'Backend architecture' %} <span class="arrow" aria-hidden="true">→</span></a></h3>
                 <p class="offer__text">{% translate 'API design, data modeling and AWS infrastructure for products that need to grow without being rebuilt.' %}</p>
             </div>
             <div class="offer">
-                <h3 class="offer__title">{% translate 'End-to-end product' %}</h3>
+                <h3 class="offer__title"><a href="{% url 'main:service-detail' slug='end-to-end-product' %}">{% translate 'End-to-end product' %} <span class="arrow" aria-hidden="true">→</span></a></h3>
                 <p class="offer__text">{% translate 'From specification to deployment: backend, frontend, testing and release, with one person accountable.' %}</p>
             </div>
             <div class="offer">
-                <h3 class="offer__title">{% translate 'AI in existing products' %}</h3>
+                <h3 class="offer__title"><a href="{% url 'main:service-detail' slug='ai-integration' %}">{% translate 'AI in existing products' %} <span class="arrow" aria-hidden="true">→</span></a></h3>
                 <p class="offer__text">{% translate 'Integration of LLMs and Hugging Face models into systems that are already in production. Most recently: a financial analysis service that explains the dashboards of a rental management platform in plain language.' %}</p>
             </div>
         </div>
@@ -138,18 +141,7 @@
 </section>
 
 {# 7. Contact: the form lives on its own page #}
-<section class="section section--alt cta" id="contact" aria-labelledby="contact-title">
-    <div class="container cta__inner">
-        <div class="cta__text">
-            <h2 class="cta__title" id="contact-title">{% translate 'Have a project or an open role? Let’s talk.' %}</h2>
-            <p class="cta__line">{% translate 'I reply in Spanish or English.' %}</p>
-        </div>
-        <div class="buttons">
-            <a class="button button--primary" href="{{ contact_url }}">{% translate 'Write to me' %} <span class="arrow" aria-hidden="true">→</span></a>
-            <a class="button" href="{{ cv_url }}">{% translate 'View CV' %}</a>
-        </div>
-    </div>
-</section>
+{% include 'main/_lib/_contact_cta.html' %}
 
 {# 8. From the blog: only while its latest post is less than a year old, so a quiet blog doesn't date the home #}
 {% if latest_posts and latest_posts.0.published_at >= blog_shown_since %}

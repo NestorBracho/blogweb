@@ -17,7 +17,7 @@ from config.context_processors import years_of_experience
 from config.forms import HONEYPOT_FIELD
 from config.throttling import FormThrottle
 
-from . import cases
+from . import cases, services
 from .forms import ContactForm
 from .models import ContactRequest
 
@@ -92,6 +92,62 @@ class CaseDetailView(generic.TemplateView):
         kwargs['structured_data'] = structured_data.case_page(self.request, localized)
 
         return super().get_context_data(**kwargs)
+
+
+class ServiceDetailView(generic.TemplateView):
+    """A service's page (main/services.py, from docs/services-content.md)."""
+
+    template_name = 'main/service.html'
+
+    def get_context_data(self, **kwargs):
+        service = services.get_service(self.kwargs['slug'])
+        if service is None:
+            raise Http404('No such service')
+        localized = service.localized()
+
+        kwargs['service'] = localized
+        kwargs['blocks'] = numbered_blocks(
+            [
+                ('points', _('What I do'), localized.points),
+                ('examples', _('Examples'), localized.examples),
+                ('cases', _('Cases'), localized.cases),
+                ('how_i_work', _('How I work'), localized.how_i_work),
+                ('faq', _('Frequently asked questions'), localized.faq),
+            ]
+        )
+        kwargs['drafts_visible'] = cases.drafts_visible()
+        kwargs['full_title'] = localized.title
+        kwargs['meta_description'] = localized.description
+        kwargs['structured_data'] = structured_data.service_page(self.request, localized)
+
+        return super().get_context_data(**kwargs)
+
+
+class HowIWorkView(generic.TemplateView):
+    """The method's own page; the home's How I work block summarizes it and links here."""
+
+    template_name = 'main/how_i_work.html'
+
+    def get_context_data(self, **kwargs):
+        example = cases.get_case(HOW_I_WORK_EXAMPLE)
+        kwargs['example'] = example.localized() if example else None
+        kwargs['full_title'] = services.HOW_I_WORK_TITLE
+        kwargs['meta_description'] = services.HOW_I_WORK_DESCRIPTION
+        kwargs['structured_data'] = structured_data.how_i_work_page(self.request)
+
+        return super().get_context_data(**kwargs)
+
+
+def numbered_blocks(candidates):
+    """
+    The labelled blocks of a page, in order, leaving out those it has nothing for: each takes the next number, so
+    they run 01, 02... with no gaps. `candidates` is [(kind, label, value)...].
+    """
+    blocks = []
+    for kind, label, value in candidates:
+        if value:
+            blocks.append({'kind': kind, 'label': label, 'number': f'{len(blocks) + 1:02d}'})
+    return blocks
 
 
 def case_blocks(case):
@@ -175,6 +231,17 @@ class LlmsTxtView(generic.View):
                     {'title': case.title, 'summary': case.summary, 'url': request.build_absolute_uri(case.url)}
                     for case in (published.localized() for published in cases.CASES if published.is_published())
                 ],
+                # Each with its SEO description as its line
+                'services': [
+                    {
+                        'name': service.name,
+                        'description': service.description,
+                        'url': request.build_absolute_uri(service.url),
+                    }
+                    for service in (service.localized() for service in services.SERVICES)
+                ],
+                'how_i_work_url': url('main:how-i-work'),
+                'how_i_work_description': services.HOW_I_WORK_DESCRIPTION,
             }
             with translation.override('es'):
                 context['home_es_url'] = url('main:index')

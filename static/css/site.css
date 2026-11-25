@@ -1089,6 +1089,45 @@ a:hover {
     padding: 88px 0;
 }
 
+/* Service and How I work pages: the case page's blocks, with more than one thing in a block and an FAQ */
+
+.case-block__content--flow > * + * {
+    margin-top: 24px;
+}
+
+.case-block__heading {
+    font-size: 22px;
+    letter-spacing: -0.02em;
+    color: var(--text);
+}
+
+.steps--page {
+    margin-bottom: 0;
+}
+
+/* One element per question and its answer, always visible */
+.faq {
+    border-top: 1px solid var(--line);
+}
+
+.faq__item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.faq__question {
+    font-size: 17px;
+    letter-spacing: -0.02em;
+    color: var(--text);
+}
+
+.faq__answer {
+    font-size: 16px;
+}
+
 /* CV, about and privacy: a page head and running text */
 
 .page {

@@ -1,0 +1,18 @@
+{% load i18n %}
+{% comment %}
+    The home's contact block, which every page that sells ends with: the home, the service pages and How I work.
+{% endcomment %}
+{% url 'main:contact' as contact_url %}
+{% url 'main:cv' as cv_url %}
+<section class="section section--alt cta" id="contact" aria-labelledby="contact-title">
+    <div class="container cta__inner">
+        <div class="cta__text">
+            <h2 class="cta__title" id="contact-title">{% translate 'Have a project or an open role? Let’s talk.' %}</h2>
+            <p class="cta__line">{% translate 'I reply in Spanish or English.' %}</p>
+        </div>
+        <div class="buttons">
+            <a class="button button--primary" href="{{ contact_url }}">{% translate 'Write to me' %} <span class="arrow" aria-hidden="true">→</span></a>
+            <a class="button" href="{{ cv_url }}">{% translate 'View CV' %}</a>
+        </div>
+    </div>
+</section>

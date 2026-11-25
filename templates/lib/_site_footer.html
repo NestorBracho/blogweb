@@ -5,6 +5,10 @@
         <span class="site-footer__logo">{% include 'lib/_brand_wordmark.html' %}</span>
         <nav class="site-footer__nav" aria-label="{% translate 'Footer' %}">
             <a href="{{ home_url }}#cases">{% translate 'Cases' %}</a>
+            <a href="{% url 'main:service-detail' slug='django-backend' %}">{% translate 'Backend architecture' %}</a>
+            <a href="{% url 'main:service-detail' slug='ai-integration' %}">{% translate 'AI in existing products' %}</a>
+            <a href="{% url 'main:service-detail' slug='end-to-end-product' %}">{% translate 'End-to-end product' %}</a>
+            <a href="{% url 'main:how-i-work' %}">{% translate 'How I work' %}</a>
             <a href="{% url 'blog:post-list' %}">{% translate 'Blog' %}</a>
             <a href="{% url 'main:cv' %}">{% translate 'CV' %}</a>
             <a href="{% url 'main:about' %}">{% translate 'About' %}</a>

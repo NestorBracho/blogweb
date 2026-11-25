@@ -22,7 +22,7 @@ django-environ==0.14.0
     # via -r requirements.in
 djangorestframework==3.18.3
     # via -r requirements.in
-gunicorn==26.2.0
+gunicorn==27.0.1
     # via -r requirements.in
 h11==0.16.0
     # via httpcore2

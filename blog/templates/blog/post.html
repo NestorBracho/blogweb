@@ -4,7 +4,7 @@
 {% block meta_seo %}
 {{ block.super }}
 <meta property="article:published_time" content="{{ object.published_at|iso8601 }}">
-<meta property="article:modified_time" content="{{ object.updated|iso8601 }}">
+<meta property="article:modified_time" content="{{ object.content_modified|iso8601 }}">
 {% endblock %}
 
 {% block content %}
@@ -36,13 +36,25 @@
 
                         <h1 class="post-title">{{ object.title }}</h1>
 
+                        {# Who wrote it and when its content last changed: Post.shows_updated_date #}
                         <div class="post-meta">
-                            <div class="post-meta__bottom">
-                                <time class="post-date" datetime="{{ object.published_at|iso8601 }}">{{  object.published_at|localized_date }}</time>
-                                –
-                                <span class="post-minutes">
-                                    {{ object.read_time }} {% translate 'min read' %}
-                                </span>
+                            <div class="post-meta__content">
+                                <p class="post-byline">
+                                    <a class="post-meta__author" href="{% url 'main:about' %}" rel="author">Nestor Bracho</a>
+                                    <span class="post-byline__credential">{% blocktranslate trimmed with role=owner.role years=owner.years %}
+                                        {{ role }} · more than {{ years }} years with Python and Django
+                                    {% endblocktranslate %}</span>
+                                </p>
+                                <div class="post-meta__bottom">
+                                    <time class="post-date" datetime="{{ object.published_at|iso8601 }}">{{  object.published_at|localized_date }}</time>
+                                    –
+                                    <span class="post-minutes">
+                                        {{ object.read_time }} {% translate 'min read' %}
+                                    </span>
+                                    {% if object.shows_updated_date %}
+                                        · <span class="post-updated">{% translate 'Updated' context 'post update date' %} <time datetime="{{ object.content_updated|iso8601 }}">{{ object.content_updated|localized_date }}</time></span>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </div>

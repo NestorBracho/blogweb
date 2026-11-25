@@ -1,6 +1,5 @@
-import datetime
-
 from django.conf import settings
+from django.utils import timezone
 from django.utils.functional import SimpleLazyObject
 from django.utils.translation import gettext_lazy as _
 
@@ -8,9 +7,11 @@ from blog.listing import POSTS_PAGE_SIZE
 from blog.models import Category, Post, content_language
 
 
-def years_of_experience():
-    """Whole years since his career started, for "more than N years": it started in January, so N is always true."""
-    return datetime.date.today().year - settings.OWNER_CAREER_START_YEAR
+def years_of_experience(today=None):
+    """Whole years since his career started (settings.OWNER_CAREER_START), for "more than N years"."""
+    # The site's date (TIME_ZONE), not the server's
+    start, today = settings.OWNER_CAREER_START, today or timezone.localdate()
+    return today.year - start.year - ((today.month, today.day) < (start.month, start.day))
 
 
 # What search results and link previews show for the home and for pages without a description of their own; the

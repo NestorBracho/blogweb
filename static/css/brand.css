@@ -154,3 +154,16 @@
     position: absolute;
     left: -10000px;
 }
+
+/* A post's byline (blog/templates/blog/post.html): the author, linked to About, and his credential on one line */
+.post-byline {
+    margin: 0;
+    line-height: 1.4;
+}
+
+.post-byline__credential {
+    display: block;
+    margin-top: 4px;
+    font-size: 14px;
+    color: var(--text-alt-color);
+}

@@ -16,6 +16,10 @@
 {# Error pages are neither indexed nor shared, and Django renders the 500 page without the request to build these #}
 {% if not is_error_page %}
 <meta name="description" content="{{ description }}">
+{# Pages kept out of search results while still reachable by their address (a post's noindex) #}
+{% if robots %}
+<meta name="robots" content="{{ robots }}">
+{% endif %}
 
 {# The same page in each language, so search engines can send visitors to theirs #}
 {% page_urls as urls %}

@@ -17,10 +17,12 @@ class BlogSitemap(TranslatedSitemap):
 
 class PostSitemap(TranslatedSitemap):
     def items(self):
-        return Post.objects.published().order_by('-published_at')
+        # Posts kept out of search results stay out of here too
+        return Post.objects.published().exclude(noindex=True).order_by('-published_at')
 
     def lastmod(self, obj):
-        return obj.updated
+        # When the text changed, not any save
+        return obj.content_modified
 
 
 class CategorySitemap(TranslatedSitemap):

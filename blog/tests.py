@@ -3,7 +3,7 @@ import json
 import logging
 import re
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from io import BytesIO, StringIO
 from tempfile import TemporaryDirectory
 from unittest import mock
@@ -28,11 +28,20 @@ from openai import OpenAI
 from PIL import Image
 from rest_framework.throttling import SimpleRateThrottle
 
-from config.testing import EmptyCacheMixin, create_category, create_post, reverse_in, structured_data
+from config.context_processors import years_of_experience
+from config.testing import (
+    EmptyCacheMixin,
+    create_category,
+    create_post,
+    reverse_in,
+    structured_data,
+    structured_data_of_type,
+)
 from config.throttling import AnonRateThrottle, WriteRateThrottle
 
 from . import covers
 from .drafting import ArticleDraft
+from .feeds import LatestPostsFeed
 from .models import Category, Post
 from .rendering import render_markdown
 
@@ -140,7 +149,7 @@ class PostDetailViewTests(TestCase):
         response = self.get(self.post)
 
         self.assertContains(response, '<meta property="og:type" content="article">')
-        published, modified = self.post.published_at.isoformat(), self.post.updated.isoformat()
+        published, modified = self.post.published_at.isoformat(), self.post.content_modified.isoformat()
         self.assertContains(response, f'<meta property="article:published_time" content="{published}">')
         self.assertContains(response, f'<meta property="article:modified_time" content="{modified}">')
 
@@ -153,7 +162,7 @@ class PostDetailViewTests(TestCase):
         self.assertEqual((data['description'], data['inLanguage']), ('Sobre agujeros negros', 'es'))
         self.assertEqual(data['url'], f'http://testserver{reverse_in("es", "blog:post-detail", slug=post.slug)}')
         self.assertEqual(data['datePublished'], post.published_at.isoformat())
-        self.assertEqual(data['dateModified'], post.updated.isoformat())
+        self.assertEqual(data['dateModified'], post.content_modified.isoformat())
         self.assertEqual(data['author']['name'], 'Nestor Bracho')
 
     def test_structured_data_dates_the_post_by_its_publication(self):
@@ -1440,3 +1449,319 @@ class AdminTests(TestCase):
         response = self.client.get(reverse('admin:blog_category_changelist'))
 
         self.assertContains(response, '<td class="field-parent nowrap">test-topic</td>', html=True)
+
+
+def days_ago(days):
+    return timezone.now() - timedelta(days=days)
+
+
+class PostBylineTests(TestCase):
+    """Under each post's title: who wrote it and, when its text changed after it came out, when."""
+
+    def get(self, post, language='en'):
+        return self.client.get(reverse_in(language, 'blog:post-detail', slug=post.slug))
+
+    def test_names_the_author_linked_to_about_with_his_credential(self):
+        post = create_post('A post', days_ago=3)
+        years = years_of_experience()
+        for language, credential in [
+            ('en', f'{settings.OWNER_ROLE} · more than {years} years with Python and Django'),
+            ('es', f'{settings.OWNER_ROLE} · más de {years} años con Python y Django'),
+        ]:
+            with self.subTest(language=language):
+                response = self.get(post, language)
+
+                about = reverse_in(language, 'main:about')
+                self.assertContains(
+                    response, f'<a class="post-meta__author" href="{about}" rel="author">Nestor Bracho</a>'
+                )
+                self.assertContains(response, f'<span class="post-byline__credential">{credential}</span>')
+
+    def test_a_post_unchanged_since_it_came_out_shows_no_update(self):
+        response = self.get(create_post('A post', days_ago=3))
+
+        self.assertNotContains(response, 'class="post-updated"')
+
+    def test_a_post_whose_text_changed_later_says_when(self):
+        post = create_post('A post', days_ago=3)
+        post.body_es = 'Cuerpo nuevo'
+        post.save()
+
+        for language, label in [('en', 'Updated'), ('es', 'Actualizado el')]:
+            with self.subTest(language=language):
+                response = self.get(post, language)
+
+                self.assertContains(response, f'<span class="post-updated">{label} <time datetime="')
+                self.assertContains(response, f'datetime="{post.content_updated.isoformat()}"')
+
+
+class ContentDateTests(TestCase):
+    """A post's update date moves only when its title, description or body change (Post.content_updated)."""
+
+    def setUp(self):
+        self.post = create_post('A post', days_ago=10)
+        self.content_updated = self.post.content_updated
+
+    def reload(self):
+        self.post.refresh_from_db()
+        return self.post
+
+    def test_new_posts_date_their_content(self):
+        post = Post.objects.create(
+            title_en='New', title_es='Nuevo', body_en='B', body_es='C', description_en='D', description_es='E'
+        )
+
+        self.assertIsNotNone(post.content_updated)
+
+    def test_editing_the_content_in_either_language_moves_it(self):
+        for field, value in [
+            ('title_en', 'Renamed'),
+            ('title_es', 'Renombrado'),
+            ('description_en', 'New description'),
+            ('description_es', 'Nueva descripción'),
+            ('body_en', 'New body'),
+            ('body_es', 'Nuevo cuerpo'),
+        ]:
+            with self.subTest(field=field):
+                Post.objects.filter(pk=self.post.pk).update(content_updated=self.content_updated)
+                post = self.reload()
+                setattr(post, field, value)
+                post.save()
+
+                self.assertGreater(self.reload().content_updated, self.content_updated)
+
+    def test_saving_anything_else_leaves_it(self):
+        post = self.post
+        post.category = create_category()
+        post.save()
+        post.noindex = True
+        post.save()
+        post.is_published = False
+        post.save()
+        post.is_published = True
+        post.save(update_fields=['is_published'])
+
+        self.assertEqual(self.reload().content_updated, self.content_updated)
+        self.assertGreater(self.post.updated, self.content_updated)
+
+    def test_saving_only_some_fields_moves_it_when_they_hold_content(self):
+        self.post.title_en = 'Renamed'
+        self.post.save(update_fields=['title_en'])
+
+        self.assertGreater(self.reload().content_updated, self.content_updated)
+
+    def save_in_the_admin(self, **changes):
+        """Sends the post's admin form back as a browser would, with `changes` on top."""
+        self.client.force_login(get_user_model().objects.create_superuser('admin'))
+        url = reverse('admin:blog_post_change', args=[self.post.pk])
+        form = self.client.get(url).context['adminform'].form
+        data = {name: form[name].value() for name in form.fields if form[name].value() is not None}
+        data.pop('cover', None)
+        published_at = form['published_at'].value()
+        data['published_at_0'], data['published_at_1'] = f'{published_at:%Y-%m-%d}', f'{published_at:%H:%M:%S}'
+        return self.client.post(url, {**data, **changes})
+
+    def test_the_admin_saving_the_post_unchanged_leaves_it(self):
+        response = self.save_in_the_admin()
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.reload().content_updated, self.content_updated)
+
+    def test_line_breaks_and_spaces_the_browser_changes_are_no_edit(self):
+        # Stored with LF and a trailing newline; browsers send CRLF and the form strips the ends
+        Post.objects.filter(pk=self.post.pk).update(body_en='First line\nSecond line\n', body_es=' Cuerpo ')
+
+        response = self.save_in_the_admin(body_en='First line\r\nSecond line\r\n', body_es=' Cuerpo ')
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.reload().content_updated, self.content_updated)
+
+    def test_structured_data_sitemap_and_feed_give_the_content_date(self):
+        # A save that isn't about the text, today: none of them move
+        self.post.category = create_category()
+        self.post.save()
+
+        data = structured_data(self.client.get(self.post.get_absolute_url()))
+
+        self.assertEqual(data['dateModified'], self.content_updated.isoformat())
+        self.assertEqual(self.sitemap_lastmod(), f'{self.content_updated:%Y-%m-%d}')
+        self.assertEqual(LatestPostsFeed().item_updateddate(self.reload()), self.content_updated)
+
+    def sitemap_lastmod(self):
+        sitemap = self.client.get(reverse('sitemap')).content.decode()
+        post_url = f'http://testserver{reverse_in("en", "blog:post-detail", slug=self.post.slug)}'
+        return re.search(rf'<loc>{re.escape(post_url)}</loc><lastmod>([^<]+)</lastmod>', sitemap).group(1)
+
+    def test_editing_the_text_moves_all_three(self):
+        self.post.body_en = 'Rewritten'
+        self.post.save()
+
+        data = structured_data(self.client.get(self.post.get_absolute_url()))
+        content_updated = self.reload().content_updated
+
+        self.assertEqual(data['dateModified'], content_updated.isoformat())
+        self.assertEqual(self.sitemap_lastmod(), f'{content_updated:%Y-%m-%d}')
+        self.assertEqual(LatestPostsFeed().item_updateddate(self.post), content_updated)
+
+    def test_edits_to_a_draft_are_part_of_its_publication(self):
+        post = create_post('Drafted', days_ago=30, is_published=False)
+        post.body_en = 'Rewritten while a draft'
+        post.save()
+        Post.objects.filter(pk=post.pk).update(content_updated=days_ago(20))
+        post.refresh_from_db()
+        post.is_published = True
+        post.save()
+
+        response = self.client.get(post.get_absolute_url())
+        data = structured_data(response)
+
+        self.assertFalse(post.shows_updated_date)
+        self.assertNotContains(response, 'class="post-updated"')
+        self.assertEqual(data['dateModified'], data['datePublished'])
+
+    def test_a_change_on_the_day_it_came_out_is_no_update(self):
+        post = create_post('Same day')
+        post.body_en = 'Typo fixed'
+        post.save()
+
+        self.assertFalse(post.shows_updated_date)
+        self.assertGreaterEqual(post.content_modified, post.published_at)
+
+
+class NoindexTests(TestCase):
+    """A post can be kept out of search results while it stays published and reachable."""
+
+    def test_posts_without_a_choice_are_saved_as_indexed(self):
+        new = create_post('New')
+        old = create_post('Old')
+        Post.objects.filter(pk=old.pk).update(noindex=None)
+        old.refresh_from_db()
+        old.save(update_fields=['is_published'])
+
+        self.assertIs(Post.objects.get(pk=new.pk).noindex, False)
+        self.assertIs(Post.objects.get(pk=old.pk).noindex, False)
+
+    def test_the_admins_no_filter_finds_indexed_posts(self):
+        self.client.force_login(get_user_model().objects.create_superuser('admin'))
+        indexed = create_post('Indexed')
+        flagged = create_post('Flagged', noindex=True)
+
+        response = self.client.get(reverse('admin:blog_post_changelist'), {'noindex__exact': '0'})
+
+        self.assertEqual(list(response.context['cl'].queryset), [indexed])
+        self.assertNotEqual(indexed, flagged)
+
+    def test_a_flagged_post_asks_search_engines_not_to_index_it(self):
+        post = create_post('Off topic', noindex=True)
+
+        response = self.client.get(post.get_absolute_url())
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '<meta name="robots" content="noindex">', count=1)
+
+    def test_other_posts_and_pages_have_no_robots_meta(self):
+        post = create_post('On topic')
+        for url in [post.get_absolute_url(), reverse('blog:post-list'), reverse('main:index')]:
+            with self.subTest(url=url):
+                self.assertNotContains(self.client.get(url), 'name="robots"')
+
+    def test_a_flagged_post_is_left_out_of_the_sitemap(self):
+        flagged = create_post('Off topic', noindex=True)
+        kept = create_post('On topic', noindex=False)
+        unset = create_post('Older post')
+
+        response = self.client.get(reverse('sitemap'))
+
+        self.assertNotContains(response, f'/post/{flagged.slug}')
+        self.assertContains(response, f'/post/{kept.slug}')
+        self.assertContains(response, f'/post/{unset.slug}')
+
+    def test_the_admin_offers_it_as_a_checkbox(self):
+        self.client.force_login(get_user_model().objects.create_superuser('admin'))
+        post = create_post('A post')
+
+        response = self.client.get(reverse('admin:blog_post_change', args=[post.pk]))
+
+        self.assertContains(response, 'type="checkbox" name="noindex"')
+
+
+class PostBreadcrumbTests(TestCase):
+    def test_a_post_sits_under_the_blog_in_its_language(self):
+        post = create_post('Black holes', title_es='Agujeros negros')
+        for language, names in [
+            ('en', ['Home', 'Blog', 'Black holes']),
+            ('es', ['Inicio', 'Blog', 'Agujeros negros']),
+        ]:
+            with self.subTest(language=language):
+                response = self.client.get(reverse_in(language, 'blog:post-detail', slug=post.slug))
+                crumbs = structured_data_of_type(response, 'BreadcrumbList')['itemListElement']
+
+                urls = [
+                    reverse_in(language, 'main:index'),
+                    reverse_in(language, 'blog:post-list'),
+                    reverse_in(language, 'blog:post-detail', slug=post.slug),
+                ]
+                self.assertEqual([crumb['name'] for crumb in crumbs], names)
+                self.assertEqual([crumb['item'] for crumb in crumbs], [f'http://testserver{url}' for url in urls])
+                self.assertEqual([crumb['position'] for crumb in crumbs], [1, 2, 3])
+
+    def test_the_post_comes_first_by_the_whole_person(self):
+        response = self.client.get(create_post('A post').get_absolute_url())
+        data = structured_data(response)
+
+        self.assertEqual(data['@type'], 'BlogPosting')
+        self.assertEqual(data['author']['address']['addressLocality'], 'Madrid')
+        self.assertEqual(data['author']['knowsLanguage'], ['es', 'en'])
+
+
+class BlogDescriptionTests(TestCase):
+    """The blog describes itself around Django, APIs and AI agents."""
+
+    def test_the_list_and_the_feed_describe_it_in_each_language(self):
+        for language, agents in [('en', 'AI agent'), ('es', 'agentes de IA')]:
+            with self.subTest(language=language):
+                listing = self.client.get(reverse_in(language, 'blog:post-list'))
+                feed = self.client.get(reverse_in(language, 'blog:feed')).content.decode()
+                description = re.search(r'<meta name="description" content="([^"]*)">', listing.content.decode())
+                feed_description = re.search(r'<description>(.*?)</description>', feed).group(1)
+
+                for text in [description.group(1), feed_description]:
+                    self.assertIn('Django', text)
+                    self.assertIn(agents, text)
+                    for old in ['science', 'storytelling', 'ciencia', 'historias']:
+                        self.assertNotIn(old, text.lower())
+
+
+class ContentDateMigrationTests(MigrationTestCase):
+    before = [('blog', '0008_post_published_at')]
+    after = [('blog', '0009_post_noindex_content_updated')]
+
+    def test_dates_existing_content_and_flags_the_relativity_post(self):
+        old_post = self.migrate(self.before).get_model('blog', 'Post')
+        fields = {'body_en': 'Body', 'body_es': 'Cuerpo', 'description_en': 'Description', 'description_es': 'Desc'}
+        relativity = old_post.objects.create(
+            slug='special-vs-general-relativity-whats-the-difference',
+            title_en='Relativity',
+            title_es='Relatividad',
+            is_published=True,
+            **fields,
+        )
+        other = old_post.objects.create(slug='other', title_en='Other', title_es='Otro', is_published=True, **fields)
+
+        new_post = self.migrate(self.after).get_model('blog', 'Post')
+
+        self.assertEqual(new_post.objects.get(pk=relativity.pk).content_updated, relativity.updated)
+        self.assertEqual(new_post.objects.get(pk=other.pk).content_updated, other.updated)
+        self.assertTrue(new_post.objects.get(pk=relativity.pk).noindex)
+        # The others say no rather than nothing, so the admin's "No" filter finds them
+        self.assertIs(new_post.objects.get(pk=other.pk).noindex, False)
+        # Still published, reachable by its address
+        self.assertTrue(new_post.objects.get(pk=relativity.pk).is_published)
+
+    def test_only_adds_columns(self):
+        # So the code still running during a deploy, which doesn't know the columns, keeps working
+        sql = StringIO()
+        call_command('sqlmigrate', 'blog', '0009_post_noindex_content_updated', stdout=sql)
+        self.assertIn('ALTER TABLE "blog_post" ADD COLUMN "noindex"', sql.getvalue())
+        self.assertIn('ALTER TABLE "blog_post" ADD COLUMN "content_updated"', sql.getvalue())
+        self.assertNotIn('CREATE TABLE', sql.getvalue())

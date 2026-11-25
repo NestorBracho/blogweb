@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-24 22:31+0100\n"
+"POT-Creation-Date: 2026-11-25 11:07+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,11 +20,11 @@ msgstr ""
 "1 : 2;\n"
 
 #: .\blog\feeds.py:11
-msgid "Science, storytelling & software, by Nestor Bracho."
-msgstr "Ciencia, historias y software, por Nestor Bracho."
+msgid "Django, APIs and AI agent-driven development, by Nestor Bracho."
+msgstr "Django, APIs y desarrollo con agentes de IA, por Nestor Bracho."
 
 #: .\blog\templates\blog\_lib\_article_card.html:25
-#: .\blog\templates\blog\post.html:44
+#: .\blog\templates\blog\post.html:52
 #: .\templates\lib\_search_result_template.html:17
 msgid "min read"
 msgstr "min de lectura"
@@ -57,48 +57,59 @@ msgstr "Publicaciones más recientes"
 msgid "Older posts"
 msgstr "Publicaciones anteriores"
 
-#: .\blog\templates\blog\post.html:61 .\blog\templates\blog\post.html:62
-#: .\blog\templates\blog\post.html:63
+#: .\blog\templates\blog\post.html:44
+#, python-format
+msgid "%(role)s · more than %(years)s years with Python and Django"
+msgstr "%(role)s · más de %(years)s años con Python y Django"
+
+#: .\blog\templates\blog\post.html:55
+msgctxt "post update date"
+msgid "Updated"
+msgstr "Actualizado el"
+
+#: .\blog\templates\blog\post.html:73 .\blog\templates\blog\post.html:74
+#: .\blog\templates\blog\post.html:75
 #, python-format
 msgid "Share on %(network)s"
 msgstr "Compartir en %(network)s"
 
-#: .\blog\templates\blog\post.html:65
+#: .\blog\templates\blog\post.html:77
 msgid "Share this"
 msgstr "Compartir"
 
-#: .\blog\templates\blog\post.html:95
+#: .\blog\templates\blog\post.html:107
 msgid "Older post"
 msgstr "Publicación anterior"
 
-#: .\blog\templates\blog\post.html:103
+#: .\blog\templates\blog\post.html:115
 msgid "Newer post"
 msgstr "Publicación siguiente"
 
-#: .\blog\templates\blog\post.html:120
+#: .\blog\templates\blog\post.html:132
 msgid "Related"
 msgstr "Relacionados"
 
 #: .\blog\templates\blog\post_list.html:17 .\blog\views.py:24
-#: .\templates\lib\_main_footer.html:59 .\templates\lib\_main_navbar.html:29
-#: .\templates\lib\_site_footer.html:8 .\templates\lib\_site_header.html:13
+#: .\config\structured_data.py:149 .\templates\lib\_main_footer.html:59
+#: .\templates\lib\_main_navbar.html:29 .\templates\lib\_site_footer.html:8
+#: .\templates\lib\_site_header.html:13
 msgid "Blog"
 msgstr "Blog"
 
 #: .\blog\views.py:26
 msgid ""
-"Posts by Nestor Bracho about science, storytelling and software, in English "
-"and Spanish."
+"Posts by Nestor Bracho on Django, APIs and AI agent-driven development, in "
+"English and Spanish."
 msgstr ""
-"Artículos de Nestor Bracho sobre ciencia, historias y software, en inglés y "
-"español."
+"Artículos de Nestor Bracho sobre Django, APIs y desarrollo con agentes de "
+"IA, en inglés y español."
 
-#: .\blog\views.py:93
+#: .\blog\views.py:95
 #, python-format
 msgid "Posts about %(category)s by Nestor Bracho."
 msgstr "Publicaciones sobre %(category)s de Nestor Bracho."
 
-#: .\config\context_processors.py:19
+#: .\config\context_processors.py:20
 #, python-format
 msgid ""
 "%(role)s with more than %(years)s years building web platforms with Python "
@@ -108,6 +119,21 @@ msgstr ""
 "%(role)s con más de %(years)s años construyendo plataformas web con Python y "
 "Django. Tres años para el Grupo Banco Mundial; hoy, freelance con desarrollo "
 "dirigido por agentes de IA."
+
+#: .\config\structured_data.py:34 .\main\templates\main\index.html:44
+msgid "World Bank Group"
+msgstr "Grupo Banco Mundial"
+
+#: .\config\structured_data.py:122 .\config\structured_data.py:148
+#: .\templates\lib\_main_footer.html:57 .\templates\lib\_main_navbar.html:23
+msgid "Home"
+msgstr "Inicio"
+
+#: .\config\structured_data.py:122 .\main\templates\main\index.html:57
+#: .\templates\lib\_main_navbar.html:26 .\templates\lib\_site_footer.html:7
+#: .\templates\lib\_site_header.html:11
+msgid "Cases"
+msgstr "Casos"
 
 #: .\main\templates\main\_lib\_case_card.html:9
 #: .\main\templates\main\case.html:21
@@ -165,7 +191,7 @@ msgid "Native Spanish · English B2"
 msgstr "Español nativo · Inglés B2"
 
 #: .\main\templates\main\about.html:9 .\main\templates\main\about.html:14
-#: .\main\views.py:121
+#: .\main\views.py:127
 msgid "About Me"
 msgstr "Sobre mí"
 
@@ -215,18 +241,19 @@ msgid "What I Do (and Love Doing)"
 msgstr "Lo que hago (y lo que más disfruto)"
 
 #: .\main\templates\main\about.html:46
+#, python-format
 msgid ""
 "I build complex backend systems. It’s where I feel most at home; "
 "architecting infrastructure,\n"
 "                        optimizing processes, and spinning up APIs and "
 "services that hum with efficiency. I’ve spent\n"
-"                        over a decade crafting digital platforms for "
-"everything from social good to business\n"
+"                        more than %(years)s years crafting digital platforms "
+"for everything from social good to business\n"
 "                        logistics."
 msgstr ""
 "Me especializo en construir sistemas backend complejos. Es donde me siento "
 "en casa: diseñando infraestructuras, optimizando procesos y creando APIs que "
-"funcionan como un reloj suizo. Llevo más de una década desarrollando "
+"funcionan como un reloj suizo. Llevo más de %(years)s años desarrollando "
 "plataformas digitales, desde soluciones para proyectos sociales hasta "
 "sistemas logísticos robustos."
 
@@ -428,7 +455,7 @@ msgid "I will only use your details to reply to you."
 msgstr "Solo usaré tus datos para responderte."
 
 #: .\main\templates\main\contact.html:54 .\main\templates\main\privacy.html:11
-#: .\main\views.py:152 .\templates\lib\_main_right_sidebar.html:29
+#: .\main\views.py:189 .\templates\lib\_main_right_sidebar.html:29
 msgid "Privacy policy"
 msgstr "Política de privacidad"
 
@@ -446,11 +473,11 @@ msgstr "Descargar PDF"
 
 #: .\main\templates\main\index.html:17
 msgid ""
-"I design and build web platforms and their backends, from architecture to "
-"deployment."
+"I design and build web platforms and their backends with Python and Django, "
+"from architecture to deployment."
 msgstr ""
-"Diseño y construyo plataformas web y sus backends, de la arquitectura al "
-"despliegue."
+"Diseño y construyo plataformas web y sus backends con Python y Django, de la "
+"arquitectura al despliegue."
 
 #: .\main\templates\main\index.html:18
 #, python-format
@@ -477,18 +504,9 @@ msgstr "Clientes"
 msgid "I have worked for"
 msgstr "He trabajado para"
 
-#: .\main\templates\main\index.html:44
-msgid "World Bank Group"
-msgstr "Grupo Banco Mundial"
-
 #: .\main\templates\main\index.html:48
 msgid "IUCN"
 msgstr "UICN"
-
-#: .\main\templates\main\index.html:57 .\templates\lib\_main_navbar.html:26
-#: .\templates\lib\_site_footer.html:7 .\templates\lib\_site_header.html:11
-msgid "Cases"
-msgstr "Casos"
 
 #: .\main\templates\main\index.html:58
 msgid "What I have built"
@@ -621,31 +639,36 @@ msgstr "Del blog"
 msgid "View all"
 msgstr "Ver todo"
 
-#: .\main\views.py:97
+#: .\main\views.py:46
+#, python-format
+msgid "Nestor Bracho, %(role)s · Freelance Django & Python, %(city)s"
+msgstr "Nestor Bracho, %(role)s · Django y Python freelance, %(city)s"
+
+#: .\main\views.py:103
 msgid "The problem"
 msgstr "El problema"
 
-#: .\main\views.py:98
+#: .\main\views.py:104
 msgid "What I built"
 msgstr "Lo que construí"
 
-#: .\main\views.py:100
+#: .\main\views.py:106
 msgid "How it was built"
 msgstr "Cómo se construyó"
 
-#: .\main\views.py:101
+#: .\main\views.py:107
 msgid "Stack"
 msgstr "Stack"
 
-#: .\main\views.py:102
+#: .\main\views.py:108
 msgid "Result"
 msgstr "Resultado"
 
-#: .\main\views.py:103
+#: .\main\views.py:109
 msgid "Links"
 msgstr "Enlaces"
 
-#: .\main\views.py:123
+#: .\main\views.py:129
 #, python-format
 msgid ""
 "Get to know Nestor Bracho, %(role)s: backend systems, Python and technology "
@@ -654,12 +677,12 @@ msgstr ""
 "Conoce a Nestor Bracho, %(role)s: sistemas backend, Python y tecnología con "
 "impacto social. Su trayectoria, habilidades y lo que le mueve."
 
-#: .\main\views.py:135
+#: .\main\views.py:141
 #, python-format
 msgid "CV · Nestor Bracho, %(role)s"
 msgstr "CV · Nestor Bracho, %(role)s"
 
-#: .\main\views.py:137
+#: .\main\views.py:143
 #, python-format
 msgid ""
 "CV of Nestor Bracho, %(role)s with more than %(years)s years building web "
@@ -668,18 +691,18 @@ msgstr ""
 "CV de Nestor Bracho, %(role)s con más de %(years)s años construyendo "
 "plataformas web con Python y Django."
 
-#: .\main\views.py:153
+#: .\main\views.py:190
 msgid ""
 "What personal data this site collects, why, and how to exercise your rights."
 msgstr ""
 "Qué datos personales recoge este sitio, para qué y cómo ejercer tus derechos."
 
-#: .\main\views.py:165 .\templates\lib\_main_footer.html:80
+#: .\main\views.py:202 .\templates\lib\_main_footer.html:80
 #: .\templates\lib\_main_navbar.html:38 .\templates\lib\_site_header.html:31
 msgid "Contact"
 msgstr "Contacto"
 
-#: .\main\views.py:167
+#: .\main\views.py:204
 msgid ""
 "Plug into the grid, whether you’re building something bold or need a sharp "
 "mind in the system, this is your uplink to start working together."
@@ -687,7 +710,7 @@ msgstr ""
 "¿Buscas un dev que hable en código y entienda el sistema? Transmite por "
 "aquí. <br><i>Construyamos el futuro juntos.</i>"
 
-#: .\main\views.py:178
+#: .\main\views.py:215
 msgid ""
 "You've sent several messages in a short time. Please try again later: your "
 "message is still here."
@@ -695,7 +718,7 @@ msgstr ""
 "Has enviado varios mensajes en poco tiempo. Inténtalo de nuevo más tarde: tu "
 "mensaje sigue aquí."
 
-#: .\main\views.py:185
+#: .\main\views.py:222
 msgid ""
 "Your contact request has been successfully submitted. I'll get in touch as "
 "soon as possible!"
@@ -703,7 +726,7 @@ msgstr ""
 "Solicitud de contacto enviada con éxito. ¡Me pondré en contacto contigo lo "
 "antes posible!"
 
-#: .\main\views.py:192
+#: .\main\views.py:229
 msgid "Something went wrong. Try again later."
 msgstr "Algo salió mal. Intenta de nuevo más tarde."
 
@@ -774,11 +797,12 @@ msgstr "Deja este campo vacío"
 
 #: .\templates\lib\_main_footer.html:9
 msgid ""
-"Science, storytelling &amp; software. This is the personal site of Nestor "
-"Bracho, a software engineer who likes to understand how things work."
+"Django, APIs and AI agent-driven development. This is the personal site of "
+"Nestor Bracho, a software engineer who likes to understand how things work."
 msgstr ""
-"Ciencia, historias y software. Esta es la web personal de Nestor Bracho, un "
-"ingeniero de software al que le gusta entender cómo funcionan las cosas."
+"Django, APIs y desarrollo con agentes de IA. Esta es la web personal de "
+"Nestor Bracho, un ingeniero de software al que le gusta entender cómo "
+"funcionan las cosas."
 
 #: .\templates\lib\_main_footer.html:22
 msgid "Recent Posts"
@@ -787,10 +811,6 @@ msgstr "Publicaciones recientes"
 #: .\templates\lib\_main_footer.html:53 .\templates\lib\_main_navbar.html:13
 msgid "Menu"
 msgstr "Menú"
-
-#: .\templates\lib\_main_footer.html:57 .\templates\lib\_main_navbar.html:23
-msgid "Home"
-msgstr "Inicio"
 
 #: .\templates\lib\_main_footer.html:73
 msgid "Pages"
@@ -813,10 +833,6 @@ msgstr "Privacidad"
 #: .\templates\lib\_main_footer.html:99
 msgid "Crafted by"
 msgstr "Hecho por"
-
-#: .\templates\lib\_main_footer.html:99
-msgid "Designed by"
-msgstr "Diseñado por"
 
 #: .\templates\lib\_main_meta_seo.html:9
 #, python-format
@@ -993,3 +1009,9 @@ msgstr "Tu suscripción está confirmada. ¡Gracias!"
 #: .\usermanager\views.py:94
 msgid "Confirm your subscription to Bracho"
 msgstr "Confirma tu suscripción a Bracho"
+
+#~ msgid "Science, storytelling & software, by Nestor Bracho."
+#~ msgstr "Ciencia, historias y software, por Nestor Bracho."
+
+#~ msgid "Designed by"
+#~ msgstr "Diseñado por"

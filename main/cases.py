@@ -191,6 +191,10 @@ def grouped_cases():
 
 GITHUB = 'GitHub'
 
+# His own published work, which the structured data also lists among his profiles (config/structured_data.py)
+E3_PYPI_URL = 'https://pypi.org/project/e3-django-dynamic-forms/'
+SITE_REPO_URL = 'https://github.com/NestorBracho/blogweb'
+
 CASES = [
     Case(
         slug='local-development-portal',
@@ -437,7 +441,7 @@ CASES = [
             '3.10 a 3.13 y Django 4.1 a 5.1.',
         ),
         links=(
-            Link('PyPI', 'https://pypi.org/project/e3-django-dynamic-forms/'),
+            Link('PyPI', E3_PYPI_URL),
             Link(GITHUB, 'https://github.com/e3tools/e3-django-dynamic-forms'),
         ),
     ),
@@ -704,6 +708,6 @@ CASES = [
             'In production, with the code and the architecture decisions in the open.',
             'En producción, con el código y las decisiones de arquitectura abiertos.',
         ),
-        links=(Link(GITHUB, 'https://github.com/NestorBracho/blogweb'),),
+        links=(Link(GITHUB, SITE_REPO_URL),),
     ),
 ]

@@ -109,7 +109,7 @@ HOW_I_WORK_DESCRIPTION = _(
 SERVICES = [
     Service(
         slug='django-backend',
-        name=_('Backend architecture'),
+        name=_('Django backend'),
         title=_('Freelance Django developer in Madrid · Nestor Bracho'),
         description=_(
             'Freelance Django and Django REST Framework developer in Madrid. More than %(years)s years designing APIs, '

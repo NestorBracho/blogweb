@@ -2450,14 +2450,14 @@ class ServicePagesDiscoverabilityTests(TestCase):
         # In English, with the years filled in: the SEO descriptions
         django = reverse_in('en', 'main:service-detail', slug='django-backend')
         self.assertIn(
-            f'- [Backend architecture](http://testserver{django}): Freelance Django and Django REST Framework '
+            f'- [Django backend](http://testserver{django}): Freelance Django and Django REST Framework '
             f'developer in Madrid. More than {years_of_experience()} years',
             content,
         )
         self.assertIn('Spec-driven development with AI agents', content)
 
     def test_services_sit_under_the_home_in_their_language(self):
-        for language, names in [('en', ['Home', 'Backend architecture']), ('es', ['Inicio', 'Arquitectura backend'])]:
+        for language, names in [('en', ['Home', 'Django backend']), ('es', ['Inicio', 'Backend con Django'])]:
             with self.subTest(language=language):
                 url = reverse_in(language, 'main:service-detail', slug='django-backend')
                 crumbs = structured_data_of_type(self.client.get(url), 'BreadcrumbList')['itemListElement']

@@ -1,0 +1,139 @@
+{% extends 'site.html' %}
+{% load i18n %}
+
+{% comment %}
+    The How I work page, from docs/services-content.md: the home's How I work block in full, with the real example
+    and the FAQ. The FAQ keeps one element per question and answer.
+{% endcomment %}
+
+{% block content %}
+<section class="case-hero" aria-labelledby="how-i-work-title">
+    <div class="container case-hero__inner">
+        <nav class="breadcrumb" aria-label="{% translate 'Breadcrumb' %}">
+            {% translate 'Home' as home_label %}
+            <a href="{% url 'main:index' %}"><span aria-hidden="true">~/</span>{{ home_label|lower }}</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">how-i-work</span>
+        </nav>
+        {# The same English as the home's heading, but its own Spanish (docs/services-content.md) #}
+        <h1 class="case-hero__title" id="how-i-work-title">{% translate 'Agents write the code. The specification and the review are mine.' context 'how I work page' %}</h1>
+        <p class="case-hero__lede">{% blocktranslate trimmed %}
+            I build software with AI agents in four steps: I write the specification, agents with different roles
+            implement it, I review every plan and every change, and nothing reaches production without passing the
+            tests and continuous integration. With this method I delivered the first five epics of a CRM, 19 stories,
+            in two weeks, with more than 2,000 automated tests.
+        {% endblocktranslate %}</p>
+    </div>
+</section>
+
+<section class="section section--alt" aria-label="{% translate 'How I work' %}">
+    <div class="container">
+        <ol class="steps steps--page">
+            <li class="step">
+                <span class="meta" aria-hidden="true">01</span>
+                <h2 class="step__title">{% translate 'Specification' %}</h2>
+                <p class="step__text">{% blocktranslate trimmed %}
+                    Before any code is written there is a brief, a phased scope and acceptance criteria. On larger
+                    projects that means a PRD, an architecture, epics and one spec per story. The specification lives
+                    in the repository next to the code, so whoever comes later, person or agent, knows what was decided
+                    and why.
+                {% endblocktranslate %}</p>
+            </li>
+            <li class="step">
+                <span class="meta" aria-hidden="true">02</span>
+                <h2 class="step__title">{% translate 'Agents with roles' %}</h2>
+                <p class="step__text">{% blocktranslate trimmed %}
+                    I work with Claude Code and the BMAD method. One agent plans, another implements and another
+                    reviews, each with its own instructions. I use subagents, custom commands, instruction files and
+                    MCP servers so each agent only has the context it needs.
+                {% endblocktranslate %}</p>
+            </li>
+            <li class="step">
+                <span class="meta" aria-hidden="true">03</span>
+                <h2 class="step__title">{% translate 'Human review' %}</h2>
+                <p class="step__text">{% blocktranslate trimmed %}
+                    I approve every plan before it runs and read every change before it is merged. Agents speed up
+                    writing the code; product and architecture decisions are not delegated.
+                {% endblocktranslate %}</p>
+            </li>
+            <li class="step">
+                <span class="meta" aria-hidden="true">04</span>
+                <h2 class="step__title">{% translate 'Verification' %}</h2>
+                <p class="step__text">{% blocktranslate trimmed %}
+                    Automated tests (pytest, Jest, Maestro), API contracts locked with OpenAPI and continuous
+                    integration on every change. If something fails, it is not merged.
+                {% endblocktranslate %}</p>
+            </li>
+        </ol>
+    </div>
+</section>
+
+<section class="case-body">
+    <div class="container case-body__inner">
+        <div class="case-block">
+            <h2 class="case-block__label"><span class="section-label__mark" aria-hidden="true"></span>01 / {% translate 'Real example' %}</h2>
+            <div class="case-block__content case-block__content--flow">
+                <h3 class="case-block__heading">{% translate 'A CRM in production, from spec to deployment' %}</h3>
+                <p>{% blocktranslate trimmed %}
+                    For a vacation and mid-term rental management company I built a CRM inside their management
+                    system: leads created automatically from Idealista, WhatsApp conversations and reservations created
+                    on their own when a deal closes. I wrote the PRD, the architecture and the epics with BMAD, and
+                    each story was implemented with agents from its spec and reviewed before merging.
+                {% endblocktranslate %}</p>
+                <ul class="case-solution">
+                    <li>{% translate '19 stories in the first five epics' %}</li>
+                    <li>{% translate '2 weeks to implement those epics' %}</li>
+                    <li>{% translate 'More than 2,000 automated tests in the module' %}</li>
+                    <li>{% translate 'CI on PostgreSQL in GitHub Actions on every change' %}</li>
+                    <li>{% translate 'In production and still evolving with the rest of the team' %}</li>
+                </ul>
+                {% if example %}
+                    <a class="text-link" href="{{ example.url }}">{% translate 'See the full case' %} <span class="arrow" aria-hidden="true">→</span></a>
+                {% endif %}
+                <p>{% blocktranslate trimmed %}
+                    Other projects built this way: the offline-first participatory monitoring app for the World Bank
+                    Group, a warehouse management system for a logistics company and this site.
+                {% endblocktranslate %}</p>
+            </div>
+        </div>
+
+        <div class="case-block">
+            <h2 class="case-block__label"><span class="section-label__mark" aria-hidden="true"></span>02 / {% translate 'Frequently asked questions' %}</h2>
+            <div class="case-block__content faq">
+                <div class="faq__item">
+                    <h3 class="faq__question">{% translate 'What is spec-driven development?' %}</h3>
+                    <p class="faq__answer">{% blocktranslate trimmed %}
+                        Writing down first what has to be built and how you will know it is right, and then building
+                        it. With AI agents, it is what turns a code generator into a predictable team: the agent works
+                        against the specification and the review checks against it.
+                    {% endblocktranslate %}</p>
+                </div>
+                <div class="faq__item">
+                    <h3 class="faq__question">{% translate 'What is the BMAD method?' %}</h3>
+                    <p class="faq__answer">{% blocktranslate trimmed %}
+                        An open-source method for AI agent-driven development that splits the work into roles
+                        (analyst, product, architecture, development, review) and produces documents that build on
+                        each other: brief, PRD, architecture, epics and stories.
+                    {% endblocktranslate %}</p>
+                </div>
+                <div class="faq__item">
+                    <h3 class="faq__question">{% translate 'Is code written by agents reliable?' %}</h3>
+                    <p class="faq__answer">{% blocktranslate trimmed %}
+                        As reliable as the review and the tests around it. That is why I review every change and
+                        nothing is merged without passing the tests and continuous integration.
+                    {% endblocktranslate %}</p>
+                </div>
+                <div class="faq__item">
+                    <h3 class="faq__question">{% translate 'Can I use this method with my team?' %}</h3>
+                    <p class="faq__answer">{% blocktranslate trimmed %}
+                        Yes. I offer training and hands-on support so your team can work with AI agents under
+                        specification and review, on your own projects.
+                    {% endblocktranslate %}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% include 'main/_lib/_contact_cta.html' %}
+{% endblock %}

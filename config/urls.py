@@ -17,11 +17,12 @@ from django.views.generic import RedirectView, TemplateView
 from django.views.i18n import set_language
 
 from blog.sitemaps import BlogSitemap, CategorySitemap, PostSitemap
-from main.sitemaps import CaseSitemap, StaticViewSitemap
+from main.sitemaps import CaseSitemap, ServiceSitemap, StaticViewSitemap
 from main.views import LlmsTxtView
 
 sitemaps = {
     'pages': StaticViewSitemap,
+    'services': ServiceSitemap,
     'cases': CaseSitemap,
     'blog': BlogSitemap,
     'posts': PostSitemap,

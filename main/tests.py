@@ -37,7 +37,7 @@ from config.testing import (
 )
 from config.throttling import FormThrottle
 
-from . import cases, seo
+from . import cases, seo, services
 from .models import ContactRequest
 
 
@@ -83,7 +83,12 @@ def visible_text(response):
 
 
 # The main site's pages, on its own layout (templates/site.html)
-MAIN_SITE_PAGES = ['main:index', 'main:about', 'main:cv', 'main:contact', 'main:privacy']
+MAIN_SITE_PAGES = ['main:index', 'main:how-i-work', 'main:about', 'main:cv', 'main:contact', 'main:privacy']
+
+
+def service_urls(language):
+    """The service pages (main/services.py) in one language."""
+    return [reverse_in(language, 'main:service-detail', slug=service.slug) for service in services.SERVICES]
 
 
 # The copy is free to change: these tests check who the page is about, its language and where it leads
@@ -452,6 +457,7 @@ class SiteLayoutTests(TestCase):
     def test_new_pages_have_no_style_attributes(self):
         pages = [reverse_in('en', name) for name in MAIN_SITE_PAGES]
         pages += [reverse_in('es', 'main:case-detail', slug=case.slug) for case in cases.visible_cases()]
+        pages += service_urls('es')
         for url in pages:
             with self.subTest(url=url):
                 self.assertNotContains(self.client.get(url), 'style=')
@@ -460,6 +466,7 @@ class SiteLayoutTests(TestCase):
         create_post('A post')
         pages = [reverse_in('en', name) for name in MAIN_SITE_PAGES]
         pages += [reverse_in('en', 'main:case-detail', slug=case.slug) for case in cases.visible_cases()]
+        pages += service_urls('en')
         for url in pages:
             with self.subTest(url=url):
                 levels = headings(self.client.get(url))
@@ -470,7 +477,9 @@ class SiteLayoutTests(TestCase):
                     self.assertLessEqual(level, previous + 1)
 
     def test_arrows_are_decoration_screen_readers_skip(self):
-        for url in [reverse_in('en', 'main:index'), reverse_in('en', 'main:case-detail', slug='this-site')]:
+        pages = [reverse_in('en', 'main:index'), reverse_in('en', 'main:case-detail', slug='this-site')]
+        pages += [reverse_in('en', 'main:how-i-work'), *service_urls('en')]
+        for url in pages:
             with self.subTest(url=url):
                 content = self.client.get(url).content.decode()
 
@@ -482,6 +491,8 @@ class SiteLayoutTests(TestCase):
     def test_texts_use_no_em_dashes(self):
         pages = [reverse_in(language, 'main:index') for language in ['en', 'es']]
         pages += [reverse_in('es', 'main:case-detail', slug=case.slug) for case in cases.visible_cases()]
+        pages += [reverse_in(language, 'main:how-i-work') for language in ['en', 'es']]
+        pages += service_urls('en') + service_urls('es')
         for url in pages:
             with self.subTest(url=url):
                 self.assertNotIn('—', visible_text(self.client.get(url)))
@@ -534,6 +545,8 @@ class BrandTests(TestCase):
                     reverse_in(language, 'main:cv'),
                     reverse_in(language, 'main:about'),
                     reverse_in(language, 'main:privacy'),
+                    reverse_in(language, 'main:how-i-work'),
+                    *service_urls(language),
                 ]:
                     self.assertIn(f'href="{url}"', footer)
 
@@ -549,7 +562,7 @@ class SiteHeaderTests(TestCase):
 
                 for url in [
                     f'{home}#cases',
-                    f'{home}#how-i-work',
+                    reverse_in(language, 'main:how-i-work'),
                     reverse_in(language, 'blog:post-list'),
                     reverse_in(language, 'main:cv'),
                     reverse_in(language, 'main:contact'),
@@ -560,6 +573,14 @@ class SiteHeaderTests(TestCase):
         response = self.client.get(reverse_in('en', 'main:cv'))
 
         self.assertContains(response, f'href="{reverse_in("en", "main:cv")}" aria-current="page"')
+
+    def test_marks_how_i_work_on_its_page_only(self):
+        url = reverse_in('es', 'main:how-i-work')
+        current = f'<a class="site-nav__link is-current" href="{url}" aria-current="page">Cómo trabajo</a>'
+
+        self.assertContains(self.client.get(url), current)
+        self.assertNotContains(self.client.get(reverse_in('es', 'main:cv')), current)
+        self.assertContains(self.client.get(reverse_in('es', 'main:cv')), f'<a class="site-nav__link" href="{url}">')
 
     def test_the_language_switch_is_a_form_that_needs_no_javascript(self):
         for language, other, name in [('en', 'es', 'Switch to Spanish'), ('es', 'en', 'Cambiar a inglés')]:
@@ -1898,6 +1919,26 @@ class CaseDraftsInDevelopmentTests(TestCase):
 
         self.assertNotContains(response, 'next-case')
 
+    def test_a_service_page_shows_its_draft_cases_marked(self):
+        service = services.Service(
+            slug='a-service',
+            name='A service',
+            title='A service title',
+            description='A service description',
+            heading='A service heading',
+            answer='A service answer',
+            points=('A point',),
+            cases=('published-case', 'drafted-case'),
+            cases_lead=None,
+            how_i_work='A how I work line',
+            faq=(),
+        )
+        with mock.patch('main.services.SERVICES', [service]):
+            response = self.client.get(reverse_in('en', 'main:service-detail', slug='a-service'))
+
+        self.assertEqual(card_titles(response), ['published-case title', 'drafted-case title'])
+        self.assertContains(response, '<p class="dev-mark">Development only: not published</p>', count=1)
+
 
 class SearchTargetingTests(TestCase):
     """The home names what clients search for, around the role, which stays as it is."""
@@ -2108,3 +2149,334 @@ class LlmsTxtTests(TestCase):
         self.assertIn('[published-case title]', content)
         self.assertIn('published-case summary', content)
         self.assertNotIn('drafted-case', content)
+
+
+# The pages of docs/services-content.md, the only source of their text
+SERVICE_SLUGS = ['django-backend', 'ai-integration', 'end-to-end-product']
+NEW_PAGES = [('main:service-detail', {'slug': slug}) for slug in SERVICE_SLUGS] + [('main:how-i-work', {})]
+
+
+def services_doc():
+    """
+    docs/services-content.md as {slug: {language: {field: value}}}, with the years filled in. A value is its text, or
+    a list for the fields with items: a FAQ's items are (question, answer).
+    """
+    years = str(years_of_experience())
+    pages = {}
+    slug = language = field = None
+    for line in (settings.BASE_DIR / 'docs' / 'services-content.md').read_text(encoding='utf-8').splitlines():
+        line = line.replace('{{ owner.years }}', years)
+        if match := re.match(r'^`slug`: `([a-z-]+)`', line):
+            slug, language = match.group(1), None
+            pages[slug] = {}
+        elif match := re.match(r'^### (ES|EN)$', line):
+            language = match.group(1).lower()
+            pages[slug][language] = {}
+        elif slug and language and (match := re.match(r'^- ([^:]+):\s*(.*)$', line)):
+            field = match.group(1)
+            pages[slug][language][field] = match.group(2) or []
+        elif slug and language and (match := re.match(r'^  (?:\d+\.|-) (.*)$', line)):
+            item = match.group(1)
+            question = re.match(r'^\*\*(.+?)\*\* (.*)$', item)
+            pages[slug][language][field].append(question.groups() if question else item)
+    return pages
+
+
+def normalized(text):
+    return ' '.join(text.split())
+
+
+def h1_text(response):
+    return normalized(html.unescape(re.search(r'<h1[^>]*>(.*?)</h1>', response.content.decode(), re.DOTALL).group(1)))
+
+
+def new_page_url(language, name, kwargs):
+    return reverse_in(language, name, **kwargs)
+
+
+class ServicePagesContentTests(TestCase):
+    """CAP-1 and CAP-2: each page shows every text docs/services-content.md gives it, in the page's language."""
+
+    def assert_shows_the_doc(self, response, fields):
+        text = normalized(visible_text(response))
+        for field, value in fields.items():
+            with self.subTest(field=field):
+                if field in ('Título SEO', 'SEO title'):
+                    self.assertEqual(page_title(response), value)
+                elif field in ('Descripción', 'Description'):
+                    self.assertEqual(meta(response, 'description'), value)
+                    self.assertEqual(meta(response, 'og:description'), value)
+                elif field == 'H1':
+                    self.assertEqual(h1_text(response), value)
+                elif field in ('Cómo trabajo', 'How I work'):
+                    # "See how I work." is the link, without its full stop
+                    sentence, link = value.rsplit('. ', 1)
+                    self.assertIn(f'{sentence}. {link.removesuffix(".")}', text)
+                elif step := re.match(r'^\d\d · (.+)$', field):
+                    self.assertIn(f'{step.group(1)} {value}', text)
+                elif field.startswith(('Otros proyectos', 'Other projects')):
+                    self.assertIn(f'{field}: {value}', text)
+                elif isinstance(value, list):
+                    for item in value:
+                        for part in item if isinstance(item, tuple) else [item]:
+                            self.assertIn(normalized(part), text)
+                else:
+                    self.assertIn(normalized(value), text)
+
+    def test_each_service_in_each_language(self):
+        doc = services_doc()
+        for slug in SERVICE_SLUGS:
+            for language in ['en', 'es']:
+                with self.subTest(slug=slug, language=language):
+                    response = self.client.get(reverse_in(language, 'main:service-detail', slug=slug))
+
+                    self.assertEqual(response.status_code, 200)
+                    self.assert_shows_the_doc(response, doc[slug][language])
+
+    def test_how_i_work_in_each_language(self):
+        doc = services_doc()
+        for language in ['en', 'es']:
+            with self.subTest(language=language):
+                response = self.client.get(reverse_in(language, 'main:how-i-work'))
+
+                self.assertEqual(response.status_code, 200)
+                self.assert_shows_the_doc(response, doc['how-i-work'][language])
+
+    def test_the_doc_and_the_data_list_the_same_services(self):
+        self.assertEqual([service.slug for service in services.SERVICES], SERVICE_SLUGS)
+        self.assertEqual(set(services_doc()), {*SERVICE_SLUGS, 'how-i-work'})
+
+    def test_the_years_are_computed(self):
+        with mock.patch('main.services.years_of_experience', return_value=42):
+            response = self.client.get(reverse_in('es', 'main:service-detail', slug='django-backend'))
+
+        self.assertIn('Más de 42 años', meta(response, 'description'))
+        self.assertContains(response, 'Llevo más de 42 años con Django')
+
+    def test_the_slugs_are_english_in_both_languages(self):
+        self.assertEqual(reverse_in('es', 'main:service-detail', slug='ai-integration'), '/es/services/ai-integration/')
+        self.assertEqual(reverse_in('es', 'main:how-i-work'), '/es/how-i-work/')
+
+    def test_unknown_services_are_not_found(self):
+        with self.assertLogs('django.request', 'WARNING'):
+            response = self.client.get(reverse_in('en', 'main:service-detail', slug='nope'))
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_the_faq_has_one_element_per_question_and_answer(self):
+        doc = services_doc()
+        pages = [
+            ('django-backend', reverse_in('en', 'main:service-detail', slug='django-backend')),
+            ('how-i-work', reverse_in('en', 'main:how-i-work')),
+        ]
+        for slug, url in pages:
+            with self.subTest(slug=slug):
+                items = re.findall(
+                    r'<div class="faq__item">\s*<h3 class="faq__question">(.*?)</h3>\s*'
+                    r'<p class="faq__answer">(.*?)</p>\s*</div>',
+                    self.client.get(url).content.decode(),
+                    re.DOTALL,
+                )
+
+                self.assertEqual(
+                    [(html.unescape(question), normalized(html.unescape(answer))) for question, answer in items],
+                    doc[slug]['en']['FAQ'],
+                )
+
+    def test_blocks_are_numbered_without_gaps(self):
+        django = self.client.get(reverse_in('en', 'main:service-detail', slug='django-backend'))
+        ai = self.client.get(reverse_in('es', 'main:service-detail', slug='ai-integration'))
+
+        self.assertEqual(
+            case_labels(django), ['01 / What I do', '02 / Cases', '03 / How I work', '04 / Frequently asked questions']
+        )
+        self.assertEqual(
+            case_labels(ai),
+            ['01 / Qué hago', '02 / Ejemplos', '03 / Casos', '04 / Cómo trabajo', '05 / Preguntas frecuentes'],
+        )
+
+    def test_no_structured_data_but_the_breadcrumbs(self):
+        for name, kwargs in NEW_PAGES:
+            with self.subTest(page=name, **kwargs):
+                blocks = structured_data_blocks(self.client.get(new_page_url('en', name, kwargs)))
+
+                self.assertEqual([block['@type'] for block in blocks], ['BreadcrumbList'])
+
+
+class ServicePagesProofTests(TestCase):
+    """CAP-3: the pages lead to the cases, to How I work and to contact."""
+
+    PORTAL = 'Local development portal for community-driven programs'
+    CRM = 'CRM for mid-term rentals, from spec to production'
+
+    def test_each_service_shows_the_cards_of_its_cases(self):
+        for slug, titles in [
+            ('django-backend', [self.PORTAL, self.CRM, 'e3-django-dynamic-forms']),
+            ('ai-integration', [self.CRM, self.PORTAL]),
+            ('end-to-end-product', [self.CRM, 'Offline-first mobile app for participatory monitoring', 'This site']),
+        ]:
+            with self.subTest(slug=slug):
+                response = self.client.get(reverse_in('en', 'main:service-detail', slug=slug))
+
+                self.assertEqual(card_titles(response), titles)
+                # Side by side: no wide card on a service page
+                self.assertNotContains(response, 'case-card--wide')
+                for case_slug in services.get_service(slug).cases:
+                    self.assertContains(response, f'href="{reverse_in("en", "main:case-detail", slug=case_slug)}"')
+
+    @mock.patch(
+        'main.cases.CASES',
+        [make_case('mid-term-rental-crm'), make_case('local-development-portal', published=False, problem=None)],
+    )
+    def test_drafts_and_missing_cases_are_skipped(self):
+        response = self.client.get(reverse_in('en', 'main:service-detail', slug='ai-integration'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(card_titles(response), ['mid-term-rental-crm title'])
+
+    @mock.patch('main.cases.CASES', [make_case('this-site')])
+    def test_a_service_with_no_case_shown_has_no_cases_block(self):
+        response = self.client.get(reverse_in('en', 'main:service-detail', slug='django-backend'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(card_titles(response), [])
+        self.assertEqual(
+            case_labels(response), ['01 / What I do', '02 / How I work', '03 / Frequently asked questions']
+        )
+
+    def test_each_service_links_to_how_i_work(self):
+        for slug in SERVICE_SLUGS:
+            with self.subTest(slug=slug):
+                response = self.client.get(reverse_in('es', 'main:service-detail', slug=slug))
+
+                how_i_work = reverse_in('es', 'main:how-i-work')
+                self.assertContains(response, f'<a class="text-link" href="{how_i_work}">Ver cómo trabajo')
+
+    def test_how_i_work_links_the_crm_case(self):
+        response = self.client.get(reverse_in('es', 'main:how-i-work'))
+
+        crm = reverse_in('es', 'main:case-detail', slug='mid-term-rental-crm')
+        self.assertContains(response, f'<a class="text-link" href="{crm}">Ver el caso completo')
+
+    @mock.patch('main.cases.CASES', [make_case('this-site')])
+    def test_how_i_work_without_the_crm_case_leaves_the_link_out(self):
+        response = self.client.get(reverse_in('en', 'main:how-i-work'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'A CRM in production, from spec to deployment')
+        self.assertNotContains(response, 'See the full case')
+
+    def test_every_new_page_ends_with_the_homes_contact_block(self):
+        home = inner_html(self.client.get(reverse_in('es', 'main:index')), 'section section--alt cta')
+        for name, kwargs in NEW_PAGES:
+            with self.subTest(page=name, **kwargs):
+                response = self.client.get(new_page_url('es', name, kwargs))
+                main = response.content.decode().split('<footer', 1)[0]
+
+                self.assertEqual(inner_html(response, 'section section--alt cta'), home)
+                self.assertIn('¿Tienes un proyecto o una vacante? Hablemos.', main)
+                # Nothing after it
+                self.assertNotIn('<section', main.split('id="contact"', 1)[1])
+
+
+class ServicePagesLinksTests(TestCase):
+    """CAP-4: the home, the header and the footer lead to the new pages."""
+
+    def test_each_home_offer_links_to_its_service(self):
+        response = self.client.get(reverse_in('es', 'main:index'))
+
+        offers = re.findall(r'<h3 class="offer__title"><a href="([^"]+)">', response.content.decode())
+        self.assertEqual(
+            offers,
+            [
+                reverse_in('es', 'main:service-detail', slug='django-backend'),
+                reverse_in('es', 'main:service-detail', slug='end-to-end-product'),
+                reverse_in('es', 'main:service-detail', slug='ai-integration'),
+            ],
+        )
+
+    def test_the_homes_how_i_work_links_to_the_page_and_keeps_the_crm_link(self):
+        response = self.client.get(reverse_in('en', 'main:index'))
+        section = response.content.decode().split('id="how-i-work"', 1)[1].split('</section>', 1)[0]
+
+        self.assertIn(f'<a class="text-link" href="{reverse_in("en", "main:how-i-work")}">See how I work', section)
+        self.assertIn(reverse_in('en', 'main:case-detail', slug='mid-term-rental-crm'), section)
+
+    def test_the_home_keeps_its_how_i_work_and_services_sections(self):
+        response = self.client.get(reverse_in('en', 'main:index'))
+
+        self.assertContains(response, 'id="how-i-work"')
+        self.assertContains(response, 'id="services"')
+        self.assertContains(response, '<ol class="steps">')
+        self.assertContains(response, '<div class="offer">', count=3)
+
+
+class ServicePagesDiscoverabilityTests(TestCase):
+    """CAP-5: as discoverable as the rest of the site."""
+
+    def test_each_page_points_to_itself_in_each_language(self):
+        for name, kwargs in NEW_PAGES:
+            for language in ['en', 'es']:
+                with self.subTest(page=name, language=language, **kwargs):
+                    response = self.client.get(new_page_url(language, name, kwargs))
+                    path = new_page_url(language, name, kwargs).removeprefix(f'/{language}')
+
+                    self.assertContains(response, f'<link rel="canonical" href="http://testserver/{language}{path}">')
+                    for other in ['en', 'es']:
+                        self.assertContains(
+                            response,
+                            f'<link rel="alternate" hreflang="{other}" href="http://testserver/{other}{path}">',
+                        )
+                    self.assertContains(
+                        response, f'<link rel="alternate" hreflang="x-default" href="http://testserver{path}">'
+                    )
+
+    def test_each_page_is_in_the_sitemap_in_both_languages(self):
+        sitemap = self.client.get(reverse('sitemap'))
+
+        for name, kwargs in NEW_PAGES:
+            for language in ['en', 'es']:
+                with self.subTest(page=name, language=language, **kwargs):
+                    self.assertContains(sitemap, f'<loc>http://testserver{new_page_url(language, name, kwargs)}</loc>')
+
+    def test_each_page_is_in_llms_txt_with_a_line(self):
+        content = self.client.get(reverse('llms'), HTTP_ACCEPT_LANGUAGE='es').content.decode()
+
+        self.assertIn('\n## Services\n', content)
+        for name, kwargs in NEW_PAGES:
+            with self.subTest(page=name, **kwargs):
+                url = re.escape(new_page_url('en', name, kwargs))
+                self.assertRegex(content, rf'- \[[^\]]+\]\(http://testserver{url}\): \S')
+        # In English, with the years filled in: the SEO descriptions
+        django = reverse_in('en', 'main:service-detail', slug='django-backend')
+        self.assertIn(
+            f'- [Django backend](http://testserver{django}): Freelance Django and Django REST Framework '
+            f'developer in Madrid. More than {years_of_experience()} years',
+            content,
+        )
+        self.assertIn('Spec-driven development with AI agents', content)
+
+    def test_services_sit_under_the_home_in_their_language(self):
+        for language, names in [('en', ['Home', 'Django backend']), ('es', ['Inicio', 'Backend con Django'])]:
+            with self.subTest(language=language):
+                url = reverse_in(language, 'main:service-detail', slug='django-backend')
+                crumbs = structured_data_of_type(self.client.get(url), 'BreadcrumbList')['itemListElement']
+
+                self.assertEqual([crumb['name'] for crumb in crumbs], names)
+                self.assertEqual([crumb['position'] for crumb in crumbs], [1, 2])
+                self.assertEqual(
+                    [crumb['item'] for crumb in crumbs],
+                    [f'http://testserver{reverse_in(language, "main:index")}', f'http://testserver{url}'],
+                )
+
+    def test_how_i_work_sits_under_the_home_in_its_language(self):
+        for language, names in [('en', ['Home', 'How I work']), ('es', ['Inicio', 'Cómo trabajo'])]:
+            with self.subTest(language=language):
+                url = reverse_in(language, 'main:how-i-work')
+                crumbs = structured_data_of_type(self.client.get(url), 'BreadcrumbList')['itemListElement']
+
+                self.assertEqual([crumb['name'] for crumb in crumbs], names)
+                self.assertEqual(
+                    [crumb['item'] for crumb in crumbs],
+                    [f'http://testserver{reverse_in(language, "main:index")}', f'http://testserver{url}'],
+                )

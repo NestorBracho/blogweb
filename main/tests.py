@@ -83,7 +83,15 @@ def visible_text(response):
 
 
 # The main site's pages, on its own layout (templates/site.html)
-MAIN_SITE_PAGES = ['main:index', 'main:how-i-work', 'main:about', 'main:cv', 'main:contact', 'main:privacy']
+MAIN_SITE_PAGES = [
+    'main:index',
+    'main:cases',
+    'main:how-i-work',
+    'main:about',
+    'main:cv',
+    'main:contact',
+    'main:privacy',
+]
 
 
 def service_urls(language):
@@ -540,7 +548,7 @@ class BrandTests(TestCase):
                 footer = inner_html(self.client.get(reverse_in(language, 'main:index')), 'site-footer__nav')
 
                 for url in [
-                    f'{reverse_in(language, "main:index")}#cases',
+                    reverse_in(language, 'main:cases'),
                     reverse_in(language, 'blog:post-list'),
                     reverse_in(language, 'main:cv'),
                     reverse_in(language, 'main:about'),
@@ -558,10 +566,9 @@ class SiteHeaderTests(TestCase):
         for language in ['en', 'es']:
             with self.subTest(language=language):
                 header = inner_html(self.client.get(reverse_in(language, 'main:about')), 'site-nav')
-                home = reverse_in(language, 'main:index')
 
                 for url in [
-                    f'{home}#cases',
+                    reverse_in(language, 'main:cases'),
                     reverse_in(language, 'main:how-i-work'),
                     reverse_in(language, 'blog:post-list'),
                     reverse_in(language, 'main:cv'),
@@ -648,7 +655,7 @@ class BlogHeaderTests(TestCase):
     def test_links_to_the_cases(self):
         for language, name in [('en', 'Cases'), ('es', 'Casos')]:
             with self.subTest(language=language):
-                cases_url = f'{reverse_in(language, "main:index")}#cases'
+                cases_url = reverse_in(language, 'main:cases')
 
                 self.assertContains(self.get_blog(language), f'<a href="{cases_url}" class="nav__link">{name}</a>')
 
@@ -924,26 +931,6 @@ class ErrorPageTests(TestCase):
         self.assertContains(spanish, 'class="site-header"', status_code=404)
         self.assertContains(spanish, 'class="site-footer"', status_code=404)
         self.assertNotContains(spanish, 'rel="canonical"', status_code=404)
-
-
-class CasesIndexTests(TestCase):
-    def test_sends_visitors_to_the_homes_cases(self):
-        for language in ['en', 'es']:
-            with self.subTest(language=language):
-                response = self.client.get(f'/{language}/cases/')
-
-                # Temporary: a cases page may come later, and browsers would remember a permanent one
-                self.assertRedirects(
-                    response,
-                    f'{reverse_in(language, "main:index")}#cases',
-                    status_code=302,
-                    fetch_redirect_response=False,
-                )
-
-    def test_case_pages_are_still_found(self):
-        response = self.client.get(reverse_in('en', 'main:case-detail', slug='this-site'))
-
-        self.assertEqual(response.status_code, 200)
 
 
 class OwnerLocationSettingTests(SimpleTestCase):
@@ -1851,11 +1838,13 @@ class CaseDetailTests(TestCase):
                     '<link rel="alternate" hreflang="x-default" href="http://testserver/cases/first-case/">',
                 )
 
-    def test_is_a_work_by_the_person_the_site_is_about(self):
+    def test_is_an_article_by_the_person_the_site_is_about(self):
         data = structured_data(self.get_case('es'))
 
-        self.assertEqual(data['@type'], 'CreativeWork')
+        self.assertEqual(data['@type'], 'Article')
+        self.assertEqual(data['headline'], 'first-case título')
         self.assertEqual(data['name'], 'first-case título')
+        self.assertEqual(data['datePublished'], '2026-11-23')
         self.assertEqual(data['description'], 'first-case resumen')
         self.assertEqual(data['keywords'], 'Python, Django')
         self.assertEqual(data['inLanguage'], 'es')
@@ -2061,7 +2050,7 @@ class PersonAndWebsiteTests(TestCase):
 
 @mock.patch('main.cases.CASES', [make_case('first-case'), make_case('second-case')])
 class CaseBreadcrumbTests(TestCase):
-    def test_a_case_sits_under_the_homes_cases_in_its_language(self):
+    def test_a_case_sits_under_the_cases_index_in_its_language(self):
         for language, names in [
             ('en', ['Home', 'Cases', 'first-case title']),
             ('es', ['Inicio', 'Casos', 'first-case título']),
@@ -2074,13 +2063,14 @@ class CaseBreadcrumbTests(TestCase):
                 case = f'http://testserver{reverse_in(language, "main:case-detail", slug="first-case")}'
                 self.assertEqual([crumb['name'] for crumb in crumbs], names)
                 self.assertEqual([crumb['position'] for crumb in crumbs], [1, 2, 3])
-                self.assertEqual([crumb['item'] for crumb in crumbs], [home, f'{home}#cases', case])
+                cases_url = f'http://testserver{reverse_in(language, "main:cases")}'
+                self.assertEqual([crumb['item'] for crumb in crumbs], [home, cases_url, case])
                 self.assertEqual({crumb['@type'] for crumb in crumbs}, {'ListItem'})
 
     def test_the_case_is_still_the_main_entity_and_names_the_whole_person(self):
         data = structured_data(self.client.get(reverse_in('en', 'main:case-detail', slug='first-case')))
 
-        self.assertEqual(data['@type'], 'CreativeWork')
+        self.assertEqual(data['@type'], 'Article')
         self.assertEqual(data['author']['@id'], 'http://testserver/#person')
         self.assertEqual(data['author']['address']['addressLocality'], 'Madrid')
         self.assertIn('alumniOf', data['author'])
@@ -2295,12 +2285,13 @@ class ServicePagesContentTests(TestCase):
             ['01 / Qué hago', '02 / Ejemplos', '03 / Casos', '04 / Cómo trabajo', '05 / Preguntas frecuentes'],
         )
 
-    def test_no_structured_data_but_the_breadcrumbs(self):
+    def test_says_what_each_page_is_then_where_it_sits(self):
         for name, kwargs in NEW_PAGES:
             with self.subTest(page=name, **kwargs):
                 blocks = structured_data_blocks(self.client.get(new_page_url('en', name, kwargs)))
 
-                self.assertEqual([block['@type'] for block in blocks], ['BreadcrumbList'])
+                main = [] if name == 'main:how-i-work' else ['Service']
+                self.assertEqual([block['@type'] for block in blocks], [*main, 'FAQPage', 'BreadcrumbList'])
 
 
 class ServicePagesProofTests(TestCase):
@@ -2479,4 +2470,401 @@ class ServicePagesDiscoverabilityTests(TestCase):
                 self.assertEqual(
                     [crumb['item'] for crumb in crumbs],
                     [f'http://testserver{reverse_in(language, "main:index")}', f'http://testserver{url}'],
+                )
+
+
+# SEO phase 2b: the cases index, the links back to the services and the structured data
+CRM_SLUG = 'mid-term-rental-crm'
+
+
+def faq_items(response):
+    """The page's visible FAQ, as [(question, answer)...]."""
+    items = re.findall(
+        r'<div class="faq__item">\s*<h3 class="faq__question">(.*?)</h3>\s*<p class="faq__answer">(.*?)</p>\s*</div>',
+        response.content.decode(),
+        re.DOTALL,
+    )
+    return [(html.unescape(question), normalized(html.unescape(answer))) for question, answer in items]
+
+
+def card_urls(response):
+    """The case pages the page's cards link to, in order."""
+    return re.findall(
+        r'<a class="text-link" href="([^"]+)">[^<]*<span class="screen-reader-text">', response.content.decode()
+    )
+
+
+def case_service_links(response):
+    """The case page's service block: [(name, URL)...]; None without one."""
+    content = response.content.decode()
+    if 'class="case-services"' not in content:
+        return None
+    block = content.split('class="case-services"', 1)[1].split('</section>', 1)[0]
+    return [
+        (html.unescape(name), url)
+        for url, name in re.findall(r'<a class="text-link" href="([^"]+)">([^<]+?) <span', block)
+    ]
+
+
+class CasesIndexPageTests(TestCase):
+    """CAP-1: the cases have a real index page in each language."""
+
+    COPY = {
+        'en': {
+            'title': 'Django and Python case studies · Nestor Bracho',
+            'description': (
+                'Case studies of Django backends, APIs and products built for the World Bank Group and private '
+                'clients: the problem, the solution and the result.'
+            ),
+            'h1': 'What I have built',
+            'intro': (
+                'Each case explains the problem, what I built, how and what changed. Most are Django backends with '
+                'their API; some include the frontend and the AI pieces.'
+            ),
+        },
+        'es': {
+            'title': 'Casos de Django y Python · Nestor Bracho',
+            'description': (
+                'Casos de backends Django, APIs y productos construidos para el Grupo Banco Mundial y clientes '
+                'privados: el problema, la solución y el resultado.'
+            ),
+            'h1': 'Lo que he construido',
+            'intro': (
+                'Cada caso explica el problema, lo que construí, cómo y qué cambió. La mayoría son backends Django '
+                'con su API; algunos incluyen el frontend y las piezas de IA.'
+            ),
+        },
+    }
+
+    def test_is_a_page_with_the_copy_in_each_language(self):
+        for language, copy in self.COPY.items():
+            with self.subTest(language=language):
+                response = self.client.get(f'/{language}/cases/')
+
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(page_title(response), copy['title'])
+                self.assertEqual(meta(response, 'description'), copy['description'])
+                self.assertEqual(meta(response, 'og:description'), copy['description'])
+                self.assertEqual(h1_text(response), copy['h1'])
+                self.assertIn(copy['intro'], normalized(visible_text(response)))
+
+    def test_the_h1_is_the_homes_cases_title(self):
+        for language in ['en', 'es']:
+            with self.subTest(language=language):
+                home = self.client.get(reverse_in(language, 'main:index')).content.decode()
+                title = re.search(r'<h2 class="section__title" id="cases-title">([^<]+)</h2>', home).group(1)
+
+                self.assertEqual(h1_text(self.client.get(reverse_in(language, 'main:cases'))), html.unescape(title))
+
+    def test_shows_the_homes_cards_grouped_as_there(self):
+        for language in ['en', 'es']:
+            with self.subTest(language=language):
+                home = self.client.get(reverse_in(language, 'main:index'))
+                index = self.client.get(reverse_in(language, 'main:cases'))
+
+                self.assertEqual(len(card_titles(index)), 5)
+                self.assertEqual(card_titles(index), card_titles(home))
+                self.assertEqual(card_urls(index), card_urls(home))
+                self.assertEqual(
+                    re.findall(r'<h2 class="group-label">([^<]+)</h2>', index.content.decode()),
+                    re.findall(r'<p class="group-label">([^<]+)</p>', home.content.decode()),
+                )
+                self.assertContains(index, 'class="case-card case-card--wide"', count=2)
+
+    def test_the_breadcrumb_leads_home(self):
+        response = self.client.get(reverse_in('es', 'main:cases'))
+
+        home = reverse_in('es', 'main:index')
+        self.assertContains(response, f'<a href="{home}"><span aria-hidden="true">~/</span>inicio</a>')
+        self.assertContains(response, '<span aria-current="page">casos</span>')
+
+    def test_ends_with_the_homes_contact_block(self):
+        home = inner_html(self.client.get(reverse_in('es', 'main:index')), 'section section--alt cta')
+        response = self.client.get(reverse_in('es', 'main:cases'))
+        main = response.content.decode().split('<footer', 1)[0]
+
+        self.assertEqual(inner_html(response, 'section section--alt cta'), home)
+        self.assertNotIn('<section', main.split('id="contact"', 1)[1])
+
+    @mock.patch('main.cases.CASES', [make_case('published-case'), make_case('drafted-case', published=False)])
+    def test_in_production_drafts_are_neither_listed_nor_in_the_item_list(self):
+        response = self.client.get(reverse_in('en', 'main:cases'))
+        items = structured_data_of_type(response, 'CollectionPage')['mainEntity']['itemListElement']
+
+        self.assertEqual(card_titles(response), ['published-case title'])
+        self.assertEqual([item['name'] for item in items], ['published-case title'])
+        self.assertNotContains(response, 'drafted-case')
+
+    @override_settings(DEBUG=True)
+    @mock.patch('main.cases.CASES', [make_case('published-case'), make_case('drafted-case', published=False)])
+    def test_in_development_drafts_are_listed_and_marked(self):
+        response = self.client.get(reverse_in('en', 'main:cases'))
+
+        self.assertEqual(card_titles(response), ['published-case title', 'drafted-case title'])
+        self.assertContains(response, '<p class="dev-mark">Development only: not published</p>', count=1)
+
+    def test_case_pages_are_still_found(self):
+        response = self.client.get(reverse_in('en', 'main:case-detail', slug='this-site'))
+
+        self.assertEqual(response.status_code, 200)
+
+
+class CasesIndexLinksTests(TestCase):
+    """CAP-2: the site leads to the index instead of the home's anchor."""
+
+    def test_the_header_marks_cases_on_the_index_and_on_case_pages(self):
+        url = reverse_in('en', 'main:cases')
+
+        self.assertContains(
+            self.client.get(url), f'<a class="site-nav__link is-current" href="{url}" aria-current="page">Cases</a>'
+        )
+        self.assertContains(
+            self.client.get(reverse_in('en', 'main:case-detail', slug=CRM_SLUG)),
+            f'<a class="site-nav__link is-current" href="{url}" aria-current="true">Cases</a>',
+        )
+        self.assertContains(self.client.get(reverse_in('en', 'main:cv')), f'<a class="site-nav__link" href="{url}">')
+
+    def test_the_case_breadcrumb_leads_to_the_index(self):
+        for language, name in [('en', 'cases'), ('es', 'casos')]:
+            with self.subTest(language=language):
+                response = self.client.get(reverse_in(language, 'main:case-detail', slug=CRM_SLUG))
+
+                self.assertContains(
+                    response,
+                    f'<a href="{reverse_in(language, "main:cases")}"><span aria-hidden="true">~/</span>{name}</a>',
+                )
+
+    def test_the_homes_cases_section_links_to_the_index(self):
+        for language, text in [('en', 'All cases'), ('es', 'Ver todos los casos')]:
+            with self.subTest(language=language):
+                home = self.client.get(reverse_in(language, 'main:index')).content.decode()
+                section = home.split('id="cases"', 1)[1].split('</section>', 1)[0]
+
+                self.assertIn(f'<a class="text-link" href="{reverse_in(language, "main:cases")}">{text}', section)
+
+    def test_no_template_links_the_homes_anchor(self):
+        folders = [
+            settings.BASE_DIR / 'templates',
+            *(settings.BASE_DIR / app / 'templates' for app in ['main', 'blog']),
+        ]
+        for template in (path for folder in folders for path in folder.rglob('*.html')):
+            with self.subTest(template=template.name):
+                self.assertNotIn('#cases', template.read_text(encoding='utf-8'))
+
+
+class CaseServicesTests(TestCase):
+    """CAP-3: each case leads to the services whose pages list it."""
+
+    def test_is_the_inverse_of_the_services_case_lists(self):
+        for case in cases.CASES:
+            with self.subTest(case=case.slug):
+                self.assertEqual(
+                    [link['url'] for link in services.services_for_case(case.slug)],
+                    [service.get_absolute_url() for service in services.SERVICES if case.slug in service.cases],
+                )
+
+    def test_a_case_in_several_services_lists_them_all_in_order(self):
+        for language, label, names in [
+            ('en', 'Service', ['Django backend', 'AI in existing products', 'End-to-end product']),
+            ('es', 'Servicio', ['Backend con Django', 'IA en productos existentes', 'Producto de principio a fin']),
+        ]:
+            with self.subTest(language=language):
+                response = self.client.get(reverse_in(language, 'main:case-detail', slug=CRM_SLUG))
+                urls = [
+                    reverse_in(language, 'main:service-detail', slug=slug)
+                    for slug in ['django-backend', 'ai-integration', 'end-to-end-product']
+                ]
+
+                self.assertEqual(case_service_links(response), list(zip(names, urls, strict=True)))
+                self.assertRegex(
+                    response.content.decode(), rf'<h2 class="case-services__label"[^>]*>.*?</span>{label}</h2>'
+                )
+
+    def test_the_block_comes_between_the_body_and_the_next_case(self):
+        content = self.client.get(reverse_in('en', 'main:case-detail', slug=CRM_SLUG)).content.decode()
+
+        self.assertLess(content.index('class="case-body"'), content.index('class="case-services"'))
+        self.assertLess(content.index('class="case-services"'), content.index('class="next-case"'))
+
+    def test_a_case_in_one_service_links_that_one(self):
+        response = self.client.get(reverse_in('en', 'main:case-detail', slug=cases.E3_SLUG))
+
+        self.assertEqual(
+            case_service_links(response),
+            [('Django backend', reverse_in('en', 'main:service-detail', slug='django-backend'))],
+        )
+
+    @override_settings(DEBUG=True)
+    def test_a_case_no_service_lists_shows_no_block(self):
+        response = self.client.get(reverse_in('en', 'main:case-detail', slug='payments-and-b2b'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(case_service_links(response))
+
+
+class ServiceStructuredDataTests(TestCase):
+    """CAP-5: service pages and How I work say what they are, with the FAQ the page shows."""
+
+    def test_each_service_is_a_service_by_the_person(self):
+        for language in ['en', 'es']:
+            for service in services.SERVICES:
+                with self.subTest(language=language, slug=service.slug):
+                    url = reverse_in(language, 'main:service-detail', slug=service.slug)
+                    response = self.client.get(url)
+                    data = structured_data(response)
+                    with translation.override(language):
+                        name = str(service.name)
+
+                    self.assertEqual(data['@type'], 'Service')
+                    self.assertEqual(data['name'], name)
+                    self.assertEqual(data['serviceType'], name)
+                    self.assertEqual(data['description'], meta(response, 'description'))
+                    self.assertEqual(data['url'], f'http://testserver{url}')
+                    self.assertEqual(data['provider'], {'@id': 'http://testserver/#person'})
+                    self.assertEqual(
+                        data['areaServed'],
+                        [
+                            {'@type': 'City', 'name': settings.OWNER_CITY},
+                            {'@type': 'Country', 'name': 'Spain', 'identifier': settings.OWNER_COUNTRY},
+                            'Remote',
+                        ],
+                    )
+
+    def test_the_faq_page_is_the_visible_faq(self):
+        pages = [reverse_in(language, 'main:how-i-work') for language in ['en', 'es']]
+        pages += service_urls('en') + service_urls('es')
+        for url in pages:
+            with self.subTest(url=url):
+                response = self.client.get(url)
+                data = structured_data_of_type(response, 'FAQPage')
+                questions = data['mainEntity']
+
+                self.assertEqual(data['url'], f'http://testserver{url}')
+                self.assertEqual(data['inLanguage'], url.split('/')[1])
+                self.assertGreater(len(questions), 0)
+                self.assertEqual({item['@type'] for item in questions}, {'Question'})
+                self.assertEqual({item['acceptedAnswer']['@type'] for item in questions}, {'Answer'})
+                self.assertEqual(
+                    [(item['name'], normalized(item['acceptedAnswer']['text'])) for item in questions],
+                    faq_items(response),
+                )
+
+    def test_how_i_work_faq_keeps_its_spanish(self):
+        response = self.client.get(reverse_in('es', 'main:how-i-work'))
+
+        self.assertEqual(faq_items(response)[0][0], '¿Qué es el desarrollo dirigido por especificaciones?')
+
+
+class CaseArticleTests(TestCase):
+    """CAP-6: cases are articles, and the open-source package is code."""
+
+    def test_a_case_is_an_article(self):
+        for language in ['en', 'es']:
+            with self.subTest(language=language):
+                url = reverse_in(language, 'main:case-detail', slug=CRM_SLUG)
+                response = self.client.get(url)
+                data = structured_data(response)
+
+                self.assertEqual(data['@type'], 'Article')
+                self.assertEqual(data['headline'], h1_text(response))
+                self.assertEqual(data['description'], meta(response, 'description'))
+                self.assertEqual(data['url'], f'http://testserver{url}')
+                self.assertEqual(data['inLanguage'], language)
+                self.assertEqual(data['datePublished'], '2026-11-23')
+                self.assertEqual(data['author']['@type'], 'Person')
+                self.assertEqual(data['author']['@id'], 'http://testserver/#person')
+                self.assertEqual(
+                    [block['@type'] for block in structured_data_blocks(response)], ['Article', 'BreadcrumbList']
+                )
+
+    def test_every_case_is_dated_the_same_day(self):
+        for case in cases.visible_cases():
+            with self.subTest(case=case.slug):
+                data = structured_data(self.client.get(reverse_in('en', 'main:case-detail', slug=case.slug)))
+
+                self.assertEqual(data['datePublished'], cases.CASES_PUBLISHED.isoformat())
+
+    def test_the_e3_case_is_also_its_source_code(self):
+        response = self.client.get(reverse_in('en', 'main:case-detail', slug=cases.E3_SLUG))
+        code = structured_data_of_type(response, 'SoftwareSourceCode')
+
+        self.assertEqual(
+            [block['@type'] for block in structured_data_blocks(response)],
+            ['Article', 'SoftwareSourceCode', 'BreadcrumbList'],
+        )
+        self.assertEqual(code['name'], 'e3-django-dynamic-forms')
+        self.assertEqual(code['codeRepository'], 'https://github.com/e3tools/e3-django-dynamic-forms')
+        self.assertEqual(code['url'], cases.E3_PYPI_URL)
+        self.assertEqual(code['programmingLanguage'], 'Python')
+        self.assertEqual(code['license'], 'https://opensource.org/license/mit')
+        self.assertEqual(code['author'], {'@id': 'http://testserver/#person'})
+        # The same address as the case's own GitHub link
+        self.assertIn(cases.Link(cases.GITHUB, code['codeRepository']), case_by_slug(cases.E3_SLUG).links)
+
+
+class CasesIndexDiscoverabilityTests(TestCase):
+    """CAP-7: the index is as discoverable as the other pages."""
+
+    def test_points_to_itself_in_each_language(self):
+        for language in ['en', 'es']:
+            with self.subTest(language=language):
+                response = self.client.get(reverse_in(language, 'main:cases'))
+
+                self.assertContains(response, f'<link rel="canonical" href="http://testserver/{language}/cases/">')
+                for other in ['en', 'es']:
+                    self.assertContains(
+                        response, f'<link rel="alternate" hreflang="{other}" href="http://testserver/{other}/cases/">'
+                    )
+                self.assertContains(
+                    response, '<link rel="alternate" hreflang="x-default" href="http://testserver/cases/">'
+                )
+
+    def test_is_in_the_sitemap_in_both_languages(self):
+        sitemap = self.client.get(reverse('sitemap'))
+
+        for language in ['en', 'es']:
+            with self.subTest(language=language):
+                self.assertContains(sitemap, f'<loc>http://testserver{reverse_in(language, "main:cases")}</loc>')
+
+    def test_is_in_llms_txt_with_a_line(self):
+        content = self.client.get(reverse('llms'), HTTP_ACCEPT_LANGUAGE='es').content.decode()
+
+        url = reverse_in('en', 'main:cases')
+        self.assertIn(f'- [Cases](http://testserver{url}): Case studies of Django backends', content)
+
+    def test_is_a_collection_of_the_cases_it_shows(self):
+        for language in ['en', 'es']:
+            with self.subTest(language=language):
+                url = reverse_in(language, 'main:cases')
+                response = self.client.get(url)
+                blocks = structured_data_blocks(response)
+                data = blocks[0]
+                items = data['mainEntity']['itemListElement']
+
+                self.assertEqual([block['@type'] for block in blocks], ['CollectionPage', 'BreadcrumbList'])
+                self.assertEqual(data['name'], h1_text(response))
+                self.assertEqual(data['description'], meta(response, 'description'))
+                self.assertEqual(data['url'], f'http://testserver{url}')
+                self.assertEqual(data['inLanguage'], language)
+                self.assertEqual(data['mainEntity']['@type'], 'ItemList')
+                self.assertEqual({item['@type'] for item in items}, {'ListItem'})
+                self.assertEqual(
+                    [item['url'] for item in items], [f'http://testserver{u}' for u in card_urls(response)]
+                )
+                self.assertEqual([item['name'] for item in items], card_titles(response))
+                self.assertEqual([item['position'] for item in items], list(range(1, len(items) + 1)))
+
+    def test_sits_under_the_home(self):
+        for language, names in [('en', ['Home', 'Cases']), ('es', ['Inicio', 'Casos'])]:
+            with self.subTest(language=language):
+                response = self.client.get(reverse_in(language, 'main:cases'))
+                crumbs = structured_data_of_type(response, 'BreadcrumbList')['itemListElement']
+
+                self.assertEqual([crumb['name'] for crumb in crumbs], names)
+                self.assertEqual(
+                    [crumb['item'] for crumb in crumbs],
+                    [
+                        f'http://testserver{reverse_in(language, "main:index")}',
+                        f'http://testserver{reverse_in(language, "main:cases")}',
+                    ],
                 )

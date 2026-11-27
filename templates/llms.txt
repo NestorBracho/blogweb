@@ -10,6 +10,7 @@ Nestor Bracho is a freelance {{ role }} based in {{ city }}, Spain. He designs a
 - [Inicio]({{ home_es_url }}): the same home page, in Spanish.
 - [About]({{ about_url }}): his story, what he does and what drives him.
 - [CV]({{ cv_url }}): his experience, skills and education.
+- [Cases]({{ cases_url }}): {{ cases_description }}
 - [Blog]({{ blog_url }}): posts on Django, APIs and AI agent-driven development, in English and Spanish.
 
 ## Services

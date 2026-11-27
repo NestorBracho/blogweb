@@ -58,22 +58,9 @@
             <h2 class="section__title" id="cases-title">{% translate 'What I have built' %}</h2>
         </div>
 
-        <div class="case-groups">
-            {% for group, wide_cases, normal_cases in case_groups %}
-                <div class="case-group">
-                    <p class="group-label">{% if group == 'world-bank' %}{% translate 'World Bank Group · 2023 to 2026' %}{% else %}{% translate 'Other clients and projects' %}{% endif %}</p>
-                    {% for case in wide_cases %}
-                        {% include 'main/_lib/_case_card.html' %}
-                    {% endfor %}
-                    {% if normal_cases %}
-                        <div class="case-grid">
-                            {% for case in normal_cases %}
-                                {% include 'main/_lib/_case_card.html' %}
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
-            {% endfor %}
+        {% include 'main/_lib/_case_groups.html' %}
+        <div class="links case-groups__more">
+            <a class="text-link" href="{% url 'main:cases' %}">{% translate 'All cases' %} <span class="arrow" aria-hidden="true">→</span></a>
         </div>
     </div>
 </section>

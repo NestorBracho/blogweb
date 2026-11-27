@@ -1,0 +1,24 @@
+{% load i18n %}
+{% comment %}
+    The cases, grouped as on the home (main.cases.grouped_cases, as `case_groups`): the home and the cases index both
+    show them. On the index nothing heads the cards but the page's H1, so each group's label is a heading there
+    (`group_headings`); on the home the section's title heads them.
+{% endcomment %}
+<div class="case-groups">
+    {% for group, wide_cases, normal_cases in case_groups %}
+        <div class="case-group">
+            {% if group == 'world-bank' %}{% translate 'World Bank Group · 2023 to 2026' as group_label %}{% else %}{% translate 'Other clients and projects' as group_label %}{% endif %}
+            {% if group_headings %}<h2 class="group-label">{{ group_label }}</h2>{% else %}<p class="group-label">{{ group_label }}</p>{% endif %}
+            {% for case in wide_cases %}
+                {% include 'main/_lib/_case_card.html' %}
+            {% endfor %}
+            {% if normal_cases %}
+                <div class="case-grid">
+                    {% for case in normal_cases %}
+                        {% include 'main/_lib/_case_card.html' %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>

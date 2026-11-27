@@ -167,3 +167,47 @@
     font-size: 14px;
     color: var(--text-alt-color);
 }
+
+/* The end of a post (blog/templates/blog/_lib/_post_services.html): what he offers, on the theme's colours so it
+   follows its light and dark modes. The second alternative background: on the first, the dark mode's grey text gave
+   4.3:1 */
+.post-services {
+    margin-top: 48px;
+    padding: 32px;
+    border: 1px solid var(--border-alt-color);
+    border-radius: 12px;
+    background: var(--background-alt-color-2);
+}
+
+.post-services__title {
+    margin-bottom: 12px;
+    font-size: 24px;
+    color: var(--heading-font-color);
+}
+
+.post-services__text {
+    margin-bottom: 16px;
+    color: var(--text-color);
+}
+
+.post-services__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 24px;
+}
+
+.post-services__list a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-weight: 600;
+    color: var(--link-color);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+@media (max-width: 576px) {
+    .post-services {
+        padding: 24px 20px;
+    }
+}

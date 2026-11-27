@@ -560,6 +560,8 @@ a:hover {
     font-family: var(--mono);
     font-size: 14px;
     font-weight: 500;
+    /* A heading on the cases index: not the headings' tighter spacing */
+    letter-spacing: normal;
     color: var(--text);
 }
 
@@ -568,6 +570,11 @@ a:hover {
     flex: 1 1 auto;
     height: 1px;
     background: var(--line);
+}
+
+/* "All cases", under the home's groups */
+.case-groups__more {
+    margin-top: 32px;
 }
 
 .case-grid {
@@ -1053,6 +1060,38 @@ a:hover {
 .case-shot img {
     display: block;
     width: 100%;
+}
+
+/* The services a case proves, between its body and the next case: the label, then a link to each */
+.case-services {
+    padding: 32px 0;
+    border-top: 1px solid var(--line);
+}
+
+.case-services__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 64px;
+}
+
+/* The same columns as the case's blocks above */
+.case-services__label {
+    display: flex;
+    flex: 1 1 220px;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: normal;
+    color: var(--muted);
+}
+
+.case-services .links {
+    flex: 999 1 520px;
+    min-width: 0;
+    max-width: 760px;
+    font-size: 16px;
 }
 
 .next-case {

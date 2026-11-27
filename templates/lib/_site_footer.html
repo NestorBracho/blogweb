@@ -1,10 +1,9 @@
 {% load i18n %}
-{% url 'main:index' as home_url %}
 <footer class="site-footer">
     <div class="container site-footer__inner">
         <span class="site-footer__logo">{% include 'lib/_brand_wordmark.html' %}</span>
         <nav class="site-footer__nav" aria-label="{% translate 'Footer' %}">
-            <a href="{{ home_url }}#cases">{% translate 'Cases' %}</a>
+            <a href="{% url 'main:cases' %}">{% translate 'Cases' %}</a>
             <a href="{% url 'main:service-detail' slug='django-backend' %}">{% translate 'Django backend' %}</a>
             <a href="{% url 'main:service-detail' slug='ai-integration' %}">{% translate 'AI in existing products' %}</a>
             <a href="{% url 'main:service-detail' slug='end-to-end-product' %}">{% translate 'End-to-end product' %}</a>

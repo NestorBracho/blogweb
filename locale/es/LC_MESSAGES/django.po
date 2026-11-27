@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-26 09:58+0100\n"
+"POT-Creation-Date: 2026-11-27 11:14+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -36,6 +36,38 @@ msgstr "Cargar más"
 #: .\blog\templates\blog\_lib\_load_more.html:13
 msgid "The posts couldn't be loaded. Please try again."
 msgstr "No se pudieron cargar las publicaciones. Inténtalo de nuevo."
+
+#: .\blog\templates\blog\_lib\_post_services.html:7
+msgid "Need this in your project?"
+msgstr "¿Lo necesitas en tu proyecto?"
+
+#: .\blog\templates\blog\_lib\_post_services.html:8
+msgid ""
+"I build Django backends, add AI to existing products and take products from "
+"idea to production."
+msgstr "Construyo backends con Django, añado IA a productos existentes y llevo productos de la idea a producción."
+
+#: .\blog\templates\blog\_lib\_post_services.html:10 .\main\services.py:173
+#: .\templates\lib\_site_footer.html:7
+msgid "Django backend"
+msgstr "Backend con Django"
+
+#: .\blog\templates\blog\_lib\_post_services.html:11 .\main\services.py:242
+#: .\main\templates\main\index.html:123 .\templates\lib\_site_footer.html:8
+msgid "AI in existing products"
+msgstr "IA en productos existentes"
+
+#: .\blog\templates\blog\_lib\_post_services.html:12 .\main\services.py:317
+#: .\main\templates\main\index.html:119 .\templates\lib\_site_footer.html:9
+msgid "End-to-end product"
+msgstr "Producto de principio a fin"
+
+#: .\blog\templates\blog\_lib\_post_services.html:13
+#: .\config\structured_data.py:228 .\main\templates\main\how_i_work.html:30
+#: .\main\templates\main\index.html:72 .\main\views.py:122
+#: .\templates\lib\_site_footer.html:10 .\templates\lib\_site_header.html:13
+msgid "How I work"
+msgstr "Cómo trabajo"
 
 #: .\blog\templates\blog\category.html:16
 #, python-format
@@ -77,22 +109,22 @@ msgstr "Compartir en %(network)s"
 msgid "Share this"
 msgstr "Compartir"
 
-#: .\blog\templates\blog\post.html:107
+#: .\blog\templates\blog\post.html:109
 msgid "Older post"
 msgstr "Publicación anterior"
 
-#: .\blog\templates\blog\post.html:115
+#: .\blog\templates\blog\post.html:117
 msgid "Newer post"
 msgstr "Publicación siguiente"
 
-#: .\blog\templates\blog\post.html:132
+#: .\blog\templates\blog\post.html:134
 msgid "Related"
 msgstr "Relacionados"
 
 #: .\blog\templates\blog\post_list.html:17 .\blog\views.py:24
-#: .\config\structured_data.py:158 .\templates\lib\_main_footer.html:59
-#: .\templates\lib\_main_navbar.html:29 .\templates\lib\_site_footer.html:12
-#: .\templates\lib\_site_header.html:13
+#: .\config\structured_data.py:255 .\templates\lib\_main_footer.html:59
+#: .\templates\lib\_main_navbar.html:29 .\templates\lib\_site_footer.html:11
+#: .\templates\lib\_site_header.html:14
 msgid "Blog"
 msgstr "Blog"
 
@@ -120,35 +152,36 @@ msgstr ""
 "Django. Tres años para el Grupo Banco Mundial; hoy, freelance con desarrollo "
 "dirigido por agentes de IA."
 
-#: .\config\structured_data.py:34 .\main\templates\main\index.html:44
+#: .\config\structured_data.py:35 .\main\templates\main\index.html:44
 msgid "World Bank Group"
 msgstr "Grupo Banco Mundial"
 
-#: .\config\structured_data.py:122 .\config\structured_data.py:128
-#: .\config\structured_data.py:132 .\config\structured_data.py:157
-#: .\main\templates\main\how_i_work.html:13
+#: .\config\structured_data.py:138 .\config\structured_data.py:172
+#: .\config\structured_data.py:220 .\config\structured_data.py:228
+#: .\config\structured_data.py:254 .\main\templates\main\cases.html:13
+#: .\main\templates\main\how_i_work.html:14
 #: .\main\templates\main\service.html:14 .\templates\lib\_main_footer.html:57
 #: .\templates\lib\_main_navbar.html:23
 msgid "Home"
 msgstr "Inicio"
 
-#: .\config\structured_data.py:122 .\main\templates\main\index.html:57
-#: .\main\views.py:113 .\templates\lib\_main_navbar.html:26
-#: .\templates\lib\_site_footer.html:7 .\templates\lib\_site_header.html:11
+#: .\config\structured_data.py:138 .\config\structured_data.py:172
+#: .\main\templates\main\index.html:57 .\main\views.py:121
+#: .\templates\lib\_main_navbar.html:26 .\templates\lib\_site_footer.html:6
+#: .\templates\lib\_site_header.html:12
 msgid "Cases"
 msgstr "Casos"
 
-#: .\config\structured_data.py:132 .\main\templates\main\how_i_work.html:29
-#: .\main\templates\main\index.html:85 .\main\views.py:114
-#: .\templates\lib\_site_footer.html:11 .\templates\lib\_site_header.html:12
-msgid "How I work"
-msgstr "Cómo trabajo"
+#: .\config\structured_data.py:155 .\main\templates\main\cases.html:18
+#: .\main\templates\main\index.html:58
+msgid "What I have built"
+msgstr "Lo que he construido"
 
-#: .\main\services.py:103
+#: .\main\services.py:113
 msgid "How I build software with AI agents · Nestor Bracho"
 msgstr "Cómo construyo software con agentes de IA · Nestor Bracho"
 
-#: .\main\services.py:105
+#: .\main\services.py:115
 msgid ""
 "Spec-driven development with AI agents: specification, agents with roles, "
 "human review and verification. With a real case and its numbers."
@@ -157,15 +190,85 @@ msgstr ""
 "agentes con roles, revisión humana y verificación. Con un caso real y sus "
 "números."
 
-#: .\main\services.py:112 .\templates\lib\_site_footer.html:8
-msgid "Django backend"
-msgstr "Backend con Django"
+#: .\main\services.py:122
+msgid "What is spec-driven development?"
+msgstr "¿Qué es el desarrollo dirigido por especificaciones?"
 
-#: .\main\services.py:113
+#: .\main\services.py:124
+msgid ""
+"Writing down first what has to be built and how you will know it is right, "
+"and then building it. With AI agents, it is what turns a code generator into "
+"a predictable team: the agent works against the specification and the review "
+"checks against it."
+msgstr ""
+"Es escribir primero qué hay que construir y cómo se sabrá que está bien, y "
+"después implementarlo. Con agentes de IA es lo que convierte un generador de "
+"código en un equipo predecible: el agente trabaja contra la especificación y "
+"la revisión compara contra ella."
+
+#: .\main\services.py:130
+msgid "What is the BMAD method?"
+msgstr "¿Qué es el método BMAD?"
+
+#: .\main\services.py:132
+msgid ""
+"An open-source method for AI agent-driven development that splits the work "
+"into roles (analyst, product, architecture, development, review) and "
+"produces documents that build on each other: brief, PRD, architecture, epics "
+"and stories."
+msgstr ""
+"Un método de código abierto para desarrollo con agentes de IA que reparte el "
+"trabajo en roles (analista, producto, arquitectura, desarrollo, revisión) y "
+"produce documentos que se encadenan: brief, PRD, arquitectura, épicas e "
+"historias."
+
+#: .\main\services.py:138
+msgid "Is code written by agents reliable?"
+msgstr "¿El código escrito por agentes es fiable?"
+
+#: .\main\services.py:140
+msgid ""
+"As reliable as the review and the tests around it. That is why I review "
+"every change and nothing is merged without passing the tests and continuous "
+"integration."
+msgstr ""
+"Tanto como la revisión y los tests que lo acompañan. Por eso reviso cada "
+"cambio y nada se integra sin pasar los tests y la integración continua."
+
+#: .\main\services.py:145
+msgid "Can I use this method with my team?"
+msgstr "¿Puedo usar este método con mi equipo?"
+
+#: .\main\services.py:147
+msgid ""
+"Yes. I offer training and hands-on support so your team can work with AI "
+"agents under specification and review, on your own projects."
+msgstr ""
+"Sí. Ofrezco formación y acompañamiento para que tu equipo trabaje con "
+"agentes de IA bajo especificación y revisión, sobre vuestros propios "
+"proyectos."
+
+#: .\main\services.py:160
+msgid "Django and Python case studies · Nestor Bracho"
+msgstr "Casos de Django y Python · Nestor Bracho"
+
+#: .\main\services.py:162
+msgid ""
+"Case studies of Django backends, APIs and products built for the World Bank "
+"Group and private clients: the problem, the solution and the result."
+msgstr "Casos de backends Django, APIs y productos construidos para el Grupo Banco Mundial y clientes privados: el problema, la solución y el resultado."
+
+#: .\main\services.py:166
+msgid ""
+"Each case explains the problem, what I built, how and what changed. Most are "
+"Django backends with their API; some include the frontend and the AI pieces."
+msgstr "Cada caso explica el problema, lo que construí, cómo y qué cambió. La mayoría son backends Django con su API; algunos incluyen el frontend y las piezas de IA."
+
+#: .\main\services.py:174
 msgid "Freelance Django developer in Madrid · Nestor Bracho"
 msgstr "Desarrollador Django freelance en Madrid · Nestor Bracho"
 
-#: .\main\services.py:115
+#: .\main\services.py:176
 #, python-format
 msgid ""
 "Freelance Django and Django REST Framework developer in Madrid. More than "
@@ -174,13 +277,13 @@ msgstr ""
 "Desarrollador Django y Django REST Framework freelance en Madrid. Más de "
 "%(years)s años diseñando APIs, modelos de datos y backends en producción."
 
-#: .\main\services.py:118
+#: .\main\services.py:179
 msgid ""
 "Freelance Django developer: APIs and backends that grow without a rewrite"
 msgstr ""
 "Desarrollador Django freelance: APIs y backends que crecen sin reescribirse"
 
-#: .\main\services.py:120
+#: .\main\services.py:181
 #, python-format
 msgid ""
 "I design and build backends with Python, Django and Django REST Framework "
@@ -195,18 +298,18 @@ msgstr ""
 "Banco Mundial, y ahora como freelance desde Madrid, en remoto o en formato "
 "híbrido."
 
-#: .\main\services.py:125
+#: .\main\services.py:186
 msgid ""
 "REST API design with Django REST Framework, with contracts locked in OpenAPI."
 msgstr ""
 "Diseño de APIs REST con Django REST Framework, con contratos fijados en "
 "OpenAPI."
 
-#: .\main\services.py:126
+#: .\main\services.py:187
 msgid "Data modeling and query optimization in PostgreSQL."
 msgstr "Modelado de datos y optimización de consultas en PostgreSQL."
 
-#: .\main\services.py:128
+#: .\main\services.py:189
 msgid ""
 "Third-party integrations: Stripe payments, WhatsApp Business API, Idealista, "
 "SMS and email (Twilio, SendGrid, Mailchimp)."
@@ -214,11 +317,11 @@ msgstr ""
 "Integraciones con terceros: pagos con Stripe, WhatsApp Business API, "
 "Idealista, SMS y email (Twilio, SendGrid, Mailchimp)."
 
-#: .\main\services.py:131
+#: .\main\services.py:192
 msgid "Background jobs with Celery and Redis."
 msgstr "Tareas en segundo plano con Celery y Redis."
 
-#: .\main\services.py:133
+#: .\main\services.py:194
 msgid ""
 "AWS infrastructure (EC2, RDS, S3, Elastic Beanstalk, Lambda) with Terraform "
 "and CI/CD on GitHub Actions."
@@ -226,7 +329,7 @@ msgstr ""
 "Infraestructura en AWS (EC2, RDS, S3, Elastic Beanstalk, Lambda) con "
 "Terraform y CI/CD en GitHub Actions."
 
-#: .\main\services.py:136
+#: .\main\services.py:197
 msgid ""
 "Work on existing Django codebases: new features, maintenance and version "
 "upgrades."
@@ -234,11 +337,11 @@ msgstr ""
 "Trabajo sobre bases de código Django que ya existen: nuevas funcionalidades, "
 "mantenimiento y migraciones de versión."
 
-#: .\main\services.py:139
+#: .\main\services.py:200
 msgid "Three Django backends in production."
 msgstr "Tres backends Django en producción."
 
-#: .\main\services.py:141
+#: .\main\services.py:202
 msgid ""
 "I write the specification, AI agents implement it and I review every change "
 "before it is merged."
@@ -246,11 +349,11 @@ msgstr ""
 "Escribo la especificación, los agentes de IA implementan y yo reviso cada "
 "cambio antes de integrarlo."
 
-#: .\main\services.py:145
+#: .\main\services.py:206
 msgid "Can you work on an existing Django project?"
 msgstr "¿Puedes trabajar sobre un proyecto Django que ya existe?"
 
-#: .\main\services.py:147
+#: .\main\services.py:208
 msgid ""
 "Yes. Much of my work has been on other people's code, such as Nokia's Zina "
 "CRM/ERP or the management system I built the mid-term rental CRM into. I "
@@ -261,11 +364,11 @@ msgstr ""
 "estancia. Empiezo leyendo el código y los tests, y propongo cambios por "
 "fases."
 
-#: .\main\services.py:153
+#: .\main\services.py:214
 msgid "Do you only do Django, or the frontend too?"
 msgstr "¿Trabajas solo con Django o también con el frontend?"
 
-#: .\main\services.py:155
+#: .\main\services.py:216
 msgid ""
 "Backend is my specialty, but I also deliver the interface when needed: HTMX "
 "in Django templates, Angular, or React Native for mobile."
@@ -273,22 +376,22 @@ msgstr ""
 "El backend es mi especialidad, pero entrego también la interfaz cuando hace "
 "falta: HTMX en plantillas de Django, Angular, o React Native para móvil."
 
-#: .\main\services.py:160
+#: .\main\services.py:221
 msgid "Do you work remotely?"
 msgstr "¿Trabajas en remoto?"
 
-#: .\main\services.py:161
+#: .\main\services.py:222
 msgid ""
 "Yes. I live in Madrid and work remotely or hybrid, in Spanish or English."
 msgstr ""
 "Sí. Vivo en Madrid y trabajo en remoto o en formato híbrido, en español o en "
 "inglés."
 
-#: .\main\services.py:164
+#: .\main\services.py:225
 msgid "What about quality if you use AI agents?"
 msgstr "¿Qué pasa con la calidad si usas agentes de IA?"
 
-#: .\main\services.py:166
+#: .\main\services.py:227
 msgid ""
 "No change is merged until I have reviewed it and it has passed the tests and "
 "continuous integration. The mid-term rental CRM module, built this way, has "
@@ -298,11 +401,11 @@ msgstr ""
 "integración continua. El módulo de CRM de media estancia, construido así, "
 "tiene más de 2.000 tests automáticos."
 
-#: .\main\services.py:171
+#: .\main\services.py:232
 msgid "How do you quote a project?"
 msgstr "¿Cómo presupuestas un proyecto?"
 
-#: .\main\services.py:173
+#: .\main\services.py:234
 msgid ""
 "By phase. The first phase is the specification, and each phase is quoted "
 "once its scope is defined. Tell me about the project and I will prepare a "
@@ -311,16 +414,11 @@ msgstr ""
 "Por fases. La primera es la especificación, y cada fase se presupuesta con "
 "su alcance ya definido. Cuéntame el proyecto y te preparo una propuesta."
 
-#: .\main\services.py:181 .\main\templates\main\index.html:136
-#: .\templates\lib\_site_footer.html:9
-msgid "AI in existing products"
-msgstr "IA en productos existentes"
-
-#: .\main\services.py:182
+#: .\main\services.py:243
 msgid "AI and LLM integration for Django products · Nestor Bracho"
 msgstr "Integración de IA y LLMs en productos Django · Nestor Bracho"
 
-#: .\main\services.py:184
+#: .\main\services.py:245
 msgid ""
 "I integrate LLMs and Hugging Face models into products already in "
 "production, without a rewrite. With caching, graceful degradation and tests."
@@ -328,11 +426,11 @@ msgstr ""
 "Integro LLMs y modelos de Hugging Face en productos que ya están en "
 "producción, sin reescribirlos. Con caché, degradación controlada y tests."
 
-#: .\main\services.py:187
+#: .\main\services.py:248
 msgid "AI in your current product, without a rewrite"
 msgstr "IA en tu producto actual, sin reescribirlo"
 
-#: .\main\services.py:189
+#: .\main\services.py:250
 msgid ""
 "I integrate LLMs and Hugging Face models into systems that are already in "
 "production, as one more part of the backend rather than a separate project. "
@@ -344,18 +442,18 @@ msgstr ""
 "más reciente: un servicio de análisis financiero que explica en lenguaje "
 "claro los paneles de una plataforma de gestión de alquileres."
 
-#: .\main\services.py:194
+#: .\main\services.py:255
 msgid ""
 "LLM integration through APIs (OpenAI) with prompt engineering and tool "
 "calling."
 msgstr ""
 "Integración de LLMs vía API (OpenAI) con prompt engineering y tool calling."
 
-#: .\main\services.py:195
+#: .\main\services.py:256
 msgid "Hugging Face models in content processing pipelines."
 msgstr "Modelos de Hugging Face en pipelines de procesamiento de contenido."
 
-#: .\main\services.py:197
+#: .\main\services.py:258
 msgid ""
 "Production-ready service design: per-client context, response caching and "
 "graceful degradation when the model is unavailable."
@@ -363,7 +461,7 @@ msgstr ""
 "Diseño del servicio para producción: contexto por cliente, caché de "
 "respuestas y degradación controlada cuando el modelo no está disponible."
 
-#: .\main\services.py:201
+#: .\main\services.py:262
 msgid ""
 "LLM analysis inside existing dashboards, such as the diagnostics dashboard "
 "of a grievance redress system."
@@ -371,7 +469,7 @@ msgstr ""
 "Análisis con LLM dentro de paneles existentes, como el de diagnóstico de un "
 "sistema de gestión de quejas."
 
-#: .\main\services.py:204
+#: .\main\services.py:265
 msgid ""
 "Integration into your existing Django backend, with its permissions, its "
 "data and its tests."
@@ -379,7 +477,7 @@ msgstr ""
 "Integración en el backend Django que ya tienes, con sus permisos, sus datos "
 "y sus tests."
 
-#: .\main\services.py:208
+#: .\main\services.py:269
 msgid ""
 "Vacation and mid-term rental management company: a financial analysis "
 "service using an LLM that generates insights on revenue, occupancy and "
@@ -389,7 +487,7 @@ msgstr ""
 "financiero con un LLM que genera insights sobre ingresos, ocupación y "
 "canales en los paneles. En producción."
 
-#: .\main\services.py:212
+#: .\main\services.py:273
 msgid ""
 "World Bank Group: an LLM analysis layer in the diagnostics dashboard of a "
 "grievance redress system. In production."
@@ -397,7 +495,7 @@ msgstr ""
 "Grupo Banco Mundial: capa de análisis con un LLM en el panel de diagnóstico "
 "de un sistema de gestión de quejas. En producción."
 
-#: .\main\services.py:216
+#: .\main\services.py:277
 msgid ""
 "Ekwi-three: Hugging Face models in the pipeline of a content management "
 "platform that processes and organizes large volumes of resources."
@@ -405,18 +503,18 @@ msgstr ""
 "Ekwi-three: modelos de Hugging Face en el pipeline de una plataforma de "
 "gestión de contenidos que procesa y organiza grandes volúmenes de recursos."
 
-#: .\main\services.py:222
+#: .\main\services.py:283
 msgid ""
 "The integration is specified and reviewed like any other backend feature."
 msgstr ""
 "La integración se especifica y se revisa como cualquier otra funcionalidad "
 "del backend."
 
-#: .\main\services.py:225
+#: .\main\services.py:286
 msgid "Do I need to rebuild my product to add AI?"
 msgstr "¿Hace falta rehacer el producto para añadir IA?"
 
-#: .\main\services.py:227
+#: .\main\services.py:288
 msgid ""
 "No. The integration goes in as one more backend service that reads the data "
 "you already have. In both production cases the product's architecture did "
@@ -426,11 +524,11 @@ msgstr ""
 "que ya existen. En los dos casos en producción no se cambió la arquitectura "
 "del producto."
 
-#: .\main\services.py:232
+#: .\main\services.py:293
 msgid "What if the model fails or is slow?"
 msgstr "¿Qué pasa si el modelo falla o tarda?"
 
-#: .\main\services.py:234
+#: .\main\services.py:295
 msgid ""
 "The service caches responses and, if the model is unavailable, the dashboard "
 "keeps working without the analysis. Users don't see an error."
@@ -439,11 +537,11 @@ msgstr ""
 "disponible, el panel sigue funcionando sin el análisis. El usuario no ve un "
 "error."
 
-#: .\main\services.py:239
+#: .\main\services.py:300
 msgid "Which models do you work with?"
 msgstr "¿Con qué modelos trabajas?"
 
-#: .\main\services.py:241
+#: .\main\services.py:302
 msgid ""
 "I have integrated the OpenAI API and Hugging Face models. The choice depends "
 "on the case: cost, latency and where the data is allowed to go."
@@ -451,11 +549,11 @@ msgstr ""
 "He integrado la API de OpenAI y modelos de Hugging Face. La elección depende "
 "del caso: coste, latencia y dónde pueden ir los datos."
 
-#: .\main\services.py:246
+#: .\main\services.py:307
 msgid "What about your data and your customers' data?"
 msgstr "¿Qué pasa con tus datos y los de tus clientes?"
 
-#: .\main\services.py:248
+#: .\main\services.py:309
 msgid ""
 "It stays confidential. If I later use the project as a reference, I do it "
 "anonymized, like the clients in this site's case studies."
@@ -463,16 +561,11 @@ msgstr ""
 "Son confidenciales. Si después uso el proyecto como referencia, lo hago "
 "anonimizado, como los clientes de los casos de este sitio."
 
-#: .\main\services.py:256 .\main\templates\main\index.html:132
-#: .\templates\lib\_site_footer.html:10
-msgid "End-to-end product"
-msgstr "Producto de principio a fin"
-
-#: .\main\services.py:257
+#: .\main\services.py:318
 msgid "End-to-end product development · Nestor Bracho"
 msgstr "Desarrollo de producto de principio a fin · Nestor Bracho"
 
-#: .\main\services.py:259
+#: .\main\services.py:320
 msgid ""
 "From specification to deployment: backend, frontend, testing and release, "
 "with one person accountable and AI agent-driven development."
@@ -480,11 +573,11 @@ msgstr ""
 "De la especificación al despliegue: backend, frontend, tests y puesta en "
 "producción, con una sola persona responsable y desarrollo con agentes de IA."
 
-#: .\main\services.py:262
+#: .\main\services.py:323
 msgid "From specification to production, with one person accountable"
 msgstr "De la especificación a producción, con una sola persona responsable"
 
-#: .\main\services.py:264
+#: .\main\services.py:325
 msgid ""
 "I take a product from specification to production: backend, frontend, "
 "testing and deployment. I work with AI agents under specification and human "
@@ -496,7 +589,7 @@ msgstr ""
 "y revisión humana; así entregué las cinco primeras épicas de un CRM, 19 "
 "historias, en dos semanas."
 
-#: .\main\services.py:269
+#: .\main\services.py:330
 msgid ""
 "Specification before code: PRD, architecture, epics and one spec per story, "
 "with acceptance criteria."
@@ -504,14 +597,14 @@ msgstr ""
 "Especificación antes del código: PRD, arquitectura, épicas y una "
 "especificación por historia, con criterios de aceptación."
 
-#: .\main\services.py:270
+#: .\main\services.py:331
 msgid ""
 "System architecture and a stack chosen for the problem, not the other way "
 "round."
 msgstr ""
 "Arquitectura del sistema y elección del stack según el problema, no al revés."
 
-#: .\main\services.py:271
+#: .\main\services.py:332
 msgid ""
 "Django backend, HTMX or Angular interfaces, and offline-first mobile apps "
 "with React Native and Expo."
@@ -519,7 +612,7 @@ msgstr ""
 "Backend en Django, interfaz con HTMX o Angular, y apps móviles offline-first "
 "con React Native y Expo."
 
-#: .\main\services.py:272
+#: .\main\services.py:333
 msgid ""
 "Automated tests (pytest, Jest, Maestro) and continuous integration on every "
 "change."
@@ -527,7 +620,7 @@ msgstr ""
 "Tests automáticos (pytest, Jest, Maestro) e integración continua en cada "
 "cambio."
 
-#: .\main\services.py:273
+#: .\main\services.py:334
 msgid ""
 "Deployment on AWS or on minimal infrastructure behind Cloudflare, with off-"
 "site backups."
@@ -535,7 +628,7 @@ msgstr ""
 "Despliegue en AWS o en infraestructura mínima detrás de Cloudflare, con "
 "copias de seguridad fuera del servidor."
 
-#: .\main\services.py:275
+#: .\main\services.py:336
 msgid ""
 "Handover to the team: the code, the specification and the architecture "
 "decisions stay in the repository."
@@ -543,19 +636,19 @@ msgstr ""
 "Traspaso al equipo: el código, la especificación y las decisiones de "
 "arquitectura quedan en el repositorio."
 
-#: .\main\services.py:280
+#: .\main\services.py:341
 msgid "Three products built end to end."
 msgstr "Tres productos construidos de principio a fin."
 
-#: .\main\services.py:281
+#: .\main\services.py:342
 msgid "This service is the full method in practice."
 msgstr "Este servicio es el método aplicado completo."
 
-#: .\main\services.py:284
+#: .\main\services.py:345
 msgid "What do you need to get started?"
 msgstr "¿Qué necesitas para empezar?"
 
-#: .\main\services.py:286
+#: .\main\services.py:347
 msgid ""
 "The problem you want to solve and who has it. From there I write the "
 "specification with your team and split it into phases that can be reviewed "
@@ -565,11 +658,11 @@ msgstr ""
 "con tu equipo la especificación y la divido en fases que se pueden revisar y "
 "entregar por separado."
 
-#: .\main\services.py:291
+#: .\main\services.py:352
 msgid "What do I get at the end?"
 msgstr "¿Qué recibo al final?"
 
-#: .\main\services.py:293
+#: .\main\services.py:354
 msgid ""
 "The product in production, the code with its tests and the specification in "
 "the same repository. Any developer, or any agent, can carry on from there."
@@ -578,11 +671,11 @@ msgstr ""
 "mismo repositorio. Cualquier desarrollador, o cualquier agente, puede "
 "continuar desde ahí."
 
-#: .\main\services.py:298
+#: .\main\services.py:359
 msgid "Do you build mobile apps too?"
 msgstr "¿Haces también apps móviles?"
 
-#: .\main\services.py:300
+#: .\main\services.py:361
 msgid ""
 "Yes, with React Native and Expo. The participatory monitoring app works "
 "offline and syncs when the network comes back."
@@ -590,11 +683,11 @@ msgstr ""
 "Sí, con React Native y Expo. La app de monitoreo participativo funciona sin "
 "conexión y sincroniza cuando vuelve la red."
 
-#: .\main\services.py:305
+#: .\main\services.py:366
 msgid "How long does a product take?"
 msgstr "¿Cuánto tarda un producto?"
 
-#: .\main\services.py:307
+#: .\main\services.py:368
 msgid ""
 "It depends on the scope, which is why the first deliverable is the phased "
 "specification. For reference, the first five epics of the mid-term rental "
@@ -613,6 +706,14 @@ msgstr "Solo en desarrollo: no publicado"
 msgid "View case"
 msgstr "Ver caso"
 
+#: .\main\templates\main\_lib\_case_groups.html:10
+msgid "World Bank Group · 2023 to 2026"
+msgstr "Grupo Banco Mundial · 2023 a 2026"
+
+#: .\main\templates\main\_lib\_case_groups.html:10
+msgid "Other clients and projects"
+msgstr "Otros clientes y proyectos"
+
 #: .\main\templates\main\_lib\_contact_cta.html:10
 msgid "Have a project or an open role? Let’s talk."
 msgstr "¿Tienes un proyecto o una vacante? Hablemos."
@@ -622,12 +723,12 @@ msgid "I reply in Spanish or English."
 msgstr "Respondo en español o en inglés."
 
 #: .\main\templates\main\_lib\_contact_cta.html:14
-#: .\main\templates\main\case.html:99
+#: .\main\templates\main\case.html:113
 msgid "Write to me"
 msgstr "Escríbeme"
 
 #: .\main\templates\main\_lib\_contact_cta.html:15
-#: .\main\templates\main\case.html:100 .\main\templates\main\index.html:25
+#: .\main\templates\main\case.html:114 .\main\templates\main\index.html:25
 msgid "View CV"
 msgstr "Ver CV"
 
@@ -678,7 +779,7 @@ msgid "Native Spanish · English B2"
 msgstr "Español nativo · Inglés B2"
 
 #: .\main\templates\main\about.html:9 .\main\templates\main\about.html:14
-#: .\main\views.py:183
+#: .\main\views.py:193
 msgid "About Me"
 msgstr "Sobre mí"
 
@@ -866,12 +967,13 @@ msgstr ""
 "No dejes de aprender. No pierdas la curiosidad. Y construye cosas que de "
 "verdad importen."
 
-#: .\main\templates\main\case.html:15 .\main\templates\main\how_i_work.html:12
+#: .\main\templates\main\case.html:15 .\main\templates\main\cases.html:12
+#: .\main\templates\main\how_i_work.html:13
 #: .\main\templates\main\service.html:13
 msgid "Breadcrumb"
 msgstr "Ruta"
 
-#: .\main\templates\main\case.html:16
+#: .\main\templates\main\case.html:16 .\main\templates\main\cases.html:16
 msgid "cases"
 msgstr "casos"
 
@@ -891,11 +993,15 @@ msgstr "periodo"
 msgid "authorship"
 msgstr "autoría"
 
-#: .\main\templates\main\case.html:80 .\main\templates\main\case.html:84
+#: .\main\templates\main\case.html:83
+msgid "Service"
+msgstr "Servicio"
+
+#: .\main\templates\main\case.html:94 .\main\templates\main\case.html:98
 msgid "Next case"
 msgstr "Siguiente caso"
 
-#: .\main\templates\main\case.html:96
+#: .\main\templates\main\case.html:110
 msgid "Have a similar problem? Let’s talk."
 msgstr "¿Tienes un problema parecido? Hablemos."
 
@@ -934,7 +1040,7 @@ msgid "I will only use your details to reply to you."
 msgstr "Solo usaré tus datos para responderte."
 
 #: .\main\templates\main\contact.html:54 .\main\templates\main\privacy.html:11
-#: .\main\views.py:256 .\templates\lib\_main_right_sidebar.html:29
+#: .\main\views.py:268 .\templates\lib\_main_right_sidebar.html:29
 msgid "Privacy policy"
 msgstr "Política de privacidad"
 
@@ -950,13 +1056,13 @@ msgstr "Desarrollo con agentes de IA"
 msgid "Download PDF"
 msgstr "Descargar PDF"
 
-#: .\main\templates\main\how_i_work.html:19
+#: .\main\templates\main\how_i_work.html:20
 msgctxt "how I work page"
 msgid "Agents write the code. The specification and the review are mine."
 msgstr ""
 "Los agentes escriben el código. La especificación y la revisión son mías."
 
-#: .\main\templates\main\how_i_work.html:20
+#: .\main\templates\main\how_i_work.html:21
 msgid ""
 "I build software with AI agents in four steps: I write the specification, "
 "agents with different roles implement it, I review every plan and every "
@@ -970,11 +1076,11 @@ msgstr ""
 "integración continua. Con este método entregué las cinco primeras épicas de "
 "un CRM, 19 historias, en dos semanas, con más de 2.000 tests automáticos."
 
-#: .\main\templates\main\how_i_work.html:34 .\main\templates\main\index.html:91
+#: .\main\templates\main\how_i_work.html:35 .\main\templates\main\index.html:78
 msgid "Specification"
 msgstr "Especificación"
 
-#: .\main\templates\main\how_i_work.html:35
+#: .\main\templates\main\how_i_work.html:36
 msgid ""
 "Before any code is written there is a brief, a phased scope and acceptance "
 "criteria. On larger projects that means a PRD, an architecture, epics and "
@@ -988,11 +1094,11 @@ msgstr ""
 "junto al código, así que cualquier persona o agente que llegue después sabe "
 "qué se decidió y por qué."
 
-#: .\main\templates\main\how_i_work.html:44 .\main\templates\main\index.html:96
+#: .\main\templates\main\how_i_work.html:45 .\main\templates\main\index.html:83
 msgid "Agents with roles"
 msgstr "Agentes con roles"
 
-#: .\main\templates\main\how_i_work.html:45
+#: .\main\templates\main\how_i_work.html:46
 msgid ""
 "I work with Claude Code and the BMAD method. One agent plans, another "
 "implements and another reviews, each with its own instructions. I use "
@@ -1004,12 +1110,11 @@ msgstr ""
 "comandos propios, archivos de instrucciones y servidores MCP para que cada "
 "agente tenga solo el contexto que necesita."
 
-#: .\main\templates\main\how_i_work.html:53
-#: .\main\templates\main\index.html:101
+#: .\main\templates\main\how_i_work.html:54 .\main\templates\main\index.html:88
 msgid "Human review"
 msgstr "Revisión humana"
 
-#: .\main\templates\main\how_i_work.html:54
+#: .\main\templates\main\how_i_work.html:55
 msgid ""
 "I approve every plan before it runs and read every change before it is "
 "merged. Agents speed up writing the code; product and architecture decisions "
@@ -1019,12 +1124,11 @@ msgstr ""
 "integrarlo. Los agentes aceleran la escritura del código; las decisiones de "
 "producto y de arquitectura no se delegan."
 
-#: .\main\templates\main\how_i_work.html:61
-#: .\main\templates\main\index.html:106
+#: .\main\templates\main\how_i_work.html:62 .\main\templates\main\index.html:93
 msgid "Verification"
 msgstr "Verificación"
 
-#: .\main\templates\main\how_i_work.html:62
+#: .\main\templates\main\how_i_work.html:63
 msgid ""
 "Automated tests (pytest, Jest, Maestro), API contracts locked with OpenAPI "
 "and continuous integration on every change. If something fails, it is not "
@@ -1034,15 +1138,15 @@ msgstr ""
 "OpenAPI e integración continua en cada cambio. Si algo no pasa, no se "
 "integra."
 
-#: .\main\templates\main\how_i_work.html:74
+#: .\main\templates\main\how_i_work.html:75
 msgid "Real example"
 msgstr "Ejemplo real"
 
-#: .\main\templates\main\how_i_work.html:76
+#: .\main\templates\main\how_i_work.html:77
 msgid "A CRM in production, from spec to deployment"
 msgstr "Un CRM en producción, de la especificación al despliegue"
 
-#: .\main\templates\main\how_i_work.html:77
+#: .\main\templates\main\how_i_work.html:78
 msgid ""
 "For a vacation and mid-term rental management company I built a CRM inside "
 "their management system: leads created automatically from Idealista, "
@@ -1057,31 +1161,31 @@ msgstr ""
 "con agentes a partir de su especificación y pasó revisión antes de "
 "integrarse."
 
-#: .\main\templates\main\how_i_work.html:84
+#: .\main\templates\main\how_i_work.html:85
 msgid "19 stories in the first five epics"
 msgstr "19 historias en las cinco primeras épicas"
 
-#: .\main\templates\main\how_i_work.html:85
+#: .\main\templates\main\how_i_work.html:86
 msgid "2 weeks to implement those epics"
 msgstr "2 semanas de implementación para esas épicas"
 
-#: .\main\templates\main\how_i_work.html:86
+#: .\main\templates\main\how_i_work.html:87
 msgid "More than 2,000 automated tests in the module"
 msgstr "Más de 2.000 tests automáticos en el módulo"
 
-#: .\main\templates\main\how_i_work.html:87
+#: .\main\templates\main\how_i_work.html:88
 msgid "CI on PostgreSQL in GitHub Actions on every change"
 msgstr "CI sobre PostgreSQL en GitHub Actions en cada cambio"
 
-#: .\main\templates\main\how_i_work.html:88
+#: .\main\templates\main\how_i_work.html:89
 msgid "In production and still evolving with the rest of the team"
 msgstr "En producción y en evolución por el resto del equipo"
 
-#: .\main\templates\main\how_i_work.html:91
+#: .\main\templates\main\how_i_work.html:92
 msgid "See the full case"
 msgstr "Ver el caso completo"
 
-#: .\main\templates\main\how_i_work.html:93
+#: .\main\templates\main\how_i_work.html:94
 msgid ""
 "Other projects built this way: the offline-first participatory monitoring "
 "app for the World Bank Group, a warehouse management system for a logistics "
@@ -1091,67 +1195,9 @@ msgstr ""
 "participativo para el Grupo Banco Mundial, un sistema de gestión de almacén "
 "para una empresa de logística y este sitio."
 
-#: .\main\templates\main\how_i_work.html:101 .\main\views.py:115
+#: .\main\templates\main\how_i_work.html:102 .\main\views.py:123
 msgid "Frequently asked questions"
 msgstr "Preguntas frecuentes"
-
-#: .\main\templates\main\how_i_work.html:104
-msgid "What is spec-driven development?"
-msgstr "¿Qué es el desarrollo dirigido por especificaciones?"
-
-#: .\main\templates\main\how_i_work.html:105
-msgid ""
-"Writing down first what has to be built and how you will know it is right, "
-"and then building it. With AI agents, it is what turns a code generator into "
-"a predictable team: the agent works against the specification and the review "
-"checks against it."
-msgstr ""
-"Es escribir primero qué hay que construir y cómo se sabrá que está bien, y "
-"después implementarlo. Con agentes de IA es lo que convierte un generador de "
-"código en un equipo predecible: el agente trabaja contra la especificación y "
-"la revisión compara contra ella."
-
-#: .\main\templates\main\how_i_work.html:112
-msgid "What is the BMAD method?"
-msgstr "¿Qué es el método BMAD?"
-
-#: .\main\templates\main\how_i_work.html:113
-msgid ""
-"An open-source method for AI agent-driven development that splits the work "
-"into roles (analyst, product, architecture, development, review) and "
-"produces documents that build on each other: brief, PRD, architecture, epics "
-"and stories."
-msgstr ""
-"Un método de código abierto para desarrollo con agentes de IA que reparte el "
-"trabajo en roles (analista, producto, arquitectura, desarrollo, revisión) y "
-"produce documentos que se encadenan: brief, PRD, arquitectura, épicas e "
-"historias."
-
-#: .\main\templates\main\how_i_work.html:120
-msgid "Is code written by agents reliable?"
-msgstr "¿El código escrito por agentes es fiable?"
-
-#: .\main\templates\main\how_i_work.html:121
-msgid ""
-"As reliable as the review and the tests around it. That is why I review "
-"every change and nothing is merged without passing the tests and continuous "
-"integration."
-msgstr ""
-"Tanto como la revisión y los tests que lo acompañan. Por eso reviso cada "
-"cambio y nada se integra sin pasar los tests y la integración continua."
-
-#: .\main\templates\main\how_i_work.html:127
-msgid "Can I use this method with my team?"
-msgstr "¿Puedo usar este método con mi equipo?"
-
-#: .\main\templates\main\how_i_work.html:128
-msgid ""
-"Yes. I offer training and hands-on support so your team can work with AI "
-"agents under specification and review, on your own projects."
-msgstr ""
-"Sí. Ofrezco formación y acompañamiento para que tu equipo trabaje con "
-"agentes de IA bajo especificación y revisión, sobre vuestros propios "
-"proyectos."
 
 #: .\main\templates\main\index.html:17
 msgid ""
@@ -1190,28 +1236,20 @@ msgstr "He trabajado para"
 msgid "IUCN"
 msgstr "UICN"
 
-#: .\main\templates\main\index.html:58
-msgid "What I have built"
-msgstr "Lo que he construido"
+#: .\main\templates\main\index.html:63
+msgid "All cases"
+msgstr "Ver todos los casos"
 
-#: .\main\templates\main\index.html:64
-msgid "World Bank Group · 2023 to 2026"
-msgstr "Grupo Banco Mundial · 2023 a 2026"
-
-#: .\main\templates\main\index.html:64
-msgid "Other clients and projects"
-msgstr "Otros clientes y proyectos"
-
-#: .\main\templates\main\index.html:86
+#: .\main\templates\main\index.html:73
 msgid "Agents write the code. The specification and the review are mine."
 msgstr "Los agentes escriben. La especificación y la revisión son mías."
 
-#: .\main\templates\main\index.html:92
+#: .\main\templates\main\index.html:79
 msgid "Brief, phased scope and acceptance criteria before any code is written."
 msgstr ""
 "Brief, alcance por fases y criterios de aceptación antes de escribir código."
 
-#: .\main\templates\main\index.html:97
+#: .\main\templates\main\index.html:84
 msgid ""
 "Claude Code and the BMAD method: one agent plans, another implements and "
 "another reviews."
@@ -1219,7 +1257,7 @@ msgstr ""
 "Claude Code y el método BMAD: un agente planifica, otro implementa y otro "
 "revisa."
 
-#: .\main\templates\main\index.html:102
+#: .\main\templates\main\index.html:89
 msgid ""
 "I approve every plan before it runs and read every change before it is "
 "merged."
@@ -1227,7 +1265,7 @@ msgstr ""
 "Apruebo cada plan antes de que se ejecute y leo cada cambio antes de "
 "integrarlo."
 
-#: .\main\templates\main\index.html:107
+#: .\main\templates\main\index.html:94
 msgid ""
 "Tests, locked API contracts and continuous integration. Nothing reaches "
 "production without going through them."
@@ -1235,27 +1273,27 @@ msgstr ""
 "Tests, contratos de API fijados e integración continua. Nada llega a "
 "producción sin pasar por ahí."
 
-#: .\main\templates\main\index.html:111 .\main\templates\main\service.html:51
+#: .\main\templates\main\index.html:98 .\main\templates\main\service.html:51
 msgid "See how I work"
 msgstr "Ver cómo trabajo"
 
-#: .\main\templates\main\index.html:113
+#: .\main\templates\main\index.html:100
 msgid "See a real example: the mid-term rental CRM"
 msgstr "Ver un ejemplo real: el CRM de media estancia"
 
-#: .\main\templates\main\index.html:123
+#: .\main\templates\main\index.html:110
 msgid "What I offer"
 msgstr "Qué ofrezco"
 
-#: .\main\templates\main\index.html:124
+#: .\main\templates\main\index.html:111
 msgid "How I can help"
 msgstr "En qué puedo ayudarte"
 
-#: .\main\templates\main\index.html:128
+#: .\main\templates\main\index.html:115
 msgid "Backend architecture"
 msgstr "Arquitectura backend"
 
-#: .\main\templates\main\index.html:129
+#: .\main\templates\main\index.html:116
 msgid ""
 "API design, data modeling and AWS infrastructure for products that need to "
 "grow without being rebuilt."
@@ -1263,7 +1301,7 @@ msgstr ""
 "Diseño de APIs, modelo de datos e infraestructura en AWS para productos que "
 "tienen que crecer sin rehacerse."
 
-#: .\main\templates\main\index.html:133
+#: .\main\templates\main\index.html:120
 msgid ""
 "From specification to deployment: backend, frontend, testing and release, "
 "with one person accountable."
@@ -1271,7 +1309,7 @@ msgstr ""
 "De la especificación al despliegue: backend, frontend, pruebas y puesta en "
 "producción con una sola persona responsable."
 
-#: .\main\templates\main\index.html:137
+#: .\main\templates\main\index.html:124
 msgid ""
 "Integration of LLMs and Hugging Face models into systems that are already in "
 "production. Most recently: a financial analysis service that explains the "
@@ -1281,11 +1319,11 @@ msgstr ""
 "producción. Lo más reciente: un servicio de análisis financiero que explica "
 "los paneles de una plataforma de gestión de alquileres en lenguaje claro."
 
-#: .\main\templates\main\index.html:151
+#: .\main\templates\main\index.html:138
 msgid "From the blog"
 msgstr "Del blog"
 
-#: .\main\templates\main\index.html:152
+#: .\main\templates\main\index.html:139
 msgid "View all"
 msgstr "Ver todo"
 
@@ -1294,39 +1332,39 @@ msgstr "Ver todo"
 msgid "Nestor Bracho, %(role)s · Freelance Django & Python, %(city)s"
 msgstr "Nestor Bracho, %(role)s · Django y Python freelance, %(city)s"
 
-#: .\main\views.py:111
+#: .\main\views.py:119
 msgid "What I do"
 msgstr "Qué hago"
 
-#: .\main\views.py:112
+#: .\main\views.py:120
 msgid "Examples"
 msgstr "Ejemplos"
 
-#: .\main\views.py:159
+#: .\main\views.py:169
 msgid "The problem"
 msgstr "El problema"
 
-#: .\main\views.py:160
+#: .\main\views.py:170
 msgid "What I built"
 msgstr "Lo que construí"
 
-#: .\main\views.py:162
+#: .\main\views.py:172
 msgid "How it was built"
 msgstr "Cómo se construyó"
 
-#: .\main\views.py:163
+#: .\main\views.py:173
 msgid "Stack"
 msgstr "Stack"
 
-#: .\main\views.py:164
+#: .\main\views.py:174
 msgid "Result"
 msgstr "Resultado"
 
-#: .\main\views.py:165
+#: .\main\views.py:175
 msgid "Links"
 msgstr "Enlaces"
 
-#: .\main\views.py:185
+#: .\main\views.py:195
 #, python-format
 msgid ""
 "Get to know Nestor Bracho, %(role)s: backend systems, Python and technology "
@@ -1335,12 +1373,12 @@ msgstr ""
 "Conoce a Nestor Bracho, %(role)s: sistemas backend, Python y tecnología con "
 "impacto social. Su trayectoria, habilidades y lo que le mueve."
 
-#: .\main\views.py:197
+#: .\main\views.py:207
 #, python-format
 msgid "CV · Nestor Bracho, %(role)s"
 msgstr "CV · Nestor Bracho, %(role)s"
 
-#: .\main\views.py:199
+#: .\main\views.py:209
 #, python-format
 msgid ""
 "CV of Nestor Bracho, %(role)s with more than %(years)s years building web "
@@ -1349,18 +1387,18 @@ msgstr ""
 "CV de Nestor Bracho, %(role)s con más de %(years)s años construyendo "
 "plataformas web con Python y Django."
 
-#: .\main\views.py:257
+#: .\main\views.py:269
 msgid ""
 "What personal data this site collects, why, and how to exercise your rights."
 msgstr ""
 "Qué datos personales recoge este sitio, para qué y cómo ejercer tus derechos."
 
-#: .\main\views.py:269 .\templates\lib\_main_footer.html:80
-#: .\templates\lib\_main_navbar.html:38 .\templates\lib\_site_header.html:31
+#: .\main\views.py:281 .\templates\lib\_main_footer.html:80
+#: .\templates\lib\_main_navbar.html:38 .\templates\lib\_site_header.html:32
 msgid "Contact"
 msgstr "Contacto"
 
-#: .\main\views.py:271
+#: .\main\views.py:283
 msgid ""
 "Plug into the grid, whether you’re building something bold or need a sharp "
 "mind in the system, this is your uplink to start working together."
@@ -1368,7 +1406,7 @@ msgstr ""
 "¿Buscas un dev que hable en código y entienda el sistema? Transmite por "
 "aquí. <br><i>Construyamos el futuro juntos.</i>"
 
-#: .\main\views.py:282
+#: .\main\views.py:294
 msgid ""
 "You've sent several messages in a short time. Please try again later: your "
 "message is still here."
@@ -1376,7 +1414,7 @@ msgstr ""
 "Has enviado varios mensajes en poco tiempo. Inténtalo de nuevo más tarde: tu "
 "mensaje sigue aquí."
 
-#: .\main\views.py:289
+#: .\main\views.py:301
 msgid ""
 "Your contact request has been successfully submitted. I'll get in touch as "
 "soon as possible!"
@@ -1384,7 +1422,7 @@ msgstr ""
 "Solicitud de contacto enviada con éxito. ¡Me pondré en contacto contigo lo "
 "antes posible!"
 
-#: .\main\views.py:296
+#: .\main\views.py:308
 msgid "Something went wrong. Try again later."
 msgstr "Algo salió mal. Intenta de nuevo más tarde."
 
@@ -1475,16 +1513,16 @@ msgid "Pages"
 msgstr "Páginas"
 
 #: .\templates\lib\_main_footer.html:76 .\templates\lib\_main_navbar.html:32
-#: .\templates\lib\_site_footer.html:14
+#: .\templates\lib\_site_footer.html:13
 msgid "About"
 msgstr "Sobre mí"
 
 #: .\templates\lib\_main_footer.html:78 .\templates\lib\_main_navbar.html:35
-#: .\templates\lib\_site_footer.html:13 .\templates\lib\_site_header.html:14
+#: .\templates\lib\_site_footer.html:12 .\templates\lib\_site_header.html:15
 msgid "CV"
 msgstr "CV"
 
-#: .\templates\lib\_main_footer.html:82 .\templates\lib\_site_footer.html:15
+#: .\templates\lib\_main_footer.html:82 .\templates\lib\_site_footer.html:14
 msgid "Privacy"
 msgstr "Privacidad"
 
@@ -1584,23 +1622,23 @@ msgstr "Ninguna publicación coincide con tu búsqueda."
 msgid "The search isn't working right now. Please try again later."
 msgstr "La búsqueda no funciona en este momento. Inténtalo de nuevo más tarde."
 
-#: .\templates\lib\_site_footer.html:6
+#: .\templates\lib\_site_footer.html:5
 msgid "Footer"
 msgstr "Pie"
 
-#: .\templates\lib\_site_header.html:21
+#: .\templates\lib\_site_header.html:22
 msgid "Switch to English"
 msgstr "Cambiar a inglés"
 
-#: .\templates\lib\_site_header.html:23
+#: .\templates\lib\_site_header.html:24
 msgid "Switch to Spanish"
 msgstr "Cambiar a español"
 
-#: .\templates\lib\_site_header.html:29
+#: .\templates\lib\_site_header.html:30
 msgid "Light theme"
 msgstr "Tema claro"
 
-#: .\templates\lib\_site_header.html:29
+#: .\templates\lib\_site_header.html:30
 msgid "Dark theme"
 msgstr "Tema oscuro"
 

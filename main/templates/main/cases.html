@@ -1,0 +1,30 @@
+{% extends 'site.html' %}
+{% load i18n %}
+
+{% comment %}
+    The cases index: the home's cases, grouped as there (main/_lib/_case_groups.html), under the case pages' hero, then
+    the home's contact block. Its title, description and intro are main.services.CASES_INDEX_*.
+{% endcomment %}
+
+{% block content %}
+<section class="case-hero" aria-labelledby="cases-title">
+    <div class="container case-hero__inner">
+        <nav class="breadcrumb" aria-label="{% translate 'Breadcrumb' %}">
+            {% translate 'Home' as home_label %}
+            <a href="{% url 'main:index' %}"><span aria-hidden="true">~/</span>{{ home_label|lower }}</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">{% translate 'cases' %}</span>
+        </nav>
+        <h1 class="case-hero__title" id="cases-title">{% translate 'What I have built' %}</h1>
+        <p class="case-hero__lede">{{ intro }}</p>
+    </div>
+</section>
+
+<section class="case-body">
+    <div class="container">
+        {% include 'main/_lib/_case_groups.html' with group_headings=True %}
+    </div>
+</section>
+
+{% include 'main/_lib/_contact_cta.html' %}
+{% endblock %}

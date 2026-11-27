@@ -3,7 +3,8 @@
 
 {% comment %}
     The How I work page, from docs/services-content.md: the home's How I work block in full, with the real example
-    and the FAQ. The FAQ keeps one element per question and answer.
+    and the FAQ (main.services.HOW_I_WORK_FAQ, which its structured data reads too). The FAQ keeps one element per
+    question and answer.
 {% endcomment %}
 
 {% block content %}
@@ -100,36 +101,12 @@
         <div class="case-block">
             <h2 class="case-block__label"><span class="section-label__mark" aria-hidden="true"></span>02 / {% translate 'Frequently asked questions' %}</h2>
             <div class="case-block__content faq">
-                <div class="faq__item">
-                    <h3 class="faq__question">{% translate 'What is spec-driven development?' %}</h3>
-                    <p class="faq__answer">{% blocktranslate trimmed %}
-                        Writing down first what has to be built and how you will know it is right, and then building
-                        it. With AI agents, it is what turns a code generator into a predictable team: the agent works
-                        against the specification and the review checks against it.
-                    {% endblocktranslate %}</p>
-                </div>
-                <div class="faq__item">
-                    <h3 class="faq__question">{% translate 'What is the BMAD method?' %}</h3>
-                    <p class="faq__answer">{% blocktranslate trimmed %}
-                        An open-source method for AI agent-driven development that splits the work into roles
-                        (analyst, product, architecture, development, review) and produces documents that build on
-                        each other: brief, PRD, architecture, epics and stories.
-                    {% endblocktranslate %}</p>
-                </div>
-                <div class="faq__item">
-                    <h3 class="faq__question">{% translate 'Is code written by agents reliable?' %}</h3>
-                    <p class="faq__answer">{% blocktranslate trimmed %}
-                        As reliable as the review and the tests around it. That is why I review every change and
-                        nothing is merged without passing the tests and continuous integration.
-                    {% endblocktranslate %}</p>
-                </div>
-                <div class="faq__item">
-                    <h3 class="faq__question">{% translate 'Can I use this method with my team?' %}</h3>
-                    <p class="faq__answer">{% blocktranslate trimmed %}
-                        Yes. I offer training and hands-on support so your team can work with AI agents under
-                        specification and review, on your own projects.
-                    {% endblocktranslate %}</p>
-                </div>
+                {% for item in faq %}
+                    <div class="faq__item">
+                        <h3 class="faq__question">{{ item.question }}</h3>
+                        <p class="faq__answer">{{ item.answer }}</p>
+                    </div>
+                {% endfor %}
             </div>
         </div>
     </div>

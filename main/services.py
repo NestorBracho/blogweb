@@ -99,11 +99,72 @@ def get_service(slug):
     return next((service for service in SERVICES if service.slug == slug), None)
 
 
+def services_for_case(slug):
+    """
+    The services whose pages list this case, in the order of SERVICES, as [{'name', 'url'}] in the page's language:
+    the inverse of `Service.cases`, so the case page and the service pages cannot disagree.
+    """
+    return [
+        {'name': str(service.name), 'url': service.get_absolute_url()} for service in SERVICES if slug in service.cases
+    ]
+
+
 # The How I work page (main:how-i-work): its title and description, for the page and for /llms.txt
 HOW_I_WORK_TITLE = _('How I build software with AI agents · Nestor Bracho')
 HOW_I_WORK_DESCRIPTION = _(
     'Spec-driven development with AI agents: specification, agents with roles, human review and verification. With '
     'a real case and its numbers.'
+)
+
+# Its FAQ: the page shows it and its FAQPage structured data reads it, so the two cannot drift
+HOW_I_WORK_FAQ = (
+    Question(
+        _('What is spec-driven development?'),
+        _(
+            'Writing down first what has to be built and how you will know it is right, and then building it. With AI '
+            'agents, it is what turns a code generator into a predictable team: the agent works against the '
+            'specification and the review checks against it.'
+        ),
+    ),
+    Question(
+        _('What is the BMAD method?'),
+        _(
+            'An open-source method for AI agent-driven development that splits the work into roles (analyst, product, '
+            'architecture, development, review) and produces documents that build on each other: brief, PRD, '
+            'architecture, epics and stories.'
+        ),
+    ),
+    Question(
+        _('Is code written by agents reliable?'),
+        _(
+            'As reliable as the review and the tests around it. That is why I review every change and nothing is '
+            'merged without passing the tests and continuous integration.'
+        ),
+    ),
+    Question(
+        _('Can I use this method with my team?'),
+        _(
+            'Yes. I offer training and hands-on support so your team can work with AI agents under specification and '
+            'review, on your own projects.'
+        ),
+    ),
+)
+
+
+def how_i_work_faq():
+    """The How I work FAQ in the page's language."""
+    return [Question(str(item.question), str(item.answer)) for item in HOW_I_WORK_FAQ]
+
+
+# The cases index (main:cases), from the phase 2b copy; its H1 is the home's cases title
+CASES_INDEX_TITLE = _('Django and Python case studies · Nestor Bracho')
+CASES_INDEX_DESCRIPTION = _(
+    'Case studies of Django backends, APIs and products built for the World Bank Group and private clients: the '
+    'problem, the solution and the result.'
+)
+CASES_INDEX_INTRO = _(
+    'Each case explains the problem, what I built, how and what changed. Most are Django backends with their API; '
+    'some include the frontend and the AI pieces.'
 )
 
 SERVICES = [

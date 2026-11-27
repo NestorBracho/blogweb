@@ -185,6 +185,45 @@ class PostDetailViewTests(TestCase):
         self.assertNotContains(response, '</script><script>alert(1)')
         self.assertEqual(structured_data(response)['headline'], title)
 
+    def test_ends_with_the_services_and_how_i_work_in_each_language(self):
+        for language, heading, text, names in [
+            (
+                'en',
+                'Need this in your project?',
+                'I build Django backends, add AI to existing products and take products from idea to production.',
+                ['Django backend', 'AI in existing products', 'End-to-end product', 'How I work'],
+            ),
+            (
+                'es',
+                '¿Lo necesitas en tu proyecto?',
+                'Construyo backends con Django, añado IA a productos existentes y llevo productos de la idea a '
+                'producción.',
+                ['Backend con Django', 'IA en productos existentes', 'Producto de principio a fin', 'Cómo trabajo'],
+            ),
+        ]:
+            with self.subTest(language=language):
+                content = self.client.get(reverse_in(language, 'blog:post-detail', slug=self.post.slug)).content
+                block = content.decode().split('<section class="post-services"', 1)[1].split('</section>', 1)[0]
+                urls = [
+                    *(
+                        reverse_in(language, 'main:service-detail', slug=slug)
+                        for slug in ['django-backend', 'ai-integration', 'end-to-end-product']
+                    ),
+                    reverse_in(language, 'main:how-i-work'),
+                ]
+
+                self.assertIn(heading, block)
+                self.assertIn(text, block)
+                self.assertEqual(
+                    re.findall(r'<a href="([^"]+)">([^<]+)</a>', block), list(zip(urls, names, strict=True))
+                )
+
+    def test_the_services_come_after_the_share_links_and_before_the_other_posts(self):
+        content = self.get(self.post).content.decode()
+
+        self.assertLess(content.index('<div class="share">'), content.index('class="post-services"'))
+        self.assertLess(content.index('class="post-services"'), content.index('class="post__navigation"'))
+
     def test_body_is_rendered_from_markdown(self):
         body = 'Some **bold** text\n\n<script>alert("hi")</script>'
         post = create_post('Markdown', body_es=body, body_en=body)

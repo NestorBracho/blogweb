@@ -7,7 +7,7 @@ from . import cases, services
 
 class StaticViewSitemap(TranslatedSitemap):
     def items(self):
-        return ['main:index', 'main:how-i-work', 'main:about', 'main:cv', 'main:contact', 'main:privacy']
+        return ['main:index', 'main:cases', 'main:how-i-work', 'main:about', 'main:cv', 'main:contact', 'main:privacy']
 
     def location(self, item):
         return reverse(item)

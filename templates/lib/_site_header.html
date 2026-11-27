@@ -8,7 +8,8 @@
 
         {# Below 768px the links wrap onto a second line: no menu to open, so nothing needs JavaScript #}
         <nav class="site-nav" aria-label="{% translate 'Main menu' %}">
-            <a class="site-nav__link{% if url_name == 'case-detail' %} is-current{% endif %}" href="{{ home_url }}#cases"{% if url_name == 'case-detail' %} aria-current="true"{% endif %}>{% translate 'Cases' %}</a>
+            {# Current on the index (the page) and on a case (inside the section) #}
+            <a class="site-nav__link{% if url_name == 'cases' or url_name == 'case-detail' %} is-current{% endif %}" href="{% url 'main:cases' %}"{% if url_name == 'cases' %} aria-current="page"{% elif url_name == 'case-detail' %} aria-current="true"{% endif %}>{% translate 'Cases' %}</a>
             <a class="site-nav__link{% if url_name == 'how-i-work' %} is-current{% endif %}" href="{% url 'main:how-i-work' %}"{% if url_name == 'how-i-work' %} aria-current="page"{% endif %}>{% translate 'How I work' %}</a>
             <a class="site-nav__link" href="{% url 'blog:post-list' %}">{% translate 'Blog' %}</a>
             <a class="site-nav__link{% if url_name == 'cv' %} is-current{% endif %}" href="{% url 'main:cv' %}"{% if url_name == 'cv' %} aria-current="page"{% endif %}>{% translate 'CV' %}</a>

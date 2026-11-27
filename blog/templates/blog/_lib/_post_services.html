@@ -1,0 +1,15 @@
+{% load i18n %}
+{% comment %}
+    The end of every post: what he offers, linking the three service pages and How I work, with their names as the
+    footer gives them. Post bodies stay as written.
+{% endcomment %}
+<section class="post-services" aria-labelledby="post-services-title">
+    <h2 class="post-services__title" id="post-services-title">{% translate 'Need this in your project?' %}</h2>
+    <p class="post-services__text">{% translate 'I build Django backends, add AI to existing products and take products from idea to production.' %}</p>
+    <ul class="post-services__list list-reset">
+        <li><a href="{% url 'main:service-detail' slug='django-backend' %}">{% translate 'Django backend' %}</a></li>
+        <li><a href="{% url 'main:service-detail' slug='ai-integration' %}">{% translate 'AI in existing products' %}</a></li>
+        <li><a href="{% url 'main:service-detail' slug='end-to-end-product' %}">{% translate 'End-to-end product' %}</a></li>
+        <li><a href="{% url 'main:how-i-work' %}">{% translate 'How I work' %}</a></li>
+    </ul>
+</section>

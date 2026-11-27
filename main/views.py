@@ -60,15 +60,21 @@ class IndexView(generic.TemplateView):
         return super().get_context_data(**kwargs)
 
 
-class CasesView(generic.RedirectView):
-    """
-    There is no cases page: the home's section lists them. Temporary, so browsers don't cache it in case one is made.
-    """
+class CasesView(generic.TemplateView):
+    """The cases index: the cases the site shows, grouped as on the home, and the home's contact block."""
 
-    permanent = False
+    template_name = 'main/cases.html'
 
-    def get_redirect_url(self, *args, **kwargs):
-        return f'{reverse("main:index")}#cases'
+    def get_context_data(self, **kwargs):
+        groups = cases.grouped_cases()
+        kwargs['case_groups'] = groups
+        kwargs['drafts_visible'] = cases.drafts_visible()
+        kwargs['intro'] = services.CASES_INDEX_INTRO
+        kwargs['full_title'] = services.CASES_INDEX_TITLE
+        kwargs['meta_description'] = services.CASES_INDEX_DESCRIPTION
+        kwargs['structured_data'] = structured_data.cases_page(self.request, groups)
+
+        return super().get_context_data(**kwargs)
 
 
 class CaseDetailView(generic.TemplateView):
@@ -83,6 +89,8 @@ class CaseDetailView(generic.TemplateView):
         kwargs['case'] = localized
         kwargs['blocks'] = case_blocks(localized)
         kwargs['next_case'] = cases.next_case(case).localized()
+        # The services whose pages list this case: the way back to what it proves
+        kwargs['services'] = services.services_for_case(case.slug)
         kwargs['drafts_visible'] = cases.drafts_visible()
         kwargs['page_title'] = localized.title
         # Until the summary is written (drafts, in development), the site's own description stands in
@@ -131,9 +139,11 @@ class HowIWorkView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         example = cases.get_case(HOW_I_WORK_EXAMPLE)
         kwargs['example'] = example.localized() if example else None
+        faq = services.how_i_work_faq()
+        kwargs['faq'] = faq
         kwargs['full_title'] = services.HOW_I_WORK_TITLE
         kwargs['meta_description'] = services.HOW_I_WORK_DESCRIPTION
-        kwargs['structured_data'] = structured_data.how_i_work_page(self.request)
+        kwargs['structured_data'] = structured_data.how_i_work_page(self.request, faq)
 
         return super().get_context_data(**kwargs)
 
@@ -242,6 +252,8 @@ class LlmsTxtView(generic.View):
                 ],
                 'how_i_work_url': url('main:how-i-work'),
                 'how_i_work_description': services.HOW_I_WORK_DESCRIPTION,
+                'cases_url': url('main:cases'),
+                'cases_description': services.CASES_INDEX_DESCRIPTION,
             }
             with translation.override('es'):
                 context['home_es_url'] = url('main:index')

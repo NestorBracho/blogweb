@@ -9,6 +9,7 @@ only in development (DEBUG) and marked as such.
 """
 
 from dataclasses import dataclass
+from datetime import date
 
 from django.conf import settings
 from django.urls import reverse
@@ -191,8 +192,14 @@ def grouped_cases():
 
 GITHUB = 'GitHub'
 
+# The cases have no dates of their own: their structured data dates them all by the day their pages were first
+# committed
+CASES_PUBLISHED = date(2026, 11, 23)
+
 # His own published work, which the structured data also lists among his profiles (config/structured_data.py)
+E3_SLUG = 'e3-django-dynamic-forms'
 E3_PYPI_URL = 'https://pypi.org/project/e3-django-dynamic-forms/'
+E3_GITHUB_URL = 'https://github.com/e3tools/e3-django-dynamic-forms'
 SITE_REPO_URL = 'https://github.com/NestorBracho/blogweb'
 
 CASES = [
@@ -365,7 +372,7 @@ CASES = [
         ),
     ),
     Case(
-        slug='e3-django-dynamic-forms',
+        slug=E3_SLUG,
         group=WORLD_BANK,
         layout=NORMAL,
         published=True,
@@ -442,7 +449,7 @@ CASES = [
         ),
         links=(
             Link('PyPI', E3_PYPI_URL),
-            Link(GITHUB, 'https://github.com/e3tools/e3-django-dynamic-forms'),
+            Link(GITHUB, E3_GITHUB_URL),
         ),
     ),
     Case(

@@ -13,7 +13,7 @@
 <section class="case-hero" aria-labelledby="case-title">
     <div class="container case-hero__inner">
         <nav class="breadcrumb" aria-label="{% translate 'Breadcrumb' %}">
-            <a href="{% url 'main:index' %}#cases"><span aria-hidden="true">~/</span>{% translate 'cases' %}</a>
+            <a href="{% url 'main:cases' %}"><span aria-hidden="true">~/</span>{% translate 'cases' %}</a>
             <span aria-hidden="true">/</span>
             <span aria-current="page">{{ case.slug }}</span>
         </nav>
@@ -72,6 +72,20 @@
                 </div>
             {% endif %}
         {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{# The services whose pages list this case (main.services.services_for_case) #}
+{% if services %}
+<section class="case-services" aria-labelledby="case-services-title">
+    <div class="container case-services__inner">
+        <h2 class="case-services__label" id="case-services-title"><span class="section-label__mark" aria-hidden="true"></span>{% translate 'Service' %}</h2>
+        <div class="links">
+            {% for service in services %}
+                <a class="text-link" href="{{ service.url }}">{{ service.name }} <span class="arrow" aria-hidden="true">→</span></a>
+            {% endfor %}
+        </div>
     </div>
 </section>
 {% endif %}
